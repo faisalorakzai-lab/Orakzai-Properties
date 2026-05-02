@@ -42,10 +42,10 @@ router.get("/projects/:id", async (req, res) => {
       .from(projectsTable)
       .where(eq(projectsTable.id, parsed.data.id));
     if (!project) return res.status(404).json({ error: "Not found" });
-    res.json(serializeProject(project));
+    return res.json(serializeProject(project));
   } catch (err) {
     req.log.error(err);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -57,10 +57,10 @@ router.get("/projects/:id/updates", async (req, res) => {
       .select()
       .from(projectUpdatesTable)
       .where(eq(projectUpdatesTable.projectId, parsed.data.id));
-    res.json(updates.map(serializeUpdate));
+    return res.json(updates.map(serializeUpdate));
   } catch (err) {
     req.log.error(err);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -80,10 +80,10 @@ router.post("/projects/:id/updates", requireAuth, async (req: any, res) => {
         imageUrl: bodyParsed.data.imageUrl ?? null,
       })
       .returning();
-    res.status(201).json(serializeUpdate(update));
+    return res.status(201).json(serializeUpdate(update));
   } catch (err) {
     req.log.error(err);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -108,10 +108,10 @@ router.post("/bookings", async (req: any, res) => {
         status: "pending",
       })
       .returning();
-    res.status(201).json(serializeBooking(booking));
+    return res.status(201).json(serializeBooking(booking));
   } catch (err) {
     req.log.error(err);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 

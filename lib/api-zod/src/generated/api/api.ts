@@ -46,6 +46,16 @@ export const ListPropertiesResponseItem = zod.object({
   beds: zod.number().nullish(),
   baths: zod.number().nullish(),
   areaSqft: zod.number().nullish(),
+  isAvailable: zod.boolean(),
+  furnishedStatus: zod
+    .string()
+    .nullish()
+    .describe("fully_furnished | semi_furnished | unfurnished"),
+  occupancyType: zod
+    .string()
+    .nullish()
+    .describe("family | bachelor | office_commercial"),
+  rentalDuration: zod.string().nullish().describe("short_term | long_term"),
   createdAt: zod.string(),
   updatedAt: zod.string(),
 });
@@ -69,6 +79,9 @@ export const CreatePropertyBody = zod.object({
   beds: zod.number().nullish(),
   baths: zod.number().nullish(),
   areaSqft: zod.number().nullish(),
+  furnishedStatus: zod.string().nullish(),
+  occupancyType: zod.string().nullish(),
+  rentalDuration: zod.string().nullish(),
 });
 
 /**
@@ -98,6 +111,16 @@ export const GetPropertyResponse = zod.object({
   beds: zod.number().nullish(),
   baths: zod.number().nullish(),
   areaSqft: zod.number().nullish(),
+  isAvailable: zod.boolean(),
+  furnishedStatus: zod
+    .string()
+    .nullish()
+    .describe("fully_furnished | semi_furnished | unfurnished"),
+  occupancyType: zod
+    .string()
+    .nullish()
+    .describe("family | bachelor | office_commercial"),
+  rentalDuration: zod.string().nullish().describe("short_term | long_term"),
   createdAt: zod.string(),
   updatedAt: zod.string(),
 });
@@ -120,6 +143,10 @@ export const UpdatePropertyBody = zod.object({
   images: zod.array(zod.string()).optional(),
   ownerPhone: zod.string().nullish(),
   whatsappNumber: zod.string().nullish(),
+  isAvailable: zod.boolean().optional(),
+  furnishedStatus: zod.string().nullish(),
+  occupancyType: zod.string().nullish(),
+  rentalDuration: zod.string().nullish(),
 });
 
 export const UpdatePropertyResponse = zod.object({
@@ -142,6 +169,16 @@ export const UpdatePropertyResponse = zod.object({
   beds: zod.number().nullish(),
   baths: zod.number().nullish(),
   areaSqft: zod.number().nullish(),
+  isAvailable: zod.boolean(),
+  furnishedStatus: zod
+    .string()
+    .nullish()
+    .describe("fully_furnished | semi_furnished | unfurnished"),
+  occupancyType: zod
+    .string()
+    .nullish()
+    .describe("family | bachelor | office_commercial"),
+  rentalDuration: zod.string().nullish().describe("short_term | long_term"),
   createdAt: zod.string(),
   updatedAt: zod.string(),
 });
@@ -201,6 +238,16 @@ export const GetMyPropertiesResponseItem = zod.object({
   beds: zod.number().nullish(),
   baths: zod.number().nullish(),
   areaSqft: zod.number().nullish(),
+  isAvailable: zod.boolean(),
+  furnishedStatus: zod
+    .string()
+    .nullish()
+    .describe("fully_furnished | semi_furnished | unfurnished"),
+  occupancyType: zod
+    .string()
+    .nullish()
+    .describe("family | bachelor | office_commercial"),
+  rentalDuration: zod.string().nullish().describe("short_term | long_term"),
   createdAt: zod.string(),
   updatedAt: zod.string(),
 });

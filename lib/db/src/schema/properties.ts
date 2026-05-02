@@ -19,9 +19,14 @@ export const propertiesTable = pgTable("properties", {
   ownerRating: numeric("owner_rating", { precision: 3, scale: 1 }),
   whatsappNumber: text("whatsapp_number"),
   isVerified: boolean("is_verified").notNull().default(false),
+  isAvailable: boolean("is_available").notNull().default(true),
   beds: integer("beds"),
   baths: integer("baths"),
   areaSqft: integer("area_sqft"),
+  // Rental-specific fields
+  furnishedStatus: text("furnished_status"), // fully_furnished | semi_furnished | unfurnished
+  occupancyType: text("occupancy_type"),    // family | bachelor | office_commercial
+  rentalDuration: text("rental_duration"),  // short_term | long_term
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

@@ -126,12 +126,15 @@ router.post("/properties", requireAuth, async (req: any, res) => {
         beds: data.beds ?? null,
         baths: data.baths ?? null,
         areaSqft: data.areaSqft ?? null,
+        furnishedStatus: (data as any).furnishedStatus ?? null,
+        occupancyType: (data as any).occupancyType ?? null,
+        rentalDuration: (data as any).rentalDuration ?? null,
       })
       .returning();
-    res.status(201).json(serializeProperty(prop));
+    return res.status(201).json(serializeProperty(prop));
   } catch (err) {
     req.log.error(err);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -144,10 +147,10 @@ router.get("/properties/:id", async (req, res) => {
       .from(propertiesTable)
       .where(eq(propertiesTable.id, parsed.data.id));
     if (!prop) return res.status(404).json({ error: "Not found" });
-    res.json(serializeProperty(prop));
+    return res.json(serializeProperty(prop));
   } catch (err) {
     req.log.error(err);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -177,16 +180,20 @@ router.patch("/properties/:id", requireAuth, async (req: any, res) => {
     if (data.images !== undefined) updateFields.images = data.images;
     if (data.ownerPhone !== undefined) updateFields.ownerPhone = data.ownerPhone;
     if (data.whatsappNumber !== undefined) updateFields.whatsappNumber = data.whatsappNumber;
+    if ((data as any).isAvailable !== undefined) updateFields.isAvailable = (data as any).isAvailable;
+    if ((data as any).furnishedStatus !== undefined) updateFields.furnishedStatus = (data as any).furnishedStatus;
+    if ((data as any).occupancyType !== undefined) updateFields.occupancyType = (data as any).occupancyType;
+    if ((data as any).rentalDuration !== undefined) updateFields.rentalDuration = (data as any).rentalDuration;
 
     const [updated] = await db
       .update(propertiesTable)
       .set(updateFields)
       .where(eq(propertiesTable.id, parsed.data.id))
       .returning();
-    res.json(serializeProperty(updated));
+    return res.json(serializeProperty(updated));
   } catch (err) {
     req.log.error(err);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -201,10 +208,10 @@ router.delete("/properties/:id", requireAuth, async (req: any, res) => {
     if (!existing[0]) return res.status(404).json({ error: "Not found" });
     if (existing[0].ownerId !== req.userId) return res.status(403).json({ error: "Forbidden" });
     await db.delete(propertiesTable).where(eq(propertiesTable.id, parsed.data.id));
-    res.status(204).send();
+    return res.status(204).send();
   } catch (err) {
     req.log.error(err);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
