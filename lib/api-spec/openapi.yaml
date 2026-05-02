@@ -346,6 +346,8 @@ components:
           type: ["string", "null"]
         whatsappNumber:
           type: ["string", "null"]
+        isVerified:
+          type: boolean
         createdAt:
           type: string
         updatedAt:
@@ -360,6 +362,7 @@ components:
         - type
         - images
         - ownerId
+        - isVerified
         - createdAt
         - updatedAt
 
