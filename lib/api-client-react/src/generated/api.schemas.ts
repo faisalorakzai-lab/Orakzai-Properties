@@ -30,6 +30,16 @@ export interface Property {
   /** @nullable */
   whatsappNumber?: string | null;
   isVerified: boolean;
+  /** @nullable */
+  ownerAvatar?: string | null;
+  /** @nullable */
+  ownerRating?: number | null;
+  /** @nullable */
+  beds?: number | null;
+  /** @nullable */
+  baths?: number | null;
+  /** @nullable */
+  areaSqft?: number | null;
   createdAt: string;
   updatedAt: string;
 }

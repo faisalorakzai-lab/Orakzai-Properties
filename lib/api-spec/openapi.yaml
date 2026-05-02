@@ -348,6 +348,16 @@ components:
           type: ["string", "null"]
         isVerified:
           type: boolean
+        ownerAvatar:
+          type: ["string", "null"]
+        ownerRating:
+          type: ["number", "null"]
+        beds:
+          type: ["integer", "null"]
+        baths:
+          type: ["integer", "null"]
+        areaSqft:
+          type: ["integer", "null"]
         createdAt:
           type: string
         updatedAt:
