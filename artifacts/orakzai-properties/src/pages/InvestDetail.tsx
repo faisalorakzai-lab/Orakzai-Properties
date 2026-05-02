@@ -7,6 +7,7 @@ import {
   MessageCircle, AlertCircle, ChevronDown, ChevronUp,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import InvestModal from "@/components/InvestModal";
 import { useGetInvestmentProject, getGetInvestmentProjectQueryKey } from "@workspace/api-client-react";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -92,6 +93,7 @@ export default function InvestDetail() {
   const [investAmount, setInvestAmount] = useState(project.minInvestment);
   const [shares, setShares] = useState(1);
   const [roadmapOpen, setRoadmapOpen] = useState(true);
+  const [showInvestModal, setShowInvestModal] = useState(false);
 
   const annualProfit  = useMemo(() => investAmount * (roiPct / 100), [investAmount, roiPct]);
   const monthlyProfit = useMemo(() => annualProfit / 12, [annualProfit]);
@@ -106,9 +108,6 @@ export default function InvestDetail() {
 
   const status = STATUS_CONFIG[project.status] ?? STATUS_CONFIG.funding;
 
-  const whatsappMsg = encodeURIComponent(
-    `Hello Orakzai Investment Desk,\n\nI would like to secure ${shares} share(s) in "${project.title}" (${formatPKR(shares * sharePrice)} total).\n\nPlease guide me through the process.\n\nThank you.`
-  );
 
   if (isLoading) {
     return (
@@ -343,19 +342,18 @@ export default function InvestDetail() {
                   </div>
                 </div>
 
-                <a
-                  href={`https://wa.me/923001234567?text=${whatsappMsg}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-xl text-sm font-bold transition-all duration-200 hover:shadow-xl hover:shadow-[#C9A84C]/25 hover:scale-[1.02] active:scale-[0.98]"
-                  style={{ background: "linear-gradient(135deg, #C9A84C 0%, #e8c060 50%, #C9A84C 100%)", color: "#0a1220", display: "flex" }}
+                <button
+                  onClick={() => setShowInvestModal(true)}
+                  disabled={project.fundedShares >= project.totalShares}
+                  className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-xl text-sm font-bold transition-all duration-200 hover:shadow-xl hover:shadow-[#C9A84C]/25 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
+                  style={{ background: "linear-gradient(135deg, #C9A84C 0%, #e8c060 50%, #C9A84C 100%)", color: "#0a1220" }}
                 >
                   <Shield className="w-4 h-4" />
-                  Secure My Investment
-                </a>
+                  {project.fundedShares >= project.totalShares ? "Fully Funded" : "Secure My Investment"}
+                </button>
 
                 <p className="text-[10px] text-[#2a4060] text-center mt-3">
-                  Opens a direct channel with the Orakzai Investment Desk via WhatsApp
+                  Instant on-grid transaction · Sovereign guarantee
                 </p>
 
                 <div className="mt-4 pt-4 border-t border-[#1e3a5f]/30 space-y-2">
@@ -375,6 +373,13 @@ export default function InvestDetail() {
           </div>
         </div>
       </div>
+
+      {showInvestModal && (
+        <InvestModal
+          project={project}
+          onClose={() => setShowInvestModal(false)}
+        />
+      )}
     </div>
   );
 }

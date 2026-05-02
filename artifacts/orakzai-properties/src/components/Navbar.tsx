@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Show, useUser } from "@clerk/react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Building2, Plus } from "lucide-react";
+import { Menu, X, Building2, Plus, BarChart3 } from "lucide-react";
 import { useClerk } from "@clerk/react";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -57,6 +57,11 @@ export default function Navbar() {
               </Link>
             </Show>
             <Show when="signed-in">
+              <Link href="/portfolio">
+                <Button variant="ghost" size="sm" className={`gap-1.5 text-xs h-8 px-3 ${location === "/portfolio" ? "text-[#C9A84C]" : "text-[#6a7f99] hover:text-white"}`}>
+                  <BarChart3 className="h-3.5 w-3.5" /> Portfolio
+                </Button>
+              </Link>
               <Link href="/post-property">
                 <Button size="sm" className="bg-[#C9A84C] hover:bg-[#e8c060] text-[#0a1220] font-bold gap-1.5 text-xs h-8 px-3">
                   <Plus className="h-3.5 w-3.5" /> Post Property
@@ -99,6 +104,11 @@ export default function Navbar() {
               </Link>
               <Link href="/my-properties" onClick={() => setOpen(false)}>
                 <Button variant="ghost" size="sm" className="w-full text-[#6a7f99] text-xs">My Listings</Button>
+              </Link>
+              <Link href="/portfolio" onClick={() => setOpen(false)}>
+                <Button variant="ghost" size="sm" className="w-full text-[#6a7f99] text-xs gap-1.5">
+                  <BarChart3 className="h-3.5 w-3.5" /> My Portfolio
+                </Button>
               </Link>
             </Show>
           </div>
