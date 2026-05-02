@@ -5,7 +5,7 @@ import {
   ArrowLeft, Share2, Heart, Phone, MessageCircle, ShieldCheck,
   ChevronLeft, ChevronRight, Expand, X, Star, Bed, Bath,
   Maximize2, Home, Building2, Layers, MapPin, Calendar,
-  Tag, Eye, CheckCircle2,
+  Tag, Eye, CheckCircle2, Sofa, Users, Clock, BanIcon,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { useGetProperty, getGetPropertyQueryKey } from "@workspace/api-client-react";
@@ -278,9 +278,13 @@ export default function PropertyDetail() {
     query: { enabled: !!id, queryKey: getGetPropertyQueryKey(id) },
   });
 
-  const waNum  = property?.whatsappNumber || property?.ownerPhone;
-  const waText = `Hi, I saw your property ${property?.title ?? ""} on Orakzai Properties and I am interested.`;
-  const waLink = waNum ? `https://wa.me/${waNum.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(waText)}` : null;
+  const isRental   = property?.category === "rent";
+  const isAvailable = (property as any)?.isAvailable !== false;
+  const waNum   = property?.whatsappNumber || property?.ownerPhone;
+  const waText  = isRental
+    ? `Hello, I am interested in renting your property ${property?.title ?? ""} listed for PKR ${Number(property?.price ?? 0).toLocaleString()}/month. Is it still available?`
+    : `Hi, I saw your property ${property?.title ?? ""} on Orakzai Properties and I am interested.`;
+  const waLink  = waNum ? `https://wa.me/${waNum.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(waText)}` : null;
   const catStyle = CAT_STYLE[property?.category ?? ""] ?? CAT_STYLE.buy;
   const TypeIcon = TYPE_ICON[property?.type ?? ""] ?? Home;
 
@@ -328,12 +332,25 @@ export default function PropertyDetail() {
     );
   }
 
+  const FURNISHED_LABEL: Record<string, string> = {
+    fully_furnished: "Fully Furnished", semi_furnished: "Semi-Furnished", unfurnished: "Unfurnished",
+  };
+  const OCCUPANCY_LABEL: Record<string, string> = {
+    family: "Family", bachelor: "Bachelor", office_commercial: "Office/Commercial",
+  };
+  const DURATION_LABEL: Record<string, string> = {
+    short_term: "Short-term", long_term: "Long-term",
+  };
+
   const specItems = [
     ...(property.beds   ? [{ icon: Bed,       label: "Bedrooms",  value: property.beds   }] : []),
     ...(property.baths  ? [{ icon: Bath,       label: "Bathrooms", value: property.baths  }] : []),
     ...(property.areaSqft ? [{ icon: Maximize2, label: "Sq. Ft.",  value: property.areaSqft.toLocaleString() }] : []),
     { icon: TypeIcon,   label: "Type",      value: property.type.charAt(0).toUpperCase() + property.type.slice(1) },
     { icon: MapPin,     label: "City",      value: property.city },
+    ...((isRental && (property as any).furnishedStatus) ? [{ icon: Sofa,  label: "Furnished",  value: FURNISHED_LABEL[(property as any).furnishedStatus] ?? (property as any).furnishedStatus }] : []),
+    ...((isRental && (property as any).occupancyType)   ? [{ icon: Users, label: "Occupancy",  value: OCCUPANCY_LABEL[(property as any).occupancyType] ?? (property as any).occupancyType }] : []),
+    ...((isRental && (property as any).rentalDuration)  ? [{ icon: Clock, label: "Duration",   value: DURATION_LABEL[(property as any).rentalDuration] ?? (property as any).rentalDuration }] : []),
   ];
 
   return (
@@ -430,13 +447,23 @@ export default function PropertyDetail() {
               <div className="absolute inset-0 opacity-20"
                 style={{ background: "radial-gradient(ellipse at 0% 50%, rgba(201,168,76,0.25) 0%, transparent 60%)" }} />
               <div className="relative">
-                <div className="text-[#4a6080] text-xs uppercase tracking-widest font-semibold mb-1">Listed Price</div>
-                <div className="font-serif text-4xl md:text-5xl font-bold text-[#C9A84C] leading-none tracking-tight">
-                  {formatPrice(Number(property.price))}
+                <div className="text-[#4a6080] text-xs uppercase tracking-widest font-semibold mb-1">
+                  {isRental ? "Monthly Rent" : "Listed Price"}
                 </div>
-                {property.areaSqft && (
+                <div className="font-serif text-4xl md:text-5xl font-bold text-[#C9A84C] leading-none tracking-tight">
+                  {formatPrice(Number(property.price), property.category)}
+                </div>
+                {isRental && (
+                  <div className="text-[#3a5070] text-xs mt-2">per calendar month</div>
+                )}
+                {!isRental && property.areaSqft && (
                   <div className="text-[#3a5070] text-xs mt-2">
                     ≈ PKR {Math.round(Number(property.price) / property.areaSqft).toLocaleString()} / sq. ft.
+                  </div>
+                )}
+                {isRental && !isAvailable && (
+                  <div className="mt-3 flex items-center gap-1.5 text-rose-400/80 text-xs">
+                    <BanIcon className="h-3.5 w-3.5" /> This property has been rented out
                   </div>
                 )}
                 {property.isVerified && (
@@ -560,9 +587,17 @@ export default function PropertyDetail() {
                     </span>
                   </div>
 
+                  {/* RENTED notice for rental properties */}
+                  {isRental && !isAvailable && (
+                    <div className="flex items-center gap-2 bg-rose-900/20 border border-rose-500/25 rounded-xl px-3 py-2.5 mb-2">
+                      <BanIcon className="h-4 w-4 text-rose-400 flex-shrink-0" />
+                      <span className="text-rose-300 text-xs font-semibold">This property has already been rented and is no longer accepting inquiries.</span>
+                    </div>
+                  )}
+
                   {/* CTA buttons */}
                   <div className="space-y-2.5">
-                    {property.ownerPhone && (
+                    {!isRental && property.ownerPhone && (
                       <a href={`tel:${property.ownerPhone}`} data-testid="link-call-agent">
                         <button className="w-full flex items-center justify-center gap-2.5 h-11 rounded-xl border border-white/10 bg-white/5 text-[#e8edf5] hover:border-[#C9A84C]/40 hover:bg-[#C9A84C]/5 font-semibold text-sm transition-all">
                           <Phone className="h-4 w-4 text-[#C9A84C]" />
@@ -570,7 +605,20 @@ export default function PropertyDetail() {
                         </button>
                       </a>
                     )}
-                    {waLink && (
+                    {waLink && isRental && isAvailable && (
+                      <a href={waLink} target="_blank" rel="noopener noreferrer" data-testid="link-whatsapp-rent"
+                        onClick={() => {
+                          import("@/pages/MyProperties").then(m => {
+                            m.recordRentalInquiry({ id: property.id, title: property.title, price: Number(property.price), city: property.city });
+                          });
+                        }}>
+                        <button className="w-full flex items-center justify-center gap-2.5 h-12 rounded-xl bg-[#25D366] hover:bg-[#20c55a] text-white font-bold text-sm shadow-lg shadow-[#25D366]/20 transition-all">
+                          <MessageCircle className="h-4.5 w-4.5" />
+                          Request to Rent via WhatsApp
+                        </button>
+                      </a>
+                    )}
+                    {waLink && !isRental && (
                       <a href={waLink} target="_blank" rel="noopener noreferrer" data-testid="link-whatsapp">
                         <button className="w-full flex items-center justify-center gap-2.5 h-11 rounded-xl bg-[#25D366] hover:bg-[#20c55a] text-white font-bold text-sm shadow-lg shadow-[#25D366]/15 transition-all">
                           <MessageCircle className="h-4.5 w-4.5" />
@@ -578,13 +626,26 @@ export default function PropertyDetail() {
                         </button>
                       </a>
                     )}
+                    {isRental && !isAvailable && (
+                      <button disabled className="w-full flex items-center justify-center gap-2 h-11 rounded-xl border border-rose-500/20 bg-rose-900/10 text-rose-400/60 font-semibold text-sm cursor-not-allowed">
+                        <BanIcon className="h-4 w-4" /> Property Already Rented
+                      </button>
+                    )}
+                    {isRental && isAvailable && property.ownerPhone && (
+                      <a href={`tel:${property.ownerPhone}`} data-testid="link-call-owner">
+                        <button className="w-full flex items-center justify-center gap-2.5 h-10 rounded-xl border border-white/10 bg-white/5 text-[#e8edf5] hover:border-[#C9A84C]/40 hover:bg-[#C9A84C]/5 font-semibold text-sm transition-all">
+                          <Phone className="h-4 w-4 text-[#C9A84C]" />
+                          Call Landlord
+                        </button>
+                      </a>
+                    )}
                   </div>
 
                   {/* pre-fill preview */}
-                  {waLink && (
+                  {waLink && isAvailable && (
                     <div className="mt-3 rounded-xl bg-[#C9A84C]/5 border border-[#C9A84C]/12 p-3">
                       <p className="text-[#3a5070] text-[10px] mb-1">Pre-filled message:</p>
-                      <p className="text-[#C9A84C] text-[11px] italic leading-relaxed">"{waText}"</p>
+                      <p className={`text-[11px] italic leading-relaxed ${isRental ? "text-violet-300" : "text-[#C9A84C]"}`}>"{waText}"</p>
                     </div>
                   )}
                 </div>

@@ -40,6 +40,22 @@ export interface Property {
   baths?: number | null;
   /** @nullable */
   areaSqft?: number | null;
+  isAvailable: boolean;
+  /**
+   * fully_furnished | semi_furnished | unfurnished
+   * @nullable
+   */
+  furnishedStatus?: string | null;
+  /**
+   * family | bachelor | office_commercial
+   * @nullable
+   */
+  occupancyType?: string | null;
+  /**
+   * short_term | long_term
+   * @nullable
+   */
+  rentalDuration?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -66,6 +82,12 @@ export interface CreatePropertyBody {
   baths?: number | null;
   /** @nullable */
   areaSqft?: number | null;
+  /** @nullable */
+  furnishedStatus?: string | null;
+  /** @nullable */
+  occupancyType?: string | null;
+  /** @nullable */
+  rentalDuration?: string | null;
 }
 
 export interface UpdatePropertyBody {
@@ -82,6 +104,13 @@ export interface UpdatePropertyBody {
   ownerPhone?: string | null;
   /** @nullable */
   whatsappNumber?: string | null;
+  isAvailable?: boolean;
+  /** @nullable */
+  furnishedStatus?: string | null;
+  /** @nullable */
+  occupancyType?: string | null;
+  /** @nullable */
+  rentalDuration?: string | null;
 }
 
 export interface CountEntry {

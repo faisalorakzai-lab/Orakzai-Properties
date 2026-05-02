@@ -6,6 +6,7 @@ import {
   Check, ShieldCheck, Zap, Crown, Star, Sparkles,
   Home, Building2, Layers, ArrowRight, Trophy, Share2,
   BedDouble, Bath, Maximize2, Phone, MessageCircle, User,
+  Sofa, Users, Clock,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
@@ -437,6 +438,10 @@ export default function PostProperty() {
   const [ownerPhone,   setOwnerPhone]   = useState("");
   const [whatsapp,     setWhatsapp]     = useState("");
   const [reqVerify,    setReqVerify]    = useState(false);
+  // Rental-specific
+  const [furnished,    setFurnished]    = useState("");
+  const [occupancy,    setOccupancy]    = useState("");
+  const [rentalDur,    setRentalDur]    = useState("");
 
   /* validate step before advancing */
   const validateStep = (s: number) => {
@@ -473,7 +478,12 @@ export default function PostProperty() {
           beds: beds ? Number(beds) : null,
           baths: baths ? Number(baths) : null,
           areaSqft: areaSqft ? Number(areaSqft) : null,
-        },
+          ...(category === "rent" ? {
+            furnishedStatus: furnished || null,
+            occupancyType: occupancy || null,
+            rentalDuration: rentalDur || null,
+          } : {}),
+        } as any,
       },
       {
         onSuccess: (prop) => {
@@ -729,6 +739,71 @@ export default function PostProperty() {
                         </div>
                       </div>
                     </div>
+
+                    {/* ── Rental-only fields ── */}
+                    <AnimatePresence>
+                      {category === "rent" && (
+                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                          <div className="rounded-2xl border-2 border-violet-500/25 bg-violet-500/4 p-5 space-y-5">
+                            <div className="flex items-center gap-2 mb-1">
+                              <div className="h-1 flex-1 bg-violet-500/20 rounded" />
+                              <span className="text-violet-400 text-[9px] font-black uppercase tracking-widest">Rental Details</span>
+                              <div className="h-1 flex-1 bg-violet-500/20 rounded" />
+                            </div>
+
+                            {/* Furnished Status */}
+                            <div>
+                              <SectionLabel><span className="flex items-center gap-1.5"><Sofa className="h-3 w-3 text-violet-400" /> Furnished Status <span className="text-[#1e3a5f] normal-case">(optional)</span></span></SectionLabel>
+                              <div className="flex flex-wrap gap-2">
+                                {[
+                                  { value: "fully_furnished",  label: "Fully Furnished" },
+                                  { value: "semi_furnished",   label: "Semi-Furnished"  },
+                                  { value: "unfurnished",      label: "Unfurnished"     },
+                                ].map(opt => (
+                                  <button key={opt.value} type="button" onClick={() => setFurnished(furnished === opt.value ? "" : opt.value)}
+                                    className={`text-xs px-4 py-2 rounded-xl border-2 font-semibold transition-all ${furnished === opt.value ? "border-violet-400 bg-violet-500/20 text-violet-200" : "border-white/8 text-[#4a6080] hover:border-violet-500/30 hover:text-violet-300"}`}>
+                                    {opt.label}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Occupancy Type */}
+                            <div>
+                              <SectionLabel><span className="flex items-center gap-1.5"><Users className="h-3 w-3 text-violet-400" /> Occupancy Type <span className="text-[#1e3a5f] normal-case">(optional)</span></span></SectionLabel>
+                              <div className="flex flex-wrap gap-2">
+                                {[
+                                  { value: "family",            label: "Family"           },
+                                  { value: "bachelor",          label: "Bachelor"         },
+                                  { value: "office_commercial", label: "Office/Commercial"},
+                                ].map(opt => (
+                                  <button key={opt.value} type="button" onClick={() => setOccupancy(occupancy === opt.value ? "" : opt.value)}
+                                    className={`text-xs px-4 py-2 rounded-xl border-2 font-semibold transition-all ${occupancy === opt.value ? "border-violet-400 bg-violet-500/20 text-violet-200" : "border-white/8 text-[#4a6080] hover:border-violet-500/30 hover:text-violet-300"}`}>
+                                    {opt.label}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Rental Duration */}
+                            <div>
+                              <SectionLabel><span className="flex items-center gap-1.5"><Clock className="h-3 w-3 text-violet-400" /> Duration Preference <span className="text-[#1e3a5f] normal-case">(optional)</span></span></SectionLabel>
+                              <div className="flex gap-2">
+                                {[
+                                  { value: "short_term", label: "Short-term (under 1 year)" },
+                                  { value: "long_term",  label: "Long-term (1 year+)"        },
+                                ].map(opt => (
+                                  <button key={opt.value} type="button" onClick={() => setRentalDur(rentalDur === opt.value ? "" : opt.value)}
+                                    className={`flex-1 text-xs px-3 py-2 rounded-xl border-2 font-semibold transition-all ${rentalDur === opt.value ? "border-violet-400 bg-violet-500/20 text-violet-200" : "border-white/8 text-[#4a6080] hover:border-violet-500/30 hover:text-violet-300"}`}>
+                                    {opt.label}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
 
                     {/* ── Sovereign Verification toggle ── */}
                     <div className={`rounded-2xl border-2 p-4 transition-all ${reqVerify ? "border-[#C9A84C]/50 bg-[#C9A84C]/5" : "border-[#1e3a5f] bg-white/2"}`}>

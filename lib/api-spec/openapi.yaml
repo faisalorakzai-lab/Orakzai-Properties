@@ -358,6 +358,17 @@ components:
           type: ["integer", "null"]
         areaSqft:
           type: ["integer", "null"]
+        isAvailable:
+          type: boolean
+        furnishedStatus:
+          type: ["string", "null"]
+          description: "fully_furnished | semi_furnished | unfurnished"
+        occupancyType:
+          type: ["string", "null"]
+          description: "family | bachelor | office_commercial"
+        rentalDuration:
+          type: ["string", "null"]
+          description: "short_term | long_term"
         createdAt:
           type: string
         updatedAt:
@@ -373,6 +384,7 @@ components:
         - images
         - ownerId
         - isVerified
+        - isAvailable
         - createdAt
         - updatedAt
 
@@ -409,6 +421,12 @@ components:
           type: ["integer", "null"]
         areaSqft:
           type: ["integer", "null"]
+        furnishedStatus:
+          type: ["string", "null"]
+        occupancyType:
+          type: ["string", "null"]
+        rentalDuration:
+          type: ["string", "null"]
       required:
         - title
         - description
@@ -442,6 +460,14 @@ components:
         ownerPhone:
           type: ["string", "null"]
         whatsappNumber:
+          type: ["string", "null"]
+        isAvailable:
+          type: boolean
+        furnishedStatus:
+          type: ["string", "null"]
+        occupancyType:
+          type: ["string", "null"]
+        rentalDuration:
           type: ["string", "null"]
 
     PropertyStats:
