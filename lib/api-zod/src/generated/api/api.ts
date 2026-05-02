@@ -40,6 +40,7 @@ export const ListPropertiesResponseItem = zod.object({
   ownerName: zod.string().nullish(),
   ownerPhone: zod.string().nullish(),
   whatsappNumber: zod.string().nullish(),
+  isVerified: zod.boolean(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
 });
@@ -83,6 +84,7 @@ export const GetPropertyResponse = zod.object({
   ownerName: zod.string().nullish(),
   ownerPhone: zod.string().nullish(),
   whatsappNumber: zod.string().nullish(),
+  isVerified: zod.boolean(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
 });
@@ -121,6 +123,7 @@ export const UpdatePropertyResponse = zod.object({
   ownerName: zod.string().nullish(),
   ownerPhone: zod.string().nullish(),
   whatsappNumber: zod.string().nullish(),
+  isVerified: zod.boolean(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
 });
@@ -174,6 +177,7 @@ export const GetMyPropertiesResponseItem = zod.object({
   ownerName: zod.string().nullish(),
   ownerPhone: zod.string().nullish(),
   whatsappNumber: zod.string().nullish(),
+  isVerified: zod.boolean(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
 });

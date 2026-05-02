@@ -29,6 +29,7 @@ export interface Property {
   ownerPhone?: string | null;
   /** @nullable */
   whatsappNumber?: string | null;
+  isVerified: boolean;
   createdAt: string;
   updatedAt: string;
 }

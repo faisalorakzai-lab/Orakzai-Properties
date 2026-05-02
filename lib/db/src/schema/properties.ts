@@ -1,4 +1,4 @@
-import { pgTable, text, serial, numeric, integer, timestamp, json } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, numeric, integer, timestamp, json, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -16,6 +16,7 @@ export const propertiesTable = pgTable("properties", {
   ownerName: text("owner_name"),
   ownerPhone: text("owner_phone"),
   whatsappNumber: text("whatsapp_number"),
+  isVerified: boolean("is_verified").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
