@@ -352,3 +352,103 @@ export const ListMyBookingsResponseItem = zod.object({
   createdAt: zod.string(),
 });
 export const ListMyBookingsResponse = zod.array(ListMyBookingsResponseItem);
+
+/**
+ * @summary List all fractional investment projects
+ */
+export const ListInvestmentProjectsQueryParams = zod.object({
+  status: zod.coerce.string().optional(),
+});
+
+export const ListInvestmentProjectsResponseItem = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  description: zod.string(),
+  location: zod.string(),
+  bannerImage: zod.string().nullish(),
+  totalValue: zod.number(),
+  minInvestment: zod.number(),
+  totalShares: zod.number(),
+  fundedShares: zod.number(),
+  roi: zod.string(),
+  duration: zod.string(),
+  status: zod.string().describe("funding | construction | completed"),
+  type: zod.string().describe("plaza | tower | smart_city | commercial"),
+  roadmap: zod.array(
+    zod.object({
+      phase: zod.string(),
+      description: zod.string(),
+      status: zod.string().describe("pending | in_progress | completed"),
+      date: zod.string(),
+    }),
+  ),
+  features: zod.array(zod.string()),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+export const ListInvestmentProjectsResponse = zod.array(
+  ListInvestmentProjectsResponseItem,
+);
+
+/**
+ * @summary Create a new investment project (admin)
+ */
+export const CreateInvestmentProjectBody = zod.object({
+  title: zod.string(),
+  description: zod.string(),
+  location: zod.string(),
+  bannerImage: zod.string().nullish(),
+  totalValue: zod.number(),
+  minInvestment: zod.number(),
+  totalShares: zod.number(),
+  fundedShares: zod.number().optional(),
+  roi: zod.string(),
+  duration: zod.string(),
+  status: zod.string().optional(),
+  type: zod.string().optional(),
+  roadmap: zod
+    .array(
+      zod.object({
+        phase: zod.string(),
+        description: zod.string(),
+        status: zod.string().describe("pending | in_progress | completed"),
+        date: zod.string(),
+      }),
+    )
+    .optional(),
+  features: zod.array(zod.string()).optional(),
+});
+
+/**
+ * @summary Get a single investment project
+ */
+export const GetInvestmentProjectParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetInvestmentProjectResponse = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  description: zod.string(),
+  location: zod.string(),
+  bannerImage: zod.string().nullish(),
+  totalValue: zod.number(),
+  minInvestment: zod.number(),
+  totalShares: zod.number(),
+  fundedShares: zod.number(),
+  roi: zod.string(),
+  duration: zod.string(),
+  status: zod.string().describe("funding | construction | completed"),
+  type: zod.string().describe("plaza | tower | smart_city | commercial"),
+  roadmap: zod.array(
+    zod.object({
+      phase: zod.string(),
+      description: zod.string(),
+      status: zod.string().describe("pending | in_progress | completed"),
+      date: zod.string(),
+    }),
+  ),
+  features: zod.array(zod.string()),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
