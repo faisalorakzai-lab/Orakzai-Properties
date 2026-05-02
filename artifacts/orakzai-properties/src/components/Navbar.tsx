@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Show, useUser } from "@clerk/react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Building2, Plus, BarChart3 } from "lucide-react";
+import { Menu, X, Building2, Plus, BarChart3, Wallet } from "lucide-react";
 import { useClerk } from "@clerk/react";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -57,6 +57,11 @@ export default function Navbar() {
               </Link>
             </Show>
             <Show when="signed-in">
+              <Link href="/wallet">
+                <Button variant="ghost" size="sm" className={`gap-1.5 text-xs h-8 px-3 ${location === "/wallet" ? "text-[#C9A84C]" : "text-[#6a7f99] hover:text-white"}`}>
+                  <Wallet className="h-3.5 w-3.5" /> Wallet
+                </Button>
+              </Link>
               <Link href="/portfolio">
                 <Button variant="ghost" size="sm" className={`gap-1.5 text-xs h-8 px-3 ${location === "/portfolio" ? "text-[#C9A84C]" : "text-[#6a7f99] hover:text-white"}`}>
                   <BarChart3 className="h-3.5 w-3.5" /> Portfolio
@@ -99,6 +104,11 @@ export default function Navbar() {
               </Link>
             </Show>
             <Show when="signed-in">
+              <Link href="/wallet" onClick={() => setOpen(false)}>
+                <Button variant="ghost" size="sm" className="w-full text-[#6a7f99] text-xs gap-1.5">
+                  <Wallet className="h-3.5 w-3.5" /> My Wallet
+                </Button>
+              </Link>
               <Link href="/post-property" onClick={() => setOpen(false)}>
                 <Button size="sm" className="w-full bg-[#C9A84C] hover:bg-[#e8c060] text-[#0a1220] font-bold text-xs">Post Property</Button>
               </Link>

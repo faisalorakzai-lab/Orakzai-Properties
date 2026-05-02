@@ -7,3 +7,5 @@ export * from "./user_portfolios";
 export * from "./trading_orders";
 export * from "./trades";
 export * from "./price_history";
+export * from "./wallets";
+export * from "./wallet_transactions";

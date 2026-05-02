@@ -66,6 +66,23 @@ Pakistan's premier real estate marketplace built for the Lahore & Islamabad mark
 - Owner Available/Rented toggle (PATCH `/properties/:id` with `isAvailable`)
 - My Rental Inquiries tracker in localStorage
 
+### Module 10 — Wallet Management System
+- Full financial core at `/wallet` (signed-in only, auth gate for unauthenticated)
+- **DB Tables**: `wallets` (uuid pk, userId unique, balance, currency, pinHash SHA-256, isPinSet, timestamps), `wallet_transactions` (txnId unique, userId, counterpartyId, amount, type, status, note, balanceAfter, createdAt)
+- **Balance Card**: Gold-to-midnight gradient hero card, 50px animated balance counter (ease-out quartic tick-up on load/update), PKR abbreviations (L / Cr), Total In (emerald) / Total Out (red) / Transactions stats, Live SSE indicator
+- **Three Action Buttons**: Deposit (emerald tint, ArrowDownLeft), Withdraw (crimson tint, ArrowUpRight), Transfer (gold tint, ArrowLeftRight) — glassmorphic gradient buttons with hover glow
+- **Deposit Modal**: Shows Meezan Bank transfer details with copy buttons, amount + note inputs, 2-step confirm flow (form → confirm → success animation)
+- **Withdraw Modal**: Amount + bank details form, PIN gate (4-digit numpad PinPad component), pending status returned
+- **Transfer Modal**: Recipient User ID + amount + note, PIN required for transfers ≥ PKR 50,000, atomic dual-entry (transfer_out + transfer_in) in same request
+- **Set PIN Modal**: 3-step (set → confirm → done), 4-digit numpad, PIN stored as SHA-256 hex hash with ORAKZAI salt, `isPinSet` flag on wallet
+- **PinPad Component**: 4-dot progress dots, 3×4 numpad grid, backspace key, spring animations
+- **Transaction History**: Filter tabs (All / Deposits / Withdrawals / Transfers / Investments), Green+ incoming, Red− outgoing, status badge (success/pending/failed), staggered fade-in rows, Download Receipt button per successful txn
+- **Receipt Generator**: Server-side HTML receipt at `GET /wallet/receipt/:txnId`, branded Orakzai design, opens in new tab, printable
+- **Security Info Card**: Pinned at bottom showing encryption notice + PIN protected badge / Set PIN prompt
+- **Real-time SSE**: `GET /wallet/stream` per-user EventSource, broadcasts `balance_update` on deposit/withdraw/transfer — balance animates instantly without reload
+- **API Endpoints**: `GET /wallet/me` (get/create wallet), `GET /wallet/transactions`, `POST /wallet/deposit`, `POST /wallet/withdraw`, `POST /wallet/transfer`, `POST /wallet/set-pin`, `POST /wallet/verify-pin`, `GET /wallet/stream`, `GET /wallet/receipt/:txnId`
+- **Navbar**: Added "Wallet" link (Wallet icon) for signed-in users between Portfolio and Post Property
+
 ### Module 9 — Trading Market Interface
 - Full secondary-market trading floor at `/trade/:projectId`
 - **Ticker Bar**: Project name, Last Price (gold), 24h Change (green/red with arrow), 24h Volume, High/Low, Live/Reconnecting SSE indicator
