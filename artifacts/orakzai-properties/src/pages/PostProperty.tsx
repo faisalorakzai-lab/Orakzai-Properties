@@ -1,15 +1,12 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useLocation } from "wouter";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { motion } from "framer-motion";
-import { Plus, X, ImageIcon, Lock } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Upload, X, ImageIcon, Lock, ChevronRight, ChevronLeft,
+  Check, ShieldCheck, Zap, Crown, Star, Sparkles,
+  Home, Building2, Layers, ArrowRight, Trophy, Share2,
+  BedDouble, Bath, Maximize2, Phone, MessageCircle, User,
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 import { useCreateProperty, getGetMyPropertiesQueryKey, getListPropertiesQueryKey } from "@workspace/api-client-react";
@@ -17,255 +14,805 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Show } from "@clerk/react";
 import { Link } from "wouter";
 
-const schema = z.object({
-  title: z.string().min(5, "Title must be at least 5 characters"),
-  description: z.string().min(20, "Description must be at least 20 characters"),
-  price: z.coerce.number().min(1, "Price is required"),
-  city: z.string().min(1, "City is required"),
-  area: z.string().optional(),
-  category: z.string().min(1, "Category is required"),
-  type: z.string().min(1, "Type is required"),
-  ownerName: z.string().optional(),
-  ownerPhone: z.string().optional(),
-  whatsappNumber: z.string().optional(),
-});
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-type FormValues = z.infer<typeof schema>;
+/* ── constants ──────────────────────────────────────────────────────────── */
+const CITIES = ["Lahore", "Islamabad", "Karachi", "Rawalpindi", "Peshawar"];
+const CATEGORIES = [
+  { value: "buy",  label: "Buy",  desc: "Property for sale",   color: "border-emerald-500/40 bg-emerald-500/8 text-emerald-300", active: "border-emerald-400 bg-emerald-500/20 shadow-emerald-500/20" },
+  { value: "sell", label: "Sell", desc: "Selling my property", color: "border-blue-500/40 bg-blue-500/8 text-blue-300",           active: "border-blue-400 bg-blue-500/20 shadow-blue-500/20" },
+  { value: "rent", label: "Rent", desc: "Available for rent",  color: "border-violet-500/40 bg-violet-500/8 text-violet-300",     active: "border-violet-400 bg-violet-500/20 shadow-violet-500/20" },
+];
+const TYPES = [
+  { value: "house",      label: "House",      icon: Home,      desc: "Residential building" },
+  { value: "commercial", label: "Commercial", icon: Building2, desc: "Business / offices" },
+  { value: "plot",       label: "Plot",       icon: Layers,    desc: "Land / plot" },
+];
+const BOOST_TIERS = [
+  {
+    id: "silver",
+    label: "Silver Boost",
+    price: "$5",
+    pkr: "PKR 1,400",
+    icon: Zap,
+    iconColor: "text-slate-300",
+    border: "border-slate-400/30",
+    active: "border-slate-300 bg-slate-400/10",
+    bg: "from-slate-800/40 to-slate-900/40",
+    perks: ["Top of search results for 3 days", "Highlighted listing card", "Priority indexing"],
+  },
+  {
+    id: "gold",
+    label: "Gold Boost",
+    price: "$20",
+    pkr: "PKR 5,600",
+    icon: Star,
+    iconColor: "text-[#C9A84C]",
+    border: "border-[#C9A84C]/40",
+    active: "border-[#C9A84C] bg-[#C9A84C]/10",
+    bg: "from-[#1a140a]/60 to-[#0f0a00]/60",
+    badge: "POPULAR",
+    perks: ["Featured on Home Dashboard", "Social media mention", "Top placement for 7 days"],
+  },
+  {
+    id: "sovereign",
+    label: "Sovereign Spotlight",
+    price: "$50",
+    pkr: "PKR 14,000",
+    icon: Crown,
+    iconColor: "text-amber-300",
+    border: "border-amber-400/40",
+    active: "border-amber-300 bg-amber-400/10",
+    bg: "from-[#1a1000]/60 to-[#0d0800]/60",
+    badge: "PREMIUM",
+    perks: ["24/7 top visibility", "Chairman's Choice badge", "Homepage feature slot", "Weekly email blast"],
+  },
+];
+const STEPS = [
+  { num: 1, label: "Basic Info" },
+  { num: 2, label: "Media" },
+  { num: 3, label: "Details" },
+];
 
-export default function PostProperty() {
+/* ── Gold input helper ──────────────────────────────────────────────────── */
+const goldInput = "bg-[#070e1a] border border-[#1e3a5f] text-[#f1f5f9] placeholder:text-[#2a3a50] rounded-xl px-4 py-3 text-sm w-full transition-all duration-200 outline-none focus:border-[#C9A84C]/70 focus:ring-2 focus:ring-[#C9A84C]/15 focus:shadow-[0_0_0_3px_rgba(201,168,76,0.08)]";
+const goldSelect = `${goldInput} appearance-none cursor-pointer`;
+
+/* ── Progress Bar ────────────────────────────────────────────────────────── */
+function ProgressBar({ step }: { step: number }) {
+  return (
+    <div className="mb-8">
+      <div className="flex items-center justify-between mb-3 relative">
+        {/* connector line */}
+        <div className="absolute left-0 right-0 top-4 h-px bg-[#1e3a5f] z-0" />
+        <div className="absolute left-0 top-4 h-px bg-gradient-to-r from-[#C9A84C] to-[#C9A84C]/50 z-0 transition-all duration-500"
+          style={{ width: `${((step - 1) / (STEPS.length - 1)) * 100}%` }} />
+
+        {STEPS.map(s => (
+          <div key={s.num} className="relative z-10 flex flex-col items-center gap-2">
+            <motion.div
+              animate={s.num <= step ? { scale: [1, 1.15, 1] } : {}}
+              transition={{ duration: 0.3 }}
+              className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs transition-all border-2 ${
+                s.num < step  ? "bg-[#C9A84C] border-[#C9A84C] text-[#080f1a] shadow-lg shadow-[#C9A84C]/30" :
+                s.num === step ? "bg-[#0d1929] border-[#C9A84C] text-[#C9A84C] shadow-lg shadow-[#C9A84C]/20" :
+                                 "bg-[#0d1929] border-[#1e3a5f] text-[#3a5070]"
+              }`}
+            >
+              {s.num < step ? <Check className="h-3.5 w-3.5" /> : s.num}
+            </motion.div>
+            <span className={`text-[10px] font-semibold uppercase tracking-wider ${s.num === step ? "text-[#C9A84C]" : s.num < step ? "text-[#C9A84C]/60" : "text-[#2a3a50]"}`}>
+              {s.label}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ── Drag & Drop Image Zone ─────────────────────────────────────────────── */
+function ImageUploader({ images, onChange }: { images: string[]; onChange: (imgs: string[]) => void }) {
+  const [dragging, setDragging] = useState(false);
+  const [urlInput, setUrlInput] = useState("");
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith("image/"));
+    if (files.length > 0) {
+      const readers = files.map(file => new Promise<string>(resolve => {
+        const r = new FileReader();
+        r.onload = () => resolve(r.result as string);
+        r.readAsDataURL(file);
+      }));
+      Promise.all(readers).then(urls => onChange([...images, ...urls].slice(0, 8)));
+    }
+  }, [images, onChange]);
+
+  const addUrl = () => {
+    const trimmed = urlInput.trim();
+    if (trimmed && !images.includes(trimmed)) {
+      onChange([...images, trimmed]);
+      setUrlInput("");
+    }
+  };
+
+  const remove = (i: number) => onChange(images.filter((_, idx) => idx !== i));
+
+  return (
+    <div className="space-y-4">
+      {/* drop zone */}
+      <div
+        onDragOver={e => { e.preventDefault(); setDragging(true); }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={handleDrop}
+        className={`relative rounded-2xl border-2 border-dashed transition-all duration-300 cursor-pointer overflow-hidden ${
+          dragging ? "border-[#C9A84C] bg-[#C9A84C]/5 shadow-xl shadow-[#C9A84C]/10" : "border-[#C9A84C]/25 bg-[#070e1a] hover:border-[#C9A84C]/50 hover:bg-[#C9A84C]/3"
+        }`}
+        style={{ minHeight: 160 }}
+      >
+        {/* animated grid background */}
+        <div className="absolute inset-0 opacity-5"
+          style={{ backgroundImage: "linear-gradient(rgba(201,168,76,1) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,1) 1px,transparent 1px)", backgroundSize: "30px 30px" }} />
+        <div className="relative flex flex-col items-center justify-center py-10 px-6 text-center">
+          <motion.div animate={dragging ? { scale: 1.1, rotate: 5 } : { scale: 1, rotate: 0 }}
+            className="h-14 w-14 rounded-2xl bg-[#C9A84C]/10 border border-[#C9A84C]/25 flex items-center justify-center mb-3">
+            <Upload className={`h-6 w-6 ${dragging ? "text-[#C9A84C]" : "text-[#C9A84C]/70"}`} />
+          </motion.div>
+          <p className="text-[#f1f5f9] font-semibold text-sm mb-1">
+            {dragging ? "Drop images here" : "Drag & drop property images"}
+          </p>
+          <p className="text-[#3a5070] text-xs">PNG, JPG, WEBP · Max 8 images</p>
+          {dragging && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              className="absolute inset-0 border-2 border-[#C9A84C] rounded-2xl pointer-events-none" />
+          )}
+        </div>
+      </div>
+
+      {/* URL input row */}
+      <div className="flex gap-2">
+        <input
+          value={urlInput}
+          onChange={e => setUrlInput(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && (e.preventDefault(), addUrl())}
+          placeholder="Or paste an image URL and press Enter..."
+          className={`${goldInput} flex-1`}
+        />
+        <button type="button" onClick={addUrl}
+          className="h-11 px-4 rounded-xl bg-[#C9A84C]/10 border border-[#C9A84C]/30 text-[#C9A84C] hover:bg-[#C9A84C]/20 font-semibold text-sm transition-all">
+          Add
+        </button>
+      </div>
+
+      {/* previews */}
+      {images.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {images.map((img, i) => (
+            <motion.div key={i} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+              className="relative group rounded-xl overflow-hidden border border-[#C9A84C]/15 aspect-video bg-[#0d1929]">
+              {img.startsWith("data:") || img.startsWith("http") ? (
+                <img src={img} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <ImageIcon className="h-6 w-6 text-[#C9A84C]/30" />
+                </div>
+              )}
+              <button type="button" onClick={() => remove(i)}
+                className="absolute top-1 right-1 h-6 w-6 rounded-full bg-red-500/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500">
+                <X className="h-3.5 w-3.5" />
+              </button>
+              <div className="absolute bottom-1 left-1 bg-[#080f1a]/80 text-[#C9A84C] text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                {i + 1}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Boost Popup ─────────────────────────────────────────────────────────── */
+function BoostPopup({ onClose, onSkip }: { onClose: () => void; onSkip: () => void }) {
+  const [selected, setSelected] = useState<string | null>("gold");
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] flex items-center justify-center px-4"
+      style={{ background: "rgba(4,8,16,0.94)" }}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.92, y: 30 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.94, y: 20 }}
+        transition={{ type: "spring", stiffness: 280, damping: 26 }}
+        className="w-full max-w-xl bg-gradient-to-b from-[#0d1929] to-[#070e1a] border border-[#C9A84C]/25 rounded-3xl overflow-hidden shadow-2xl shadow-black/60"
+      >
+        {/* gold header bar */}
+        <div className="h-1 bg-gradient-to-r from-transparent via-[#C9A84C] to-transparent" />
+
+        <div className="p-6 md:p-8">
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-[#C9A84C]" />
+              <span className="text-[#C9A84C] text-xs font-black uppercase tracking-widest">Boost Your Listing</span>
+            </div>
+            <button onClick={onClose} className="h-8 w-8 rounded-xl bg-white/5 text-[#4a6080] hover:text-white flex items-center justify-center transition-all">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <h2 className="font-serif text-2xl font-bold text-white mb-1">Get Maximum Visibility</h2>
+          <p className="text-[#4a6080] text-sm mb-6">Your listing is live. Boost it now to reach more serious buyers and investors.</p>
+
+          <div className="space-y-3">
+            {BOOST_TIERS.map(tier => (
+              <button key={tier.id} type="button" onClick={() => setSelected(tier.id)}
+                className={`relative w-full text-left rounded-2xl border-2 bg-gradient-to-r p-4 transition-all duration-200 ${tier.bg} ${selected === tier.id ? `${tier.active} shadow-lg` : `${tier.border} hover:border-opacity-60`}`}
+              >
+                {tier.badge && (
+                  <span className="absolute -top-2 right-4 text-[9px] font-black tracking-widest bg-[#C9A84C] text-[#080f1a] px-2 py-0.5 rounded-full uppercase">
+                    {tier.badge}
+                  </span>
+                )}
+                <div className="flex items-start gap-3">
+                  <div className={`h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 border ${tier.border} bg-black/20`}>
+                    <tier.icon className={`h-5 w-5 ${tier.iconColor}`} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-white text-sm">{tier.label}</span>
+                      <div className="text-right">
+                        <div className={`font-black text-lg leading-none ${tier.iconColor}`}>{tier.price}</div>
+                        <div className="text-[#3a5070] text-[10px]">{tier.pkr}</div>
+                      </div>
+                    </div>
+                    <ul className="mt-1.5 space-y-0.5">
+                      {tier.perks.map(p => (
+                        <li key={p} className="flex items-center gap-1.5 text-[11px] text-[#6a7f99]">
+                          <Check className="h-2.5 w-2.5 text-[#C9A84C]/70 flex-shrink-0" /> {p}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  {selected === tier.id && (
+                    <div className={`h-5 w-5 rounded-full flex items-center justify-center flex-shrink-0 ${tier.iconColor === "text-[#C9A84C]" ? "bg-[#C9A84C]" : "bg-amber-400"}`}>
+                      <Check className="h-3 w-3 text-[#080f1a]" />
+                    </div>
+                  )}
+                </div>
+              </button>
+            ))}
+          </div>
+
+          <div className="flex gap-3 mt-6">
+            <button type="button" onClick={onSkip}
+              className="flex-1 h-12 rounded-xl border border-white/10 text-[#4a6080] hover:text-[#94a3b8] text-sm font-semibold transition-all hover:border-white/20">
+              Skip for Now
+            </button>
+            <button type="button" onClick={onClose}
+              className="flex-[2] h-12 rounded-xl bg-gradient-to-r from-[#C9A84C] to-[#e8c060] text-[#080f1a] font-black text-sm shadow-lg shadow-[#C9A84C]/25 hover:shadow-[#C9A84C]/40 transition-all flex items-center justify-center gap-2">
+              <Zap className="h-4 w-4" /> Boost with {BOOST_TIERS.find(t => t.id === selected)?.label}
+            </button>
+          </div>
+          <p className="text-[#2a3a50] text-[10px] text-center mt-3">Secure payment · Cancel anytime · Results guaranteed</p>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+/* ── Success Screen ─────────────────────────────────────────────────────── */
+function SuccessScreen({ propertyId }: { propertyId: number }) {
   const [, setLocation] = useLocation();
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="min-h-screen bg-[#070e1a] flex items-center justify-center px-4"
+    >
+      {/* celebration particles */}
+      {[...Array(20)].map((_, i) => (
+        <motion.div key={i}
+          initial={{ opacity: 1, y: 0, x: 0, scale: 1 }}
+          animate={{ opacity: 0, y: -200 - Math.random() * 200, x: (Math.random() - 0.5) * 400, scale: 0, rotate: Math.random() * 360 }}
+          transition={{ duration: 1.5 + Math.random(), delay: Math.random() * 0.5, ease: "easeOut" }}
+          className="fixed pointer-events-none"
+          style={{
+            left: "50%", top: "60%",
+            width: 8 + Math.random() * 8,
+            height: 8 + Math.random() * 8,
+            borderRadius: Math.random() > 0.5 ? "50%" : "2px",
+            background: ["#C9A84C", "#e8c060", "#fff", "#25D366", "#3b82f6"][Math.floor(Math.random() * 5)],
+          }}
+        />
+      ))}
+
+      <div className="text-center max-w-sm">
+        {/* 3D trophy animation */}
+        <motion.div
+          initial={{ scale: 0, rotate: -20 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ type: "spring", stiffness: 200, damping: 18, delay: 0.1 }}
+          className="relative inline-block mb-6"
+        >
+          <div className="h-28 w-28 rounded-3xl bg-gradient-to-br from-[#C9A84C]/20 to-[#C9A84C]/5 border-2 border-[#C9A84C]/40 flex items-center justify-center mx-auto shadow-2xl shadow-[#C9A84C]/20">
+            <Trophy className="h-14 w-14 text-[#C9A84C]" />
+          </div>
+          {/* orbiting rings */}
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+            className="absolute inset-0 rounded-3xl border-2 border-dashed border-[#C9A84C]/20"
+            style={{ margin: -8 }}
+          />
+          <motion.div
+            animate={{ rotate: -360 }}
+            transition={{ repeat: Infinity, duration: 6, ease: "linear" }}
+            className="absolute inset-0 rounded-3xl border border-[#C9A84C]/10"
+            style={{ margin: -16 }}
+          />
+          {/* sparkles */}
+          {[0, 60, 120, 180, 240, 300].map((deg, i) => (
+            <motion.div key={i}
+              animate={{ scale: [0, 1, 0], opacity: [0, 1, 0] }}
+              transition={{ repeat: Infinity, duration: 1.5, delay: i * 0.25 }}
+              className="absolute h-2 w-2 rounded-full bg-[#C9A84C]"
+              style={{
+                top: "50%", left: "50%",
+                transform: `rotate(${deg}deg) translateX(60px) translateY(-50%)`,
+              }}
+            />
+          ))}
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+          <div className="text-[#C9A84C] text-xs font-black uppercase tracking-widest mb-2">Property Listed Successfully</div>
+          <h1 className="font-serif text-3xl font-bold text-white mb-3">Your Property is Live!</h1>
+          <p className="text-[#4a6080] text-sm leading-relaxed mb-8">
+            Congratulations! Your listing is now visible to thousands of buyers, investors, and renters across Pakistan.
+          </p>
+
+          <div className="flex flex-col gap-3">
+            <Link href={`${basePath}/property/${propertyId}`}>
+              <button className="w-full h-12 rounded-xl bg-gradient-to-r from-[#C9A84C] to-[#e8c060] text-[#080f1a] font-black shadow-lg shadow-[#C9A84C]/25 hover:shadow-[#C9A84C]/40 transition-all flex items-center justify-center gap-2 text-sm">
+                <ArrowRight className="h-4 w-4" /> View My Listing
+              </button>
+            </Link>
+            <div className="flex gap-3">
+              <Link href={`${basePath}/my-properties`} className="flex-1">
+                <button className="w-full h-11 rounded-xl border border-[#C9A84C]/25 text-[#C9A84C] hover:bg-[#C9A84C]/5 font-semibold text-sm transition-all">
+                  My Properties
+                </button>
+              </Link>
+              <button
+                onClick={() => navigator.share?.({ title: "Check out my property on Orakzai Properties", url: `${window.location.origin}${basePath}/property/${propertyId}` })}
+                className="flex-1 h-11 rounded-xl border border-white/10 text-[#6a7f99] hover:text-white hover:border-white/20 font-semibold text-sm transition-all flex items-center justify-center gap-1.5"
+              >
+                <Share2 className="h-4 w-4" /> Share
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ── Section label ─────────────────────────────────────────────────────── */
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="text-[#3a5070] text-[10px] font-black uppercase tracking-widest mb-2">{children}</div>
+  );
+}
+
+/* ─── Main Component ───────────────────────────────────────────────────── */
+export default function PostProperty() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [imageUrls, setImageUrls] = useState<string[]>([""]);
   const createProperty = useCreateProperty();
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
-    defaultValues: {
-      title: "", description: "", price: 0, city: "", area: "",
-      category: "", type: "", ownerName: "", ownerPhone: "", whatsappNumber: "",
-    },
-  });
+  const [step, setStep] = useState(1);
+  const [showBoost, setShowBoost] = useState(false);
+  const [successId, setSuccessId] = useState<number | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const addImageField = () => setImageUrls((prev) => [...prev, ""]);
-  const removeImageField = (i: number) => setImageUrls((prev) => prev.filter((_, idx) => idx !== i));
-  const updateImage = (i: number, val: string) => setImageUrls((prev) => { const n = [...prev]; n[i] = val; return n; });
+  /* form state */
+  const [title,        setTitle]        = useState("");
+  const [category,     setCategory]     = useState("");
+  const [propType,     setPropType]     = useState("");
+  const [price,        setPrice]        = useState("");
+  const [images,       setImages]       = useState<string[]>([]);
+  const [city,         setCity]         = useState("");
+  const [area,         setArea]         = useState("");
+  const [description,  setDescription]  = useState("");
+  const [beds,         setBeds]         = useState("");
+  const [baths,        setBaths]        = useState("");
+  const [areaSqft,     setAreaSqft]     = useState("");
+  const [ownerName,    setOwnerName]    = useState("");
+  const [ownerPhone,   setOwnerPhone]   = useState("");
+  const [whatsapp,     setWhatsapp]     = useState("");
+  const [reqVerify,    setReqVerify]    = useState(false);
 
-  const onSubmit = async (values: FormValues) => {
-    const images = imageUrls.filter((u) => u.trim().length > 0);
+  /* validate step before advancing */
+  const validateStep = (s: number) => {
+    const e: Record<string, string> = {};
+    if (s === 1) {
+      if (!title.trim() || title.length < 5) e.title = "Title must be at least 5 characters";
+      if (!category) e.category = "Select a category";
+      if (!propType) e.type = "Select a property type";
+      if (!price || isNaN(Number(price)) || Number(price) < 1) e.price = "Enter a valid price";
+    }
+    if (s === 3) {
+      if (!city) e.city = "Select a city";
+      if (!description.trim() || description.length < 20) e.description = "Description must be at least 20 characters";
+    }
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  const next = () => { if (validateStep(step)) setStep(s => Math.min(s + 1, 3)); };
+  const prev = () => { setErrors({}); setStep(s => Math.max(s - 1, 1)); };
+
+  const submit = async () => {
+    if (!validateStep(3)) return;
     createProperty.mutate(
-      { data: { ...values, images, area: values.area || null, ownerName: values.ownerName || null, ownerPhone: values.ownerPhone || null, whatsappNumber: values.whatsappNumber || null } },
       {
-        onSuccess: () => {
+        data: {
+          title, category, type: propType, description,
+          price: Number(price),
+          city, area: area || null,
+          images,
+          ownerName: ownerName || null,
+          ownerPhone: ownerPhone || null,
+          whatsappNumber: whatsapp || ownerPhone || null,
+          beds: beds ? Number(beds) : null,
+          baths: baths ? Number(baths) : null,
+          areaSqft: areaSqft ? Number(areaSqft) : null,
+        },
+      },
+      {
+        onSuccess: (prop) => {
           queryClient.invalidateQueries({ queryKey: getGetMyPropertiesQueryKey() });
           queryClient.invalidateQueries({ queryKey: getListPropertiesQueryKey() });
-          toast({ title: "Property Listed!", description: "Your property has been successfully posted." });
-          setLocation("/my-properties");
+          setShowBoost(true);
+          setSuccessId((prop as any).id);
         },
         onError: () => {
-          toast({ title: "Failed to post", description: "Please try again.", variant: "destructive" });
+          toast({ title: "Failed to post", description: "Please sign in and try again.", variant: "destructive" });
         },
       }
     );
   };
 
+  const finishFlow = () => {
+    setShowBoost(false);
+  };
+
+  /* ── Success screen after boost dismissed ── */
+  if (successId !== null && !showBoost) {
+    return <SuccessScreen propertyId={successId} />;
+  }
+
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-[#070e1a] text-foreground">
+      {/* ambient */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-0 right-1/4 w-96 h-96 rounded-full bg-[#C9A84C]/3 blur-[130px]" />
+        <div className="absolute bottom-1/3 left-0 w-64 h-64 rounded-full bg-[#1e3a8a]/6 blur-[100px]" />
+      </div>
+
       <Navbar />
-      <div className="pt-20 pb-16 px-4 max-w-3xl mx-auto">
+
+      <div className="relative z-10 pt-14 pb-20 px-4 max-w-2xl mx-auto">
+        {/* sign-out gate */}
         <Show when="signed-out">
-          <div className="mt-16 text-center">
-            <div className="h-16 w-16 rounded-full bg-[#C9A84C]/10 border border-[#C9A84C]/30 flex items-center justify-center mx-auto mb-4">
-              <Lock className="h-8 w-8 text-[#C9A84C]" />
+          <div className="mt-20 text-center">
+            <div className="h-20 w-20 rounded-3xl bg-[#C9A84C]/10 border border-[#C9A84C]/30 flex items-center justify-center mx-auto mb-6 shadow-xl shadow-[#C9A84C]/10">
+              <Lock className="h-9 w-9 text-[#C9A84C]" />
             </div>
             <h2 className="font-serif text-2xl text-white mb-2">Sign In Required</h2>
-            <p className="text-[#94a3b8] mb-6">You need to be signed in to post a property listing.</p>
-            <Link href="/sign-in">
-              <Button className="bg-[#C9A84C] hover:bg-[#e8c060] text-[#0a1220] font-semibold">Sign In to Continue</Button>
+            <p className="text-[#4a6080] text-sm mb-6 max-w-xs mx-auto">You must be signed in to post a property listing on Orakzai Properties.</p>
+            <Link href={`${basePath}/sign-in`}>
+              <button className="bg-[#C9A84C] hover:bg-[#e8c060] text-[#080f1a] font-black px-8 py-3 rounded-xl transition-all shadow-lg shadow-[#C9A84C]/25">
+                Sign In to Continue
+              </button>
             </Link>
           </div>
         </Show>
+
         <Show when="signed-in">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mt-8">
-            <div className="text-[#C9A84C] text-xs font-semibold tracking-widest uppercase mb-2">List Your Property</div>
-            <h1 className="font-serif text-3xl font-bold text-white mb-2">Post a Property</h1>
-            <p className="text-[#94a3b8] text-sm mb-8">Fill in the details below to list your property on Orakzai Properties.</p>
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mt-6">
 
-            <div className="bg-white/5 border border-[#C9A84C]/20 rounded-2xl p-6 md:p-8">
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <FormField control={form.control} name="title" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-[#94a3b8]">Property Title</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="e.g. Luxury 10 Marla House – DHA Phase 6" className="bg-[#0a1929] border-[#1e3a5f] text-[#f1f5f9]" data-testid="input-title" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+            {/* page header */}
+            <div className="mb-6">
+              <div className="text-[#C9A84C] text-[10px] font-black tracking-widest uppercase mb-1">List Your Property</div>
+              <h1 className="font-serif text-3xl font-bold text-white">Post a Property</h1>
+            </div>
 
-                  <FormField control={form.control} name="description" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-[#94a3b8]">Description</FormLabel>
-                      <FormControl>
-                        <Textarea {...field} placeholder="Describe the property in detail..." rows={4} className="bg-[#0a1929] border-[#1e3a5f] text-[#f1f5f9] resize-none" data-testid="input-description" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+            {/* progress bar */}
+            <ProgressBar step={step} />
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField control={form.control} name="price" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-[#94a3b8]">Price (PKR)</FormLabel>
-                        <FormControl>
-                          <Input {...field} type="number" placeholder="e.g. 45000000" className="bg-[#0a1929] border-[#1e3a5f] text-[#f1f5f9]" data-testid="input-price" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                    <FormField control={form.control} name="city" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-[#94a3b8]">City</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger className="bg-[#0a1929] border-[#1e3a5f] text-[#f1f5f9]" data-testid="select-city">
-                              <SelectValue placeholder="Select City" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="bg-[#0f1929] border-[#1e3a5f] text-[#f1f5f9]">
-                            <SelectItem value="Lahore">Lahore</SelectItem>
-                            <SelectItem value="Islamabad">Islamabad</SelectItem>
-                            <SelectItem value="Karachi">Karachi</SelectItem>
-                            <SelectItem value="Rawalpindi">Rawalpindi</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                  </div>
+            {/* card */}
+            <div className="rounded-3xl border border-[#C9A84C]/15 overflow-hidden"
+              style={{ background: "linear-gradient(145deg, #0d1929 0%, #080f1a 100%)" }}>
+              {/* gold top accent */}
+              <div className="h-[1.5px] bg-gradient-to-r from-transparent via-[#C9A84C] to-transparent" />
 
-                  <FormField control={form.control} name="area" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-[#94a3b8]">Area / Sector <span className="text-[#4a6080] text-xs">(optional)</span></FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="e.g. DHA Phase 6, Gulberg III, F-11" className="bg-[#0a1929] border-[#1e3a5f] text-[#f1f5f9]" data-testid="input-area" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+              <AnimatePresence mode="wait">
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField control={form.control} name="category" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-[#94a3b8]">Category</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger className="bg-[#0a1929] border-[#1e3a5f] text-[#f1f5f9]" data-testid="select-category">
-                              <SelectValue placeholder="Buy / Rent / Sell" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="bg-[#0f1929] border-[#1e3a5f] text-[#f1f5f9]">
-                            <SelectItem value="buy">Buy</SelectItem>
-                            <SelectItem value="sell">Sell</SelectItem>
-                            <SelectItem value="rent">Rent</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                    <FormField control={form.control} name="type" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-[#94a3b8]">Property Type</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger className="bg-[#0a1929] border-[#1e3a5f] text-[#f1f5f9]" data-testid="select-type">
-                              <SelectValue placeholder="Plot / House / Commercial" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="bg-[#0f1929] border-[#1e3a5f] text-[#f1f5f9]">
-                            <SelectItem value="plot">Plot</SelectItem>
-                            <SelectItem value="house">House</SelectItem>
-                            <SelectItem value="commercial">Commercial</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                  </div>
-
-                  {/* Image URLs */}
-                  <div>
-                    <div className="text-[#94a3b8] text-sm font-medium mb-2 flex items-center gap-2">
-                      <ImageIcon className="h-4 w-4 text-[#C9A84C]" /> Property Images (URLs)
-                    </div>
-                    <div className="space-y-2">
-                      {imageUrls.map((url, i) => (
-                        <div key={i} className="flex gap-2">
-                          <Input
-                            value={url}
-                            onChange={(e) => updateImage(i, e.target.value)}
-                            placeholder={`Image URL ${i + 1}`}
-                            className="bg-[#0a1929] border-[#1e3a5f] text-[#f1f5f9] flex-1"
-                            data-testid={`input-image-${i}`}
-                          />
-                          {imageUrls.length > 1 && (
-                            <Button type="button" variant="ghost" size="icon" onClick={() => removeImageField(i)} className="text-red-400 hover:text-red-300 hover:bg-red-400/10">
-                              <X className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                    <Button type="button" variant="ghost" size="sm" onClick={addImageField} className="mt-2 text-[#C9A84C] hover:text-[#e8c060] gap-1.5">
-                      <Plus className="h-4 w-4" /> Add Image URL
-                    </Button>
-                  </div>
-
-                  <div className="border-t border-[#1e3a5f] pt-6">
-                    <div className="text-[#94a3b8] text-sm font-medium mb-4">Contact Information</div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <FormField control={form.control} name="ownerName" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-[#94a3b8] text-xs">Your Name</FormLabel>
-                          <FormControl>
-                            <Input {...field} placeholder="Agent / Owner Name" className="bg-[#0a1929] border-[#1e3a5f] text-[#f1f5f9]" data-testid="input-owner-name" />
-                          </FormControl>
-                        </FormItem>
-                      )} />
-                      <FormField control={form.control} name="ownerPhone" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-[#94a3b8] text-xs">Phone Number</FormLabel>
-                          <FormControl>
-                            <Input {...field} placeholder="+923001234567" className="bg-[#0a1929] border-[#1e3a5f] text-[#f1f5f9]" data-testid="input-phone" />
-                          </FormControl>
-                        </FormItem>
-                      )} />
-                      <FormField control={form.control} name="whatsappNumber" render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-[#94a3b8] text-xs">WhatsApp Number</FormLabel>
-                          <FormControl>
-                            <Input {...field} placeholder="+923001234567" className="bg-[#0a1929] border-[#1e3a5f] text-[#f1f5f9]" data-testid="input-whatsapp" />
-                          </FormControl>
-                        </FormItem>
-                      )} />
-                    </div>
-                  </div>
-
-                  <Button
-                    type="submit"
-                    disabled={createProperty.isPending}
-                    className="w-full bg-[#C9A84C] hover:bg-[#e8c060] text-[#0a1220] font-bold h-12 text-base"
-                    data-testid="button-submit-property"
+                {/* ═════════════════════ STEP 1: BASIC INFO ═════════════════════ */}
+                {step === 1 && (
+                  <motion.div key="step1"
+                    initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }}
+                    transition={{ duration: 0.25 }} className="p-6 md:p-8 space-y-6"
                   >
-                    {createProperty.isPending ? "Posting..." : "Post Property"}
-                  </Button>
-                </form>
-              </Form>
+                    <div>
+                      <SectionLabel>Property Title</SectionLabel>
+                      <input
+                        value={title}
+                        onChange={e => setTitle(e.target.value)}
+                        placeholder="e.g. Luxury 10 Marla House – DHA Phase 6"
+                        className={goldInput}
+                        data-testid="input-title"
+                      />
+                      {errors.title && <p className="text-red-400 text-xs mt-1.5">{errors.title}</p>}
+                    </div>
+
+                    {/* Category tiles */}
+                    <div>
+                      <SectionLabel>Listing Category</SectionLabel>
+                      <div className="grid grid-cols-3 gap-3">
+                        {CATEGORIES.map(cat => (
+                          <button key={cat.value} type="button" onClick={() => setCategory(cat.value)}
+                            className={`rounded-2xl border-2 p-3 text-left transition-all ${category === cat.value ? `${cat.active} shadow-lg` : "border-white/8 bg-white/3 hover:border-white/20"}`}
+                          >
+                            <div className={`text-sm font-bold mb-0.5 ${category === cat.value ? cat.color.split(" ").find(c => c.startsWith("text-")) : "text-white"}`}>
+                              {cat.label}
+                            </div>
+                            <div className="text-[10px] text-[#3a5070]">{cat.desc}</div>
+                          </button>
+                        ))}
+                      </div>
+                      {errors.category && <p className="text-red-400 text-xs mt-1.5">{errors.category}</p>}
+                    </div>
+
+                    {/* Type tiles */}
+                    <div>
+                      <SectionLabel>Property Type</SectionLabel>
+                      <div className="grid grid-cols-3 gap-3">
+                        {TYPES.map(t => (
+                          <button key={t.value} type="button" onClick={() => setPropType(t.value)}
+                            className={`rounded-2xl border-2 p-3 text-left transition-all ${propType === t.value ? "border-[#C9A84C] bg-[#C9A84C]/10 shadow-lg shadow-[#C9A84C]/10" : "border-white/8 bg-white/3 hover:border-[#C9A84C]/30"}`}
+                          >
+                            <t.icon className={`h-5 w-5 mb-1.5 ${propType === t.value ? "text-[#C9A84C]" : "text-[#4a6080]"}`} />
+                            <div className={`text-sm font-bold mb-0.5 ${propType === t.value ? "text-[#C9A84C]" : "text-white"}`}>{t.label}</div>
+                            <div className="text-[10px] text-[#3a5070]">{t.desc}</div>
+                          </button>
+                        ))}
+                      </div>
+                      {errors.type && <p className="text-red-400 text-xs mt-1.5">{errors.type}</p>}
+                    </div>
+
+                    {/* Price */}
+                    <div>
+                      <SectionLabel>Price (PKR)</SectionLabel>
+                      <div className="relative">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#C9A84C] font-bold text-sm pointer-events-none">PKR</span>
+                        <input
+                          value={price}
+                          onChange={e => setPrice(e.target.value)}
+                          type="number"
+                          placeholder="45000000"
+                          className={`${goldInput} pl-14`}
+                          data-testid="input-price"
+                        />
+                      </div>
+                      {price && !isNaN(Number(price)) && Number(price) > 0 && (
+                        <p className="text-[#C9A84C]/70 text-xs mt-1.5 pl-1">
+                          {Number(price) >= 10000000 ? `PKR ${(Number(price)/10000000).toFixed(2)} Crore` : Number(price) >= 100000 ? `PKR ${(Number(price)/100000).toFixed(1)} Lakh` : ""}
+                        </p>
+                      )}
+                      {errors.price && <p className="text-red-400 text-xs mt-1.5">{errors.price}</p>}
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* ═════════════════════ STEP 2: MEDIA ══════════════════════════ */}
+                {step === 2 && (
+                  <motion.div key="step2"
+                    initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }}
+                    transition={{ duration: 0.25 }} className="p-6 md:p-8 space-y-4"
+                  >
+                    <div>
+                      <h3 className="font-serif text-lg font-bold text-white mb-1">Property Photos</h3>
+                      <p className="text-[#3a5070] text-sm mb-5">Great photos dramatically increase buyer interest. Aim for at least 3 high-quality images.</p>
+                      <ImageUploader images={images} onChange={setImages} />
+                    </div>
+
+                    {images.length === 0 && (
+                      <div className="rounded-xl bg-[#C9A84C]/5 border border-[#C9A84C]/15 px-4 py-3 flex items-start gap-2">
+                        <ImageIcon className="h-4 w-4 text-[#C9A84C] mt-0.5 flex-shrink-0" />
+                        <p className="text-[#6a7f99] text-xs leading-relaxed">
+                          You can skip images for now and add them later from My Properties. Listings with photos receive <span className="text-[#C9A84C] font-semibold">12× more views.</span>
+                        </p>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+
+                {/* ═════════════════════ STEP 3: DETAILS ══════════════════════ */}
+                {step === 3 && (
+                  <motion.div key="step3"
+                    initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }}
+                    transition={{ duration: 0.25 }} className="p-6 md:p-8 space-y-6"
+                  >
+                    {/* city + area */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <SectionLabel>City</SectionLabel>
+                        <select value={city} onChange={e => setCity(e.target.value)} className={goldSelect} data-testid="select-city">
+                          <option value="">Select city</option>
+                          {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                        {errors.city && <p className="text-red-400 text-xs mt-1.5">{errors.city}</p>}
+                      </div>
+                      <div>
+                        <SectionLabel>Area / Sector <span className="text-[#1e3a5f] normal-case">(optional)</span></SectionLabel>
+                        <input value={area} onChange={e => setArea(e.target.value)} placeholder="e.g. DHA Phase 6" className={goldInput} data-testid="input-area" />
+                      </div>
+                    </div>
+
+                    {/* specs */}
+                    <div>
+                      <SectionLabel>Specifications <span className="text-[#1e3a5f] normal-case">(optional)</span></SectionLabel>
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="relative">
+                          <BedDouble className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#C9A84C]/50 pointer-events-none" />
+                          <input value={beds} onChange={e => setBeds(e.target.value)} type="number" min="0"
+                            placeholder="Beds" className={`${goldInput} pl-9`} />
+                        </div>
+                        <div className="relative">
+                          <Bath className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#C9A84C]/50 pointer-events-none" />
+                          <input value={baths} onChange={e => setBaths(e.target.value)} type="number" min="0"
+                            placeholder="Baths" className={`${goldInput} pl-9`} />
+                        </div>
+                        <div className="relative">
+                          <Maximize2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#C9A84C]/50 pointer-events-none" />
+                          <input value={areaSqft} onChange={e => setAreaSqft(e.target.value)} type="number" min="0"
+                            placeholder="Sq. Ft." className={`${goldInput} pl-9`} />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* description */}
+                    <div>
+                      <SectionLabel>Description</SectionLabel>
+                      <textarea
+                        value={description}
+                        onChange={e => setDescription(e.target.value)}
+                        placeholder="Describe the property in detail — size, features, location advantages, nearby landmarks..."
+                        rows={5}
+                        className={`${goldInput} resize-none`}
+                        data-testid="input-description"
+                      />
+                      <div className="flex justify-between mt-1">
+                        {errors.description ? <p className="text-red-400 text-xs">{errors.description}</p> : <span />}
+                        <span className={`text-xs ${description.length >= 20 ? "text-[#C9A84C]/60" : "text-[#3a5070]"}`}>{description.length} chars</span>
+                      </div>
+                    </div>
+
+                    {/* contact */}
+                    <div>
+                      <SectionLabel>Contact Details</SectionLabel>
+                      <div className="space-y-3">
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#C9A84C]/50 pointer-events-none" />
+                          <input value={ownerName} onChange={e => setOwnerName(e.target.value)} placeholder="Your name / agency name"
+                            className={`${goldInput} pl-9`} data-testid="input-owner-name" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="relative">
+                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#C9A84C]/50 pointer-events-none" />
+                            <input value={ownerPhone} onChange={e => setOwnerPhone(e.target.value)} placeholder="+92 300 1234567"
+                              className={`${goldInput} pl-9`} data-testid="input-phone" />
+                          </div>
+                          <div className="relative">
+                            <MessageCircle className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#25D366]/50 pointer-events-none" />
+                            <input value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder="WhatsApp (if different)"
+                              className={`${goldInput} pl-9`} data-testid="input-whatsapp" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* ── Sovereign Verification toggle ── */}
+                    <div className={`rounded-2xl border-2 p-4 transition-all ${reqVerify ? "border-[#C9A84C]/50 bg-[#C9A84C]/5" : "border-[#1e3a5f] bg-white/2"}`}>
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-start gap-3">
+                          <div className={`h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all ${reqVerify ? "bg-[#C9A84C]/15 border-[#C9A84C]/30" : "bg-white/5 border-white/10"} border`}>
+                            <ShieldCheck className={`h-5 w-5 ${reqVerify ? "text-[#C9A84C]" : "text-[#3a5070]"}`} />
+                          </div>
+                          <div>
+                            <div className={`font-bold text-sm mb-0.5 ${reqVerify ? "text-[#C9A84C]" : "text-white"}`}>
+                              Request Orakzai Verification Badge
+                            </div>
+                            <p className="text-[#3a5070] text-xs leading-relaxed">
+                              Get the <span className="text-[#C9A84C] font-semibold">Sovereign Verified</span> trust seal after a brief document review. Builds buyer confidence and increases inquiries by up to 3×.
+                            </p>
+                          </div>
+                        </div>
+                        {/* toggle switch */}
+                        <button type="button" onClick={() => setReqVerify(v => !v)} data-testid="toggle-verify"
+                          className={`flex-shrink-0 h-6 w-11 rounded-full border-2 transition-all relative ${reqVerify ? "bg-[#C9A84C] border-[#C9A84C]" : "bg-[#0d1929] border-[#1e3a5f]"}`}>
+                          <motion.div
+                            animate={{ x: reqVerify ? 20 : 2 }}
+                            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                            className="absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-md"
+                          />
+                        </button>
+                      </div>
+                      {reqVerify && (
+                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-3 pt-3 border-t border-[#C9A84C]/20">
+                          <p className="text-[#C9A84C]/70 text-xs leading-relaxed">
+                            Our team will contact you within 24 hours to begin the verification process. A nominal fee of <span className="text-[#C9A84C] font-bold">PKR 2,500</span> covers document verification and the permanent trust seal on your listing.
+                          </p>
+                        </motion.div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* ── Navigation footer ── */}
+              <div className="px-6 md:px-8 pb-6 pt-2 border-t border-white/5 flex items-center justify-between gap-3">
+                {step > 1 ? (
+                  <button type="button" onClick={prev}
+                    className="flex items-center gap-1.5 h-11 px-4 rounded-xl border border-white/10 text-[#6a7f99] hover:text-white hover:border-white/20 font-semibold text-sm transition-all">
+                    <ChevronLeft className="h-4 w-4" /> Back
+                  </button>
+                ) : <div />}
+
+                {step < 3 ? (
+                  <button type="button" onClick={next}
+                    className="flex items-center gap-1.5 h-11 px-6 rounded-xl bg-gradient-to-r from-[#C9A84C] to-[#e8c060] text-[#080f1a] font-black text-sm shadow-lg shadow-[#C9A84C]/20 hover:shadow-[#C9A84C]/35 transition-all">
+                    Continue <ChevronRight className="h-4 w-4" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={submit}
+                    disabled={createProperty.isPending}
+                    data-testid="button-submit-property"
+                    className="flex items-center gap-2 h-11 px-8 rounded-xl bg-gradient-to-r from-[#C9A84C] to-[#e8c060] text-[#080f1a] font-black text-sm shadow-lg shadow-[#C9A84C]/25 hover:shadow-[#C9A84C]/40 transition-all disabled:opacity-60"
+                  >
+                    {createProperty.isPending ? (
+                      <><motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                        className="h-4 w-4 border-2 border-[#080f1a]/30 border-t-[#080f1a] rounded-full" /> Publishing...</>
+                    ) : (
+                      <><Sparkles className="h-4 w-4" /> Publish Listing</>
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
           </motion.div>
         </Show>
       </div>
+
+      {/* ── Boost Popup ── */}
+      <AnimatePresence>
+        {showBoost && (
+          <BoostPopup
+            onClose={finishFlow}
+            onSkip={finishFlow}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

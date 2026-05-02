@@ -403,6 +403,12 @@ components:
           type: ["string", "null"]
         whatsappNumber:
           type: ["string", "null"]
+        beds:
+          type: ["integer", "null"]
+        baths:
+          type: ["integer", "null"]
+        areaSqft:
+          type: ["integer", "null"]
       required:
         - title
         - description

@@ -123,6 +123,9 @@ router.post("/properties", requireAuth, async (req: any, res) => {
         ownerName: data.ownerName ?? null,
         ownerPhone: data.ownerPhone ?? null,
         whatsappNumber: data.whatsappNumber ?? null,
+        beds: data.beds ?? null,
+        baths: data.baths ?? null,
+        areaSqft: data.areaSqft ?? null,
       })
       .returning();
     res.status(201).json(serializeProperty(prop));

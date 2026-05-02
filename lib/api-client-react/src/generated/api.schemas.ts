@@ -60,6 +60,12 @@ export interface CreatePropertyBody {
   ownerPhone?: string | null;
   /** @nullable */
   whatsappNumber?: string | null;
+  /** @nullable */
+  beds?: number | null;
+  /** @nullable */
+  baths?: number | null;
+  /** @nullable */
+  areaSqft?: number | null;
 }
 
 export interface UpdatePropertyBody {
