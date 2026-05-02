@@ -18,6 +18,8 @@ tags:
     description: Project development updates
   - name: bookings
     description: Down-payment booking inquiries
+  - name: investment
+    description: Fractional investment projects
 
 paths:
   /healthz:
@@ -302,6 +304,66 @@ paths:
                   $ref: "#/components/schemas/Booking"
         "401":
           description: Unauthorized
+
+  /investment-projects:
+    get:
+      operationId: listInvestmentProjects
+      tags: [investment]
+      summary: List all fractional investment projects
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of investment projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InvestmentProject"
+    post:
+      operationId: createInvestmentProject
+      tags: [investment]
+      summary: Create a new investment project (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateInvestmentProjectBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvestmentProject"
+        "401":
+          description: Unauthorized
+
+  /investment-projects/{id}:
+    get:
+      operationId: getInvestmentProject
+      tags: [investment]
+      summary: Get a single investment project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Investment project detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvestmentProject"
+        "404":
+          description: Not found
 
 components:
   schemas:
@@ -629,3 +691,127 @@ components:
         - name
         - phone
         - plotSize
+
+    RoadmapPhase:
+      type: object
+      properties:
+        phase:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          description: "pending | in_progress | completed"
+        date:
+          type: string
+      required:
+        - phase
+        - description
+        - status
+        - date
+
+    InvestmentProject:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        location:
+          type: string
+        bannerImage:
+          type: ["string", "null"]
+        totalValue:
+          type: number
+        minInvestment:
+          type: number
+        totalShares:
+          type: integer
+        fundedShares:
+          type: integer
+        roi:
+          type: string
+        duration:
+          type: string
+        status:
+          type: string
+          description: "funding | construction | completed"
+        type:
+          type: string
+          description: "plaza | tower | smart_city | commercial"
+        roadmap:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoadmapPhase"
+        features:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - title
+        - description
+        - location
+        - totalValue
+        - minInvestment
+        - totalShares
+        - fundedShares
+        - roi
+        - duration
+        - status
+        - type
+        - roadmap
+        - features
+        - createdAt
+        - updatedAt
+
+    CreateInvestmentProjectBody:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        location:
+          type: string
+        bannerImage:
+          type: ["string", "null"]
+        totalValue:
+          type: number
+        minInvestment:
+          type: number
+        totalShares:
+          type: integer
+        fundedShares:
+          type: integer
+        roi:
+          type: string
+        duration:
+          type: string
+        status:
+          type: string
+        type:
+          type: string
+        roadmap:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoadmapPhase"
+        features:
+          type: array
+          items:
+            type: string
+      required:
+        - title
+        - description
+        - location
+        - totalValue
+        - minInvestment
+        - totalShares
+        - roi
+        - duration

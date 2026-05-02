@@ -19,9 +19,12 @@ import type {
 import type {
   Booking,
   CreateBookingBody,
+  CreateInvestmentProjectBody,
   CreateProjectUpdateBody,
   CreatePropertyBody,
   HealthStatus,
+  InvestmentProject,
+  ListInvestmentProjectsParams,
   ListPropertiesParams,
   Project,
   ProjectUpdate,
@@ -1191,6 +1194,284 @@ export function useListMyBookings<
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getListMyBookingsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary List all fractional investment projects
+ */
+export const getListInvestmentProjectsUrl = (
+  params?: ListInvestmentProjectsParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/investment-projects?${stringifiedParams}`
+    : `/api/investment-projects`;
+};
+
+export const listInvestmentProjects = async (
+  params?: ListInvestmentProjectsParams,
+  options?: RequestInit,
+): Promise<InvestmentProject[]> => {
+  return customFetch<InvestmentProject[]>(
+    getListInvestmentProjectsUrl(params),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getListInvestmentProjectsQueryKey = (
+  params?: ListInvestmentProjectsParams,
+) => {
+  return [`/api/investment-projects`, ...(params ? [params] : [])] as const;
+};
+
+export const getListInvestmentProjectsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listInvestmentProjects>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListInvestmentProjectsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listInvestmentProjects>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListInvestmentProjectsQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listInvestmentProjects>>
+  > = ({ signal }) =>
+    listInvestmentProjects(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listInvestmentProjects>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListInvestmentProjectsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listInvestmentProjects>>
+>;
+export type ListInvestmentProjectsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all fractional investment projects
+ */
+
+export function useListInvestmentProjects<
+  TData = Awaited<ReturnType<typeof listInvestmentProjects>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListInvestmentProjectsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listInvestmentProjects>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListInvestmentProjectsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a new investment project (admin)
+ */
+export const getCreateInvestmentProjectUrl = () => {
+  return `/api/investment-projects`;
+};
+
+export const createInvestmentProject = async (
+  createInvestmentProjectBody: CreateInvestmentProjectBody,
+  options?: RequestInit,
+): Promise<InvestmentProject> => {
+  return customFetch<InvestmentProject>(getCreateInvestmentProjectUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createInvestmentProjectBody),
+  });
+};
+
+export const getCreateInvestmentProjectMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createInvestmentProject>>,
+    TError,
+    { data: BodyType<CreateInvestmentProjectBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createInvestmentProject>>,
+  TError,
+  { data: BodyType<CreateInvestmentProjectBody> },
+  TContext
+> => {
+  const mutationKey = ["createInvestmentProject"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createInvestmentProject>>,
+    { data: BodyType<CreateInvestmentProjectBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createInvestmentProject(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateInvestmentProjectMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createInvestmentProject>>
+>;
+export type CreateInvestmentProjectMutationBody =
+  BodyType<CreateInvestmentProjectBody>;
+export type CreateInvestmentProjectMutationError = ErrorType<void>;
+
+/**
+ * @summary Create a new investment project (admin)
+ */
+export const useCreateInvestmentProject = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createInvestmentProject>>,
+    TError,
+    { data: BodyType<CreateInvestmentProjectBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createInvestmentProject>>,
+  TError,
+  { data: BodyType<CreateInvestmentProjectBody> },
+  TContext
+> => {
+  return useMutation(getCreateInvestmentProjectMutationOptions(options));
+};
+
+/**
+ * @summary Get a single investment project
+ */
+export const getGetInvestmentProjectUrl = (id: number) => {
+  return `/api/investment-projects/${id}`;
+};
+
+export const getInvestmentProject = async (
+  id: number,
+  options?: RequestInit,
+): Promise<InvestmentProject> => {
+  return customFetch<InvestmentProject>(getGetInvestmentProjectUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetInvestmentProjectQueryKey = (id: number) => {
+  return [`/api/investment-projects/${id}`] as const;
+};
+
+export const getGetInvestmentProjectQueryOptions = <
+  TData = Awaited<ReturnType<typeof getInvestmentProject>>,
+  TError = ErrorType<void>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getInvestmentProject>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetInvestmentProjectQueryKey(id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getInvestmentProject>>
+  > = ({ signal }) => getInvestmentProject(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getInvestmentProject>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetInvestmentProjectQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getInvestmentProject>>
+>;
+export type GetInvestmentProjectQueryError = ErrorType<void>;
+
+/**
+ * @summary Get a single investment project
+ */
+
+export function useGetInvestmentProject<
+  TData = Awaited<ReturnType<typeof getInvestmentProject>>,
+  TError = ErrorType<void>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getInvestmentProject>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetInvestmentProjectQueryOptions(id, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

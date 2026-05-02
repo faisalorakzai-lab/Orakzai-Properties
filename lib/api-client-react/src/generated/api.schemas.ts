@@ -185,6 +185,55 @@ export interface CreateBookingBody {
   message?: string | null;
 }
 
+export interface RoadmapPhase {
+  phase: string;
+  description: string;
+  /** pending | in_progress | completed */
+  status: string;
+  date: string;
+}
+
+export interface InvestmentProject {
+  id: number;
+  title: string;
+  description: string;
+  location: string;
+  /** @nullable */
+  bannerImage?: string | null;
+  totalValue: number;
+  minInvestment: number;
+  totalShares: number;
+  fundedShares: number;
+  roi: string;
+  duration: string;
+  /** funding | construction | completed */
+  status: string;
+  /** plaza | tower | smart_city | commercial */
+  type: string;
+  roadmap: RoadmapPhase[];
+  features: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateInvestmentProjectBody {
+  title: string;
+  description: string;
+  location: string;
+  /** @nullable */
+  bannerImage?: string | null;
+  totalValue: number;
+  minInvestment: number;
+  totalShares: number;
+  fundedShares?: number;
+  roi: string;
+  duration: string;
+  status?: string;
+  type?: string;
+  roadmap?: RoadmapPhase[];
+  features?: string[];
+}
+
 export type ListPropertiesParams = {
   city?: string;
   category?: string;
@@ -192,4 +241,8 @@ export type ListPropertiesParams = {
   minPrice?: number;
   maxPrice?: number;
   search?: string;
+};
+
+export type ListInvestmentProjectsParams = {
+  status?: string;
 };

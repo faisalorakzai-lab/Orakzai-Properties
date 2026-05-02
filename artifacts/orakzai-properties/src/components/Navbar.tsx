@@ -15,6 +15,7 @@ export default function Navbar() {
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/browse", label: "Browse" },
+    { href: "/invest", label: "Invest" },
     { href: "/project/azan-smart-city", label: "Azan Smart City" },
   ];
 
