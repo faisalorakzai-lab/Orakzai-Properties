@@ -15,8 +15,13 @@ export const propertiesTable = pgTable("properties", {
   ownerId: text("owner_id").notNull(),
   ownerName: text("owner_name"),
   ownerPhone: text("owner_phone"),
+  ownerAvatar: text("owner_avatar"),
+  ownerRating: numeric("owner_rating", { precision: 3, scale: 1 }),
   whatsappNumber: text("whatsapp_number"),
   isVerified: boolean("is_verified").notNull().default(false),
+  beds: integer("beds"),
+  baths: integer("baths"),
+  areaSqft: integer("area_sqft"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
