@@ -66,6 +66,20 @@ Pakistan's premier real estate marketplace built for the Lahore & Islamabad mark
 - Owner Available/Rented toggle (PATCH `/properties/:id` with `isAvailable`)
 - My Rental Inquiries tracker in localStorage
 
+### Module 8 — Investment Execution Flow
+- `InvestModal` — 3-step gold checkout: Share Selector → Confirmation → Success animation
+- Step 1: Live calc (total cost, monthly ROI, annual ROI), FOMO "X shares remaining" badge, +/– share picker
+- Step 2: Summary with Sovereign Guarantee notice, "Confirm Investment — PKR X" gold button
+- Step 3: Gold coin burst animation (12 coins radiate outward), Digital Certificate flash (spring-animated), "Welcome to the Grid, Chairman [Name]!" message
+- `POST /api/investment-projects/:id/invest` — auth-required endpoint: validates share availability, creates ledger entry, upserts user portfolio, increments project fundedShares
+- `GET /api/portfolio` — auth-required endpoint: returns enriched portfolio items with currentValue, projectedMonthlyRoi
+- `investments_ledger` table — every transaction: transactionId (UUID), userId, projectId, sharesBought, amountPaid, status, createdAt
+- `user_portfolios` table — per-user per-project totals: unique(userId, projectId), totalShares, totalInvested, updatedAt
+- `Portfolio.tsx` at `/portfolio` — "Chairman [Name]'s Portfolio" header, stats bar (total invested, monthly income, total shares), investment cards per project, "Expand Your Portfolio" CTA, Sovereign Guarantee disclaimer
+- Post-purchase: redirects to `/portfolio` with toast "Congratulations Chairman [Name], your investment is now active on the Orakzai Grid"
+- Auth gate: portfolio page shows "Sign In Required" shield card with CTA for unauthenticated users
+- Navbar: "Portfolio" link (BarChart3 icon) shown to signed-in users between Sign Out and Post Property
+
 ### Module 7 — Investment Portal
 - Fractional investment in Plazas, Towers, Smart Cities
 - Gold funding progress bars with animated fill

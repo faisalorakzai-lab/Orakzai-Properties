@@ -15,6 +15,7 @@ import MyProperties from "@/pages/MyProperties";
 import AzanSmartCity from "@/pages/AzanSmartCity";
 import InvestPortal from "@/pages/InvestPortal";
 import InvestDetail from "@/pages/InvestDetail";
+import Portfolio from "@/pages/Portfolio";
 
 const queryClient = new QueryClient();
 
@@ -158,6 +159,7 @@ function ClerkProviderWithRoutes() {
             <Route path="/my-properties" component={MyProperties} />
             <Route path="/invest" component={InvestPortal} />
             <Route path="/invest/:id" component={InvestDetail} />
+            <Route path="/portfolio" component={Portfolio} />
             <Route path="/project/azan-smart-city" component={AzanSmartCity} />
             <Route path="/sign-in/*?" component={SignInPage} />
             <Route path="/sign-up/*?" component={SignUpPage} />

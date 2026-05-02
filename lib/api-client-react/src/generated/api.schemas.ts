@@ -216,6 +216,46 @@ export interface InvestmentProject {
   updatedAt: string;
 }
 
+export interface BuySharesBody {
+  /** @minimum 1 */
+  shares: number;
+}
+
+export type InvestmentTransactionPortfolio = {
+  totalShares: number;
+  totalInvested: number;
+};
+
+export interface InvestmentTransaction {
+  transactionId: string;
+  projectId: number;
+  projectTitle: string;
+  sharesBought: number;
+  amountPaid: number;
+  sharePrice: number;
+  roi: string;
+  duration: string;
+  status: string;
+  createdAt: string;
+  portfolio: InvestmentTransactionPortfolio;
+}
+
+export interface PortfolioItem {
+  portfolioId: number;
+  projectId: number;
+  projectTitle: string;
+  projectLocation: string;
+  projectStatus: string;
+  projectType: string;
+  roi: string;
+  duration: string;
+  totalShares: number;
+  totalInvested: number;
+  currentValue: number;
+  projectedMonthlyRoi: number;
+  updatedAt: string;
+}
+
 export interface CreateInvestmentProjectBody {
   title: string;
   description: string;

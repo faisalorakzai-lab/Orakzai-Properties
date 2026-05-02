@@ -452,3 +452,34 @@ export const GetInvestmentProjectResponse = zod.object({
   createdAt: zod.string(),
   updatedAt: zod.string(),
 });
+
+/**
+ * @summary Purchase shares in an investment project
+ */
+export const BuySharesParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const BuySharesBody = zod.object({
+  shares: zod.number().min(1),
+});
+
+/**
+ * @summary Get the authenticated user's investment portfolio
+ */
+export const GetMyPortfolioResponseItem = zod.object({
+  portfolioId: zod.number(),
+  projectId: zod.number(),
+  projectTitle: zod.string(),
+  projectLocation: zod.string(),
+  projectStatus: zod.string(),
+  projectType: zod.string(),
+  roi: zod.string(),
+  duration: zod.string(),
+  totalShares: zod.number(),
+  totalInvested: zod.number(),
+  currentValue: zod.number(),
+  projectedMonthlyRoi: zod.number(),
+  updatedAt: zod.string(),
+});
+export const GetMyPortfolioResponse = zod.array(GetMyPortfolioResponseItem);

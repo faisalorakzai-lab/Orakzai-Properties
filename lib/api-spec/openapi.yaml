@@ -365,6 +365,54 @@ paths:
         "404":
           description: Not found
 
+  /investment-projects/{id}/invest:
+    post:
+      operationId: buyShares
+      tags: [investment]
+      summary: Purchase shares in an investment project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BuySharesBody"
+      responses:
+        "201":
+          description: Transaction confirmed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvestmentTransaction"
+        "400":
+          description: Insufficient shares or invalid input
+        "401":
+          description: Unauthorized
+        "404":
+          description: Project not found
+
+  /portfolio:
+    get:
+      operationId: getMyPortfolio
+      tags: [investment]
+      summary: Get the authenticated user's investment portfolio
+      responses:
+        "200":
+          description: User portfolio
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PortfolioItem"
+        "401":
+          description: Unauthorized
+
 components:
   schemas:
     HealthStatus:
@@ -769,6 +817,105 @@ components:
         - roadmap
         - features
         - createdAt
+        - updatedAt
+
+    BuySharesBody:
+      type: object
+      properties:
+        shares:
+          type: integer
+          minimum: 1
+      required:
+        - shares
+
+    InvestmentTransaction:
+      type: object
+      properties:
+        transactionId:
+          type: string
+        projectId:
+          type: integer
+        projectTitle:
+          type: string
+        sharesBought:
+          type: integer
+        amountPaid:
+          type: number
+        sharePrice:
+          type: number
+        roi:
+          type: string
+        duration:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+        portfolio:
+          type: object
+          properties:
+            totalShares:
+              type: integer
+            totalInvested:
+              type: number
+          required:
+            - totalShares
+            - totalInvested
+      required:
+        - transactionId
+        - projectId
+        - projectTitle
+        - sharesBought
+        - amountPaid
+        - sharePrice
+        - roi
+        - duration
+        - status
+        - createdAt
+        - portfolio
+
+    PortfolioItem:
+      type: object
+      properties:
+        portfolioId:
+          type: integer
+        projectId:
+          type: integer
+        projectTitle:
+          type: string
+        projectLocation:
+          type: string
+        projectStatus:
+          type: string
+        projectType:
+          type: string
+        roi:
+          type: string
+        duration:
+          type: string
+        totalShares:
+          type: integer
+        totalInvested:
+          type: number
+        currentValue:
+          type: number
+        projectedMonthlyRoi:
+          type: number
+        updatedAt:
+          type: string
+      required:
+        - portfolioId
+        - projectId
+        - projectTitle
+        - projectLocation
+        - projectStatus
+        - projectType
+        - roi
+        - duration
+        - totalShares
+        - totalInvested
+        - currentValue
+        - projectedMonthlyRoi
         - updatedAt
 
     CreateInvestmentProjectBody:

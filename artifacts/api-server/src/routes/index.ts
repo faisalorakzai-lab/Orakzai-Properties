@@ -3,6 +3,7 @@ import healthRouter from "./health";
 import propertiesRouter from "./properties";
 import projectsRouter from "./projects";
 import investmentProjectsRouter from "./investment_projects";
+import portfolioRouter from "./portfolio";
 
 const router: IRouter = Router();
 
@@ -10,5 +11,6 @@ router.use(healthRouter);
 router.use(propertiesRouter);
 router.use(projectsRouter);
 router.use(investmentProjectsRouter);
+router.use(portfolioRouter);
 
 export default router;
