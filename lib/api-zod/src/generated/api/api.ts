@@ -66,6 +66,9 @@ export const CreatePropertyBody = zod.object({
   ownerName: zod.string().nullish(),
   ownerPhone: zod.string().nullish(),
   whatsappNumber: zod.string().nullish(),
+  beds: zod.number().nullish(),
+  baths: zod.number().nullish(),
+  areaSqft: zod.number().nullish(),
 });
 
 /**
