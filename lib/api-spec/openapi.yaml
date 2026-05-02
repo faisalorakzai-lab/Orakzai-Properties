@@ -3,20 +3,28 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Orakzai Properties API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: properties
+    description: Property listings
+  - name: projects
+    description: Mega real estate projects
+  - name: updates
+    description: Project development updates
+  - name: bookings
+    description: Down-payment booking inquiries
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +32,277 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /properties:
+    get:
+      operationId: listProperties
+      tags: [properties]
+      summary: List/search properties
+      parameters:
+        - name: city
+          in: query
+          schema:
+            type: string
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: type
+          in: query
+          schema:
+            type: string
+        - name: minPrice
+          in: query
+          schema:
+            type: number
+        - name: maxPrice
+          in: query
+          schema:
+            type: number
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of properties
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Property"
+    post:
+      operationId: createProperty
+      tags: [properties]
+      summary: Create a new property listing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePropertyBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Property"
+        "401":
+          description: Unauthorized
+
+  /properties/{id}:
+    get:
+      operationId: getProperty
+      tags: [properties]
+      summary: Get a single property
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Property detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Property"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateProperty
+      tags: [properties]
+      summary: Update a property listing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePropertyBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Property"
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteProperty
+      tags: [properties]
+      summary: Delete a property listing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not found
+
+  /properties/stats:
+    get:
+      operationId: getPropertyStats
+      tags: [properties]
+      summary: Get marketplace stats (counts by city, type, category)
+      responses:
+        "200":
+          description: Property statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PropertyStats"
+
+  /properties/my:
+    get:
+      operationId: getMyProperties
+      tags: [properties]
+      summary: Get the authenticated user's property listings
+      responses:
+        "200":
+          description: My properties
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Property"
+        "401":
+          description: Unauthorized
+
+  /projects:
+    get:
+      operationId: listProjects
+      tags: [projects]
+      summary: List all mega projects
+      responses:
+        "200":
+          description: List of projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+
+  /projects/{id}:
+    get:
+      operationId: getProject
+      tags: [projects]
+      summary: Get a single project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Project detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "404":
+          description: Not found
+
+  /projects/{id}/updates:
+    get:
+      operationId: listProjectUpdates
+      tags: [updates]
+      summary: List construction/development updates for a project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Project updates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProjectUpdate"
+    post:
+      operationId: createProjectUpdate
+      tags: [updates]
+      summary: Post a new development update (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProjectUpdateBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectUpdate"
+        "401":
+          description: Unauthorized
+
+  /bookings:
+    post:
+      operationId: createBooking
+      tags: [bookings]
+      summary: Submit a booking/down-payment inquiry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBookingBody"
+      responses:
+        "201":
+          description: Booking submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+    get:
+      operationId: listMyBookings
+      tags: [bookings]
+      summary: List current user's bookings
+      responses:
+        "200":
+          description: My bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Booking"
+        "401":
+          description: Unauthorized
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +313,274 @@ components:
       required:
         - status
 
+    Property:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        city:
+          type: string
+        area:
+          type: ["string", "null"]
+        category:
+          type: string
+          description: "buy | rent | sell"
+        type:
+          type: string
+          description: "plot | house | commercial"
+        images:
+          type: array
+          items:
+            type: string
+        ownerId:
+          type: string
+        ownerName:
+          type: ["string", "null"]
+        ownerPhone:
+          type: ["string", "null"]
+        whatsappNumber:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - title
+        - description
+        - price
+        - city
+        - category
+        - type
+        - images
+        - ownerId
+        - createdAt
+        - updatedAt
+
+    CreatePropertyBody:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        city:
+          type: string
+        area:
+          type: ["string", "null"]
+        category:
+          type: string
+        type:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+        ownerName:
+          type: ["string", "null"]
+        ownerPhone:
+          type: ["string", "null"]
+        whatsappNumber:
+          type: ["string", "null"]
+      required:
+        - title
+        - description
+        - price
+        - city
+        - category
+        - type
+        - images
+
+    UpdatePropertyBody:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        city:
+          type: string
+        area:
+          type: ["string", "null"]
+        category:
+          type: string
+        type:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+        ownerPhone:
+          type: ["string", "null"]
+        whatsappNumber:
+          type: ["string", "null"]
+
+    PropertyStats:
+      type: object
+      properties:
+        total:
+          type: integer
+        byCity:
+          type: array
+          items:
+            $ref: "#/components/schemas/CountEntry"
+        byType:
+          type: array
+          items:
+            $ref: "#/components/schemas/CountEntry"
+        byCategory:
+          type: array
+          items:
+            $ref: "#/components/schemas/CountEntry"
+      required:
+        - total
+        - byCity
+        - byType
+        - byCategory
+
+    CountEntry:
+      type: object
+      properties:
+        label:
+          type: string
+        count:
+          type: integer
+      required:
+        - label
+        - count
+
+    Project:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        location:
+          type: string
+        bannerImage:
+          type: ["string", "null"]
+        plotSizes:
+          type: array
+          items:
+            type: string
+        pricePerMarla:
+          type: number
+        totalPlots:
+          type: ["integer", "null"]
+        progressPercent:
+          type: integer
+        status:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - name
+        - description
+        - location
+        - plotSizes
+        - pricePerMarla
+        - progressPercent
+        - status
+        - createdAt
+
+    ProjectUpdate:
+      type: object
+      properties:
+        id:
+          type: integer
+        projectId:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+      required:
+        - id
+        - projectId
+        - title
+        - content
+        - createdAt
+
+    CreateProjectUpdateBody:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+      required:
+        - title
+        - content
+
+    Booking:
+      type: object
+      properties:
+        id:
+          type: integer
+        projectId:
+          type: integer
+        userId:
+          type: ["string", "null"]
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: ["string", "null"]
+        plotSize:
+          type: string
+        message:
+          type: ["string", "null"]
+        status:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - projectId
+        - name
+        - phone
+        - plotSize
+        - status
+        - createdAt
+
+    CreateBookingBody:
+      type: object
+      properties:
+        projectId:
+          type: integer
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: ["string", "null"]
+        plotSize:
+          type: string
+        message:
+          type: ["string", "null"]
+      required:
+        - projectId
+        - name
+        - phone
+        - plotSize
