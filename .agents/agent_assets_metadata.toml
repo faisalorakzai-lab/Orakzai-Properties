@@ -1,0 +1,14 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "VB3to47GNrwH_nFd2WNhj"
+uri = "file://artifacts/orakzai-properties/public/hero.png"
+type = "image"
+title = "Luxury hotel lobby style hero"
+
+[[generated]]
+id = "01L3MrzWkRlA7eeTYb3Fy"
+uri = "file://artifacts/orakzai-properties/public/project-banner.png"
+type = "image"
+title = "Azan Smart City project banner"
