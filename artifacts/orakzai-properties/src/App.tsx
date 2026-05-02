@@ -16,6 +16,7 @@ import AzanSmartCity from "@/pages/AzanSmartCity";
 import InvestPortal from "@/pages/InvestPortal";
 import InvestDetail from "@/pages/InvestDetail";
 import Portfolio from "@/pages/Portfolio";
+import TradingFloor from "@/pages/TradingFloor";
 
 const queryClient = new QueryClient();
 
@@ -160,6 +161,7 @@ function ClerkProviderWithRoutes() {
             <Route path="/invest" component={InvestPortal} />
             <Route path="/invest/:id" component={InvestDetail} />
             <Route path="/portfolio" component={Portfolio} />
+            <Route path="/trade/:id" component={TradingFloor} />
             <Route path="/project/azan-smart-city" component={AzanSmartCity} />
             <Route path="/sign-in/*?" component={SignInPage} />
             <Route path="/sign-up/*?" component={SignUpPage} />

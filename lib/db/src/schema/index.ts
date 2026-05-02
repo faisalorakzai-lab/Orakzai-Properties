@@ -4,3 +4,6 @@ export * from "./bookings";
 export * from "./investment_projects";
 export * from "./investments_ledger";
 export * from "./user_portfolios";
+export * from "./trading_orders";
+export * from "./trades";
+export * from "./price_history";

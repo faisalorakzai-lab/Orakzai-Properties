@@ -4,7 +4,7 @@ import { useParams, Link } from "wouter";
 import {
   TrendingUp, Clock, MapPin, ChevronLeft, Shield, CheckCircle2,
   Circle, Loader2, Building2, Zap, BarChart3, Minus, Plus,
-  MessageCircle, AlertCircle, ChevronDown, ChevronUp,
+  MessageCircle, AlertCircle, ChevronDown, ChevronUp, Activity,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import InvestModal from "@/components/InvestModal";
@@ -356,7 +356,14 @@ export default function InvestDetail() {
                   Instant on-grid transaction · Sovereign guarantee
                 </p>
 
-                <div className="mt-4 pt-4 border-t border-[#1e3a5f]/30 space-y-2">
+                <Link href={`/trade/${project.id}`}>
+                  <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold border border-[#C9A84C]/30 text-[#C9A84C] hover:bg-[#C9A84C]/8 hover:border-[#C9A84C]/50 transition-all mt-1">
+                    <Activity className="w-3.5 h-3.5" />
+                    Trade on Secondary Market
+                  </button>
+                </Link>
+
+                <div className="mt-3 pt-3 border-t border-[#1e3a5f]/30 space-y-2">
                   {[
                     "Legally verified asset-backed tokens",
                     "Quarterly profit distribution",

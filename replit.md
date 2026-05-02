@@ -66,6 +66,21 @@ Pakistan's premier real estate marketplace built for the Lahore & Islamabad mark
 - Owner Available/Rented toggle (PATCH `/properties/:id` with `isAvailable`)
 - My Rental Inquiries tracker in localStorage
 
+### Module 9 — Trading Market Interface
+- Full secondary-market trading floor at `/trade/:projectId`
+- **Ticker Bar**: Project name, Last Price (gold), 24h Change (green/red with arrow), 24h Volume, High/Low, Live/Reconnecting SSE indicator
+- **Price Chart**: TradingView Lightweight Charts v5 (`addSeries(AreaSeries)`) — gold area chart on midnight-black bg, 60 seeded price history points (6-hour intervals auto-generated on first load), real trade prices appended live
+- **Order Book**: Side panel showing asks (crimson depth bars) above spread and bids (emerald depth bars) below, price + qty + total columns, depth-weighted fill bars
+- **Market Sentiment Meter**: Bear-to-Bull gradient bar based on buy-vs-sell order volume ratio with Bullish/Bearish/Neutral label
+- **Order Entry Panel**: BUY (emerald) / SELL (crimson) tabs, Limit Price input, Qty +/– picker, live fee calculation (0.5% $OKBOND trading fee → Orakzai Treasury), Net Total display, "Sign In to Trade" gate for unauth users
+- **Order Matching Engine** (`orderMatcher.ts`): Price-time priority matching — buyer price >= seller price triggers execution at the resting order's price; partial fills supported; portfolio ownership transferred atomically
+- **SSE Real-Time** (`sseController.ts`): Singleton EventSource per projectId; broadcasts `trade` and `orderbook_update` events; 20s heartbeat keepalive
+- **My Active Orders Table**: Full order history table with ID, type badge, price, qty, filled, status, time; Cancel button for pending/partial orders
+- **Recent Trades Feed**: Live-updating feed of executed trades with price, quantity, fee
+- **DB Tables**: `trading_orders` (price-time priority queue), `trades` (execution ledger with 0.5% fee column), `price_history` (time-series for chart)
+- **API Endpoints**: `GET /trading/stream/:id` (SSE), `GET /trading/orderbook/:id`, `GET /trading/ticker/:id`, `GET /trading/price-history/:id`, `GET /trading/my-orders/:id`, `POST /trading/orders`, `DELETE /trading/orders/:id`
+- **InvestDetail**: Added "Trade on Secondary Market" gold-bordered button linking to `/trade/:id`
+
 ### Module 8 — Investment Execution Flow
 - `InvestModal` — 3-step gold checkout: Share Selector → Confirmation → Success animation
 - Step 1: Live calc (total cost, monthly ROI, annual ROI), FOMO "X shares remaining" badge, +/– share picker

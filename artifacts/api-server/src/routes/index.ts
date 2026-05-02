@@ -4,6 +4,7 @@ import propertiesRouter from "./properties";
 import projectsRouter from "./projects";
 import investmentProjectsRouter from "./investment_projects";
 import portfolioRouter from "./portfolio";
+import tradingRouter from "./trading";
 
 const router: IRouter = Router();
 
@@ -12,5 +13,6 @@ router.use(propertiesRouter);
 router.use(projectsRouter);
 router.use(investmentProjectsRouter);
 router.use(portfolioRouter);
+router.use(tradingRouter);
 
 export default router;
