@@ -66,6 +66,22 @@ Pakistan's premier real estate marketplace built for the Lahore & Islamabad mark
 - Owner Available/Rented toggle (PATCH `/properties/:id` with `isAvailable`)
 - My Rental Inquiries tracker in localStorage
 
+### Module 12 — Investor Portfolio Dashboard (/portfolio)
+- Complete wealth-management dashboard replacing the old simple portfolio grid
+- **New API endpoint** `GET /portfolio/dashboard` — aggregates wallet balance, all portfolio positions with live P&L, investment ledger, and 6-month performance history; returns in a single request
+- **OpenAPI spec** extended with `PortfolioDashboard`, `PortfolioPosition`, `LedgerItem`, `PerformancePoint` schemas; codegen regenerated `useGetPortfolioDashboard` React Query hook
+- **Executive Summary Bar (4 cards)**: Total Assets (gold, Playfair), Invested Capital (blue), Unrealized P&L (emerald/rose with trend arrow, ±PKR and ±%), Wallet Balance (gold, clickable link to /wallet)
+- **Performance Chart**: `recharts` AreaChart — dual-area (gold for portfolio value, dark blue for invested capital); custom `ChartTooltip` glassmorphic component; gradient fills; 6-month x-axis; abbreviated y-axis (L/Cr/M); auto-refetch every 60s with refresh button
+- **Active Positions (tab)**: Dual-column grid of `PositionRow` cards — gold progress-bar header showing ownership %, project icon+title+location, 4-stat grid (Shares/Invested/Current Value/P&L), ownership percentage label, ROI text, **Trade** shortcut button → `/trade/:id`, **Details** → `/invest/:id`; staggered entrance animations
+- **Investment Ledger (tab)**: Timeline of `LedgerRow` items with emerald coin icon, project name, shares bought @ price/share, debit amount in emerald, confirmed/pending status badge, monospace timestamp
+- **Income Stream section**: Rental Income card (per-position monthly projected ROI breakdown + total monthly) + Dividend History card (shows completed projects' annual dividends, placeholder when none)
+- **Tab switcher**: Positions vs Investment Ledger with count badges and gold active indicator
+- **Expandable Portfolio CTA**: Gold gradient "Invest More" + Wallet shortcut buttons at bottom
+- **Auth gate**: "Investor Access Required" screen with shield icon and sign-in redirect
+- **Empty state**: PieChart icon, copy, and "Explore Investment Projects" CTA
+- **Performance history computation**: Server-side cumulative investment per month from ledger, simulated growth curve proportional to actual unrealized PnL%, gives realistic upward trajectory chart
+- Zero TypeScript errors across all packages
+
 ### Module 11 — Ultra-Luxury Property Detail Page (/property/[id])
 - Full visual overhaul of PropertyDetail.tsx — high-conversion, ultra-luxury aesthetic
 - **Gallery**: 600px cinematic viewport, AnimatePresence slide transitions (scale+opacity), "View All N Photos" overlay button, dot nav dots (wide pill for active), photo counter badge, full **Grid View** modal (lazy staggered animation) with hover Expand overlay, **Lightbox** with animated entrance, keyboard arrow/Esc navigation, gold-border thumbnail strip with ring highlight

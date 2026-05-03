@@ -413,6 +413,21 @@ paths:
         "401":
           description: Unauthorized
 
+  /portfolio/dashboard:
+    get:
+      operationId: getPortfolioDashboard
+      tags: [investment]
+      summary: Aggregated investor dashboard with wallet, positions, ledger, and performance history
+      responses:
+        "200":
+          description: Full portfolio dashboard
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortfolioDashboard"
+        "401":
+          description: Unauthorized
+
 components:
   schemas:
     HealthStatus:
@@ -873,6 +888,137 @@ components:
         - status
         - createdAt
         - portfolio
+
+    PerformancePoint:
+      type: object
+      properties:
+        month:
+          type: string
+        value:
+          type: number
+        invested:
+          type: number
+      required: [month, value, invested]
+
+    LedgerItem:
+      type: object
+      properties:
+        transactionId:
+          type: string
+        projectId:
+          type: integer
+        projectTitle:
+          type: string
+        sharesBought:
+          type: integer
+        amountPaid:
+          type: number
+        sharePrice:
+          type: number
+        status:
+          type: string
+        createdAt:
+          type: string
+      required: [transactionId, projectId, projectTitle, sharesBought, amountPaid, sharePrice, status, createdAt]
+
+    PortfolioPosition:
+      type: object
+      properties:
+        portfolioId:
+          type: integer
+        projectId:
+          type: integer
+        projectTitle:
+          type: string
+        projectLocation:
+          type: string
+        projectStatus:
+          type: string
+        projectType:
+          type: string
+        roi:
+          type: string
+        duration:
+          type: string
+        totalShares:
+          type: integer
+        totalProjectShares:
+          type: integer
+        totalInvested:
+          type: number
+        currentValue:
+          type: number
+        sharePrice:
+          type: number
+        gain:
+          type: number
+        gainPct:
+          type: number
+        projectedMonthlyRoi:
+          type: number
+        updatedAt:
+          type: string
+      required:
+        - portfolioId
+        - projectId
+        - projectTitle
+        - projectLocation
+        - projectStatus
+        - projectType
+        - roi
+        - duration
+        - totalShares
+        - totalProjectShares
+        - totalInvested
+        - currentValue
+        - sharePrice
+        - gain
+        - gainPct
+        - projectedMonthlyRoi
+        - updatedAt
+
+    PortfolioDashboard:
+      type: object
+      properties:
+        wallet:
+          type: object
+          properties:
+            balance:
+              type: number
+            currency:
+              type: string
+          required: [balance, currency]
+        summary:
+          type: object
+          properties:
+            totalAssets:
+              type: number
+            investedCapital:
+              type: number
+            unrealizedPnL:
+              type: number
+            unrealizedPnLPct:
+              type: number
+            projectedAnnualIncome:
+              type: number
+            totalPositions:
+              type: integer
+            totalShares:
+              type: integer
+          required: [totalAssets, investedCapital, unrealizedPnL, unrealizedPnLPct, projectedAnnualIncome, totalPositions, totalShares]
+        positions:
+          type: array
+          items:
+            $ref: "#/components/schemas/PortfolioPosition"
+        ledger:
+          type: array
+          items:
+            $ref: "#/components/schemas/LedgerItem"
+        performanceHistory:
+          type: array
+          items:
+            $ref: "#/components/schemas/PerformancePoint"
+      required: [wallet, summary, positions, ledger, performanceHistory]
 
     PortfolioItem:
       type: object
