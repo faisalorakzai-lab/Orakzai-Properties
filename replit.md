@@ -66,6 +66,21 @@ Pakistan's premier real estate marketplace built for the Lahore & Islamabad mark
 - Owner Available/Rented toggle (PATCH `/properties/:id` with `isAvailable`)
 - My Rental Inquiries tracker in localStorage
 
+### Module 11 — Ultra-Luxury Property Detail Page (/property/[id])
+- Full visual overhaul of PropertyDetail.tsx — high-conversion, ultra-luxury aesthetic
+- **Gallery**: 600px cinematic viewport, AnimatePresence slide transitions (scale+opacity), "View All N Photos" overlay button, dot nav dots (wide pill for active), photo counter badge, full **Grid View** modal (lazy staggered animation) with hover Expand overlay, **Lightbox** with animated entrance, keyboard arrow/Esc navigation, gold-border thumbnail strip with ring highlight
+- **Sticky sub-header**: `backdrop-blur-xl` gold-bordered bar — Back to Marketplace (gold arrow) + truncated title preview (desktop) + Heart/Share icon buttons
+- **Hero Price Card**: Full-width rounded-3xl card, `radial-gradient` gold glow, giant 5–6rem Playfair Display price in `#C9A84C` with `textShadow` glow, per sq.ft. calculation, **Sovereign Verified** inset badge (shield icon, "Price authenticated"), listing ID mono bottom-right
+- **Specs Grid (glassmorphic)**: Frosted glass card with `backdrop-blur`, gold left-bar heading accent, SpecPill cells with gold icon rings, hover fill effect
+- **Key Features & Amenities**: New section — gold checkmark icons in mini circles, 6 luxury features (security, gated, fibre, parking, generator, water), staggered fade-in animations
+- **Description**: Playfair Display `font-serif` sub-headings with gold left-bar accents, 1.85 line-height prose, Listing Details table (Category / Type / City / Area / Listed / ID)
+- **3D Map**: 260px perspectived gold grid map, animated MapPin bounce + dual ping rings, Orakzai Map watermark
+- **Agent Card (sticky right column)**: `TrustRing` SVG circular progress indicator (animated `strokeDashoffset` on mount, gold gradient stroke), stars row, Response/Properties stat pills, ID Verified + Trusted Agent badges, WhatsApp primary CTA (green gradient), phone secondary button, pre-filled message preview italicised
+- **Quick Details card**: Property ID (mono), Listed On, Status badge, Sovereign Verified gold text
+- **Sovereign Guarantee seal**: Appears for verified properties — shield icon + authentication copy
+- **Floating Action Bar**: Spring-in from bottom (delay 0.55s), gold shimmer top line, 4-zone layout — **Call** (icon+label), **WhatsApp Agent** (full hero green-gradient CTA, flex-1), **Save** (AnimatePresence heart toggle, rose fill), **Share** (gold hover), safe-area-inset-bottom padding
+- Zero TypeScript errors across all packages
+
 ### Module 10 — Wallet Management System
 - Full financial core at `/wallet` (signed-in only, auth gate for unauthenticated)
 - **DB Tables**: `wallets` (uuid pk, userId unique, balance, currency, pinHash SHA-256, isPinSet, timestamps), `wallet_transactions` (txnId unique, userId, counterpartyId, amount, type, status, note, balanceAfter, createdAt)
