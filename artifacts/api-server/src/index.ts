@@ -1,7 +1,8 @@
 import http from "http";
-import { WebSocketServer, WebSocket } from "ws";
+import { WebSocketServer } from "ws";
 import app from "./app";
 import { logger } from "./lib/logger";
+import { userSockets } from "./lib/ws";
 
 const rawPort = process.env["PORT"];
 
@@ -20,20 +21,6 @@ const server = http.createServer(app);
 
 /* ─── WebSocket server on /api/ws ─── */
 const wss = new WebSocketServer({ server, path: "/api/ws" });
-
-// userId → active sockets
-const userSockets = new Map<string, Set<WebSocket>>();
-
-export function broadcastToUser(userId: string, payload: unknown): void {
-  const sockets = userSockets.get(userId);
-  if (!sockets) return;
-  const msg = JSON.stringify(payload);
-  for (const ws of sockets) {
-    if (ws.readyState === WebSocket.OPEN) {
-      ws.send(msg);
-    }
-  }
-}
 
 wss.on("connection", (ws) => {
   let authedUserId: string | null = null;

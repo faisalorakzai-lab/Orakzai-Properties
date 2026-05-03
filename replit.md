@@ -66,6 +66,64 @@ Pakistan's premier real estate marketplace built for the Lahore & Islamabad mark
 - Owner Available/Rented toggle (PATCH `/properties/:id` with `isAvailable`)
 - My Rental Inquiries tracker in localStorage
 
+### Module 15 — Lead Management System for Agents
+
+**DB additions (3 new tables + 2 new columns on `property_leads`):**
+- `property_leads` extended: `status` (new|contacted|visit_scheduled|negotiation|closed), `score` (hot|warm|cold), `updatedAt`
+- `lead_call_logs`: id, leadId, agentId, note, createdAt — stores per-lead call notes
+- `lead_messages`: id, leadId, senderId, role (agent|buyer), body, isRead, createdAt — real-time chat storage
+- `agent_settings`: id, userId, awayEnabled, awayMessage, updatedAt — auto-responder config
+
+**WebSocket refactor:** Extracted `broadcastToUser` + `userSockets` into `artifacts/api-server/src/lib/ws.ts` shared module to eliminate circular imports. All routes (`subscription.ts`, `leads.ts`) import from `lib/ws` instead of `index.ts`.
+
+**7 new API endpoints in `artifacts/api-server/src/routes/leads.ts`:**
+- `GET /leads` — returns agent's leads with enriched callLogs array + auto-computed score (phone frequency: 3+ = hot, 2 = warm, 1 = cold); overrides with manual score if set
+- `PATCH /leads/:id` — update pipeline `status` or `score`; validates against allowed enums
+- `POST /leads/:id/call-log` — add call note; stored in `lead_call_logs`
+- `GET /leads/:id/messages` — paginated chat history for a lead
+- `POST /leads/:id/messages` — send agent message; stores in `lead_messages`; `broadcastToUser` pushes to buyer (if signed-in) and back to agent (multi-tab)
+- `GET /agent/settings` — get/create away message settings
+- `PATCH /agent/settings` — update awayEnabled + awayMessage
+
+**Lead Management UI (AgentDashboard.tsx Leads tab — complete rebuild):**
+
+*Lead Cards (List View):*
+- Each card shows: Buyer Name + phone, Property of Interest, inquiry date, Lead Score badge (🔥 Hot/🌡 Warm/❄️ Cold with matching rose/amber/sky color schemes), Pipeline Stage badge (sky→amber→purple→orange→emerald)
+- Last call log note preview inline; "+N more" overflow indicator
+- 4 action buttons per card: "Move" dropdown (5 pipeline stages), "Score" dropdown (hot/warm/cold), WhatsApp one-click, Log Call, Chat
+
+*Pipeline Kanban View:*
+- 5 horizontal columns: New Inquiry → Contacted → Visit Scheduled → Negotiation → Closed/Sold
+- Each column header color-coded; lead count badge; compact lead cards with WhatsApp/call/chat buttons
+- "→" advance button moves lead to the next stage in one click
+
+*Score & Stage Filter bar:* All / 🔥 / 🌡 / ❄️ filter tabs; List / Pipeline view toggle
+
+*Chat Panel (real-time):*
+- Slide-in panel from right (spring animation via framer-motion)
+- WebSocket connection established per open chat; authenticates with agent's Clerk userId
+- Loads message history from `GET /leads/:id/messages`; appends new messages from `lead_message` WS events (deduped by id)
+- Bubble layout: agent messages right (gold), buyer messages left (blue-gray); timestamps
+- Enter to send / Shift+Enter for newline; POST to `/leads/:id/messages`
+
+*Call Log Modal:*
+- Shows full call log history (scrollable, max-h-40)
+- Textarea for new note; Save → POST to `/leads/:id/call-log`; toasts on success; updates lead card inline without refetch
+
+*WhatsApp One-Click:*
+- Deep-links to `wa.me/92{number}?text=...` with a professional Pakistani greeting pre-filled with buyer name and property title
+- Phone number normalized to +92 format (strips leading 0, prepends 92)
+
+*Inquiries vs Deals Bar Chart:*
+- CSS-rendered BarChart (no extra dependencies); last 6 months
+- Gold bars = total inquiries; emerald bars = closed deals
+- Bottom metrics: Total Inquiries / Deals Closed / Close Rate %
+
+*Auto-Responder (Away Message):*
+- Toggle switch in Profile tab (own section)
+- Fetches from `GET /api/agent/settings`; saves via `PATCH /api/agent/settings`
+- Textarea disabled when away is off; default message pre-populated
+
 ### Module 14 — Subscription & Monetization System
 
 **DB: `user_subscriptions` table** — `userId`, `planId`, `billingCycle` (monthly/annual), `amountPaid`, `currency` (PKR), `startDate`, `expiryDate`, `isAutoRenew`, `status`, `txnId`. Pushed to PostgreSQL.

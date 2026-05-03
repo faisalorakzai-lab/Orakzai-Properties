@@ -11,7 +11,11 @@ export const propertyLeadsTable = pgTable("property_leads", {
   leadName: text("lead_name"),
   leadPhone: text("lead_phone"),
   source: text("source").notNull().default("whatsapp"), // whatsapp | contact
+  // pipeline
+  status: text("status").notNull().default("new"),          // new | contacted | visit_scheduled | negotiation | closed
+  score: text("score").notNull().default("cold"),            // hot | warm | cold
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export const insertPropertyLeadSchema = createInsertSchema(propertyLeadsTable).omit({

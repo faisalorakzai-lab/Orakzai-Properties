@@ -9,6 +9,7 @@ import walletRouter from "./wallet";
 import notificationsRouter from "./notifications";
 import agentRouter from "./agent";
 import subscriptionRouter from "./subscription";
+import leadsRouter from "./leads";
 
 const router: IRouter = Router();
 
@@ -22,5 +23,6 @@ router.use(walletRouter);
 router.use(notificationsRouter);
 router.use(agentRouter);
 router.use(subscriptionRouter);
+router.use(leadsRouter);
 
 export default router;
