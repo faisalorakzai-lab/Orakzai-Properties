@@ -428,6 +428,213 @@ paths:
         "401":
           description: Unauthorized
 
+  /notifications:
+    get:
+      operationId: listNotifications
+      tags: [notifications]
+      summary: List all notifications for the authenticated user
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of notifications
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationList"
+        "401":
+          description: Unauthorized
+    delete:
+      operationId: clearAllNotifications
+      tags: [notifications]
+      summary: Clear all notifications for the authenticated user
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Cleared
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "401":
+          description: Unauthorized
+
+  /notifications/{id}/read:
+    patch:
+      operationId: markNotificationRead
+      tags: [notifications]
+      summary: Mark a single notification as read
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Marked as read
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "401":
+          description: Unauthorized
+
+  /notifications/read-all:
+    post:
+      operationId: markAllNotificationsRead
+      tags: [notifications]
+      summary: Mark all notifications as read
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: All marked as read
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "401":
+          description: Unauthorized
+
+  /notifications/settings:
+    get:
+      operationId: getNotificationSettings
+      tags: [notifications]
+      summary: Get notification preferences for the user
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationSettingsResponse"
+        "401":
+          description: Unauthorized
+    patch:
+      operationId: updateNotificationSettings
+      tags: [notifications]
+      summary: Update notification preferences
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateNotificationSettingsBody"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationSettingsResponse"
+        "401":
+          description: Unauthorized
+
+  /notifications/push-subscribe:
+    post:
+      operationId: subscribePush
+      tags: [notifications]
+      summary: Store a Web Push subscription for the user
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PushSubscribeBody"
+      responses:
+        "200":
+          description: Subscribed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "401":
+          description: Unauthorized
+
+  /agent/dashboard:
+    get:
+      operationId: getAgentDashboard
+      tags: [agent]
+      summary: Aggregated agent dashboard with stats, listings, and leads
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Agent dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentDashboard"
+        "401":
+          description: Unauthorized
+
+  /agent/profile:
+    get:
+      operationId: getAgentProfile
+      tags: [agent]
+      summary: Get agent profile for the authenticated user
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Agent profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentProfile"
+        "401":
+          description: Unauthorized
+    patch:
+      operationId: updateAgentProfile
+      tags: [agent]
+      summary: Create or update agent profile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAgentProfileBody"
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentProfile"
+        "401":
+          description: Unauthorized
+
+  /agent/lead:
+    post:
+      operationId: recordLead
+      tags: [agent]
+      summary: Record an inquiry lead on a property
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateLeadBody"
+      responses:
+        "200":
+          description: Lead recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -1108,3 +1315,267 @@ components:
         - totalShares
         - roi
         - duration
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+      required:
+        - success
+
+    NotificationItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        type:
+          type: string
+          description: "market_alert | price_pulse | wealth_alert | system"
+        title:
+          type: string
+        body:
+          type: string
+        isRead:
+          type: boolean
+        metadata:
+          type: object
+          additionalProperties: true
+        createdAt:
+          type: string
+      required:
+        - id
+        - userId
+        - type
+        - title
+        - body
+        - isRead
+        - createdAt
+
+    NotificationList:
+      type: object
+      properties:
+        notifications:
+          type: array
+          items:
+            $ref: "#/components/schemas/NotificationItem"
+        unreadCount:
+          type: integer
+      required:
+        - notifications
+        - unreadCount
+
+    NotificationSettingsResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+        marketAlerts:
+          type: boolean
+        pricePulse:
+          type: boolean
+        wealthAlerts:
+          type: boolean
+        systemUpdates:
+          type: boolean
+        pushEnabled:
+          type: boolean
+      required:
+        - userId
+        - marketAlerts
+        - pricePulse
+        - wealthAlerts
+        - systemUpdates
+        - pushEnabled
+
+    UpdateNotificationSettingsBody:
+      type: object
+      properties:
+        marketAlerts:
+          type: boolean
+        pricePulse:
+          type: boolean
+        wealthAlerts:
+          type: boolean
+        systemUpdates:
+          type: boolean
+        pushEnabled:
+          type: boolean
+
+    PushSubscribeBody:
+      type: object
+      properties:
+        endpoint:
+          type: string
+        keys:
+          type: object
+          properties:
+            p256dh:
+              type: string
+            auth:
+              type: string
+          required:
+            - p256dh
+            - auth
+      required:
+        - endpoint
+        - keys
+
+    AgentListing:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        city:
+          type: string
+        price:
+          type: number
+        category:
+          type: string
+        type:
+          type: string
+        isAvailable:
+          type: boolean
+        isVerified:
+          type: boolean
+        status:
+          type: string
+          description: "live | pending | sold"
+        views:
+          type: integer
+        leads:
+          type: integer
+        createdAt:
+          type: string
+      required:
+        - id
+        - title
+        - city
+        - price
+        - category
+        - type
+        - isAvailable
+        - isVerified
+        - status
+        - views
+        - leads
+        - createdAt
+
+    AgentLead:
+      type: object
+      properties:
+        id:
+          type: integer
+        propertyTitle:
+          type: string
+        leadName:
+          type: ["string", "null"]
+        leadPhone:
+          type: ["string", "null"]
+        source:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - propertyTitle
+        - source
+        - createdAt
+
+    AgentProfile:
+      type: object
+      properties:
+        userId:
+          type: string
+        agencyName:
+          type: ["string", "null"]
+        logoUrl:
+          type: ["string", "null"]
+        experienceYears:
+          type: integer
+        specialization:
+          type: ["string", "null"]
+        bio:
+          type: ["string", "null"]
+        verificationStatus:
+          type: string
+      required:
+        - userId
+        - verificationStatus
+
+    UpdateAgentProfileBody:
+      type: object
+      properties:
+        agencyName:
+          type: string
+        logoUrl:
+          type: string
+        experienceYears:
+          type: integer
+        specialization:
+          type: string
+        bio:
+          type: string
+
+    AgentStats:
+      type: object
+      properties:
+        totalListings:
+          type: integer
+        activeListings:
+          type: integer
+        totalLeads:
+          type: integer
+        totalViews:
+          type: integer
+      required:
+        - totalListings
+        - activeListings
+        - totalLeads
+        - totalViews
+
+    AgentDashboard:
+      type: object
+      properties:
+        profile:
+          $ref: "#/components/schemas/AgentProfile"
+        stats:
+          $ref: "#/components/schemas/AgentStats"
+        listings:
+          type: array
+          items:
+            $ref: "#/components/schemas/AgentListing"
+        leads:
+          type: array
+          items:
+            $ref: "#/components/schemas/AgentLead"
+      required:
+        - profile
+        - stats
+        - listings
+        - leads
+
+    CreateLeadBody:
+      type: object
+      properties:
+        propertyId:
+          type: integer
+        propertyTitle:
+          type: string
+        agentId:
+          type: string
+        leadName:
+          type: string
+        leadPhone:
+          type: string
+        source:
+          type: string
+      required:
+        - propertyId
+        - propertyTitle
+        - agentId
+        - source

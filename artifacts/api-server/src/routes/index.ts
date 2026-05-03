@@ -6,6 +6,8 @@ import investmentProjectsRouter from "./investment_projects";
 import portfolioRouter from "./portfolio";
 import tradingRouter from "./trading";
 import walletRouter from "./wallet";
+import notificationsRouter from "./notifications";
+import agentRouter from "./agent";
 
 const router: IRouter = Router();
 
@@ -16,5 +18,7 @@ router.use(investmentProjectsRouter);
 router.use(portfolioRouter);
 router.use(tradingRouter);
 router.use(walletRouter);
+router.use(notificationsRouter);
+router.use(agentRouter);
 
 export default router;
