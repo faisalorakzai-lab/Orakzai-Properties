@@ -66,6 +66,32 @@ Pakistan's premier real estate marketplace built for the Lahore & Islamabad mark
 - Owner Available/Rented toggle (PATCH `/properties/:id` with `isAvailable`)
 - My Rental Inquiries tracker in localStorage
 
+### Module 13 — Notification & Alert System + Agent Dashboard
+
+**Notification & Alert System:**
+- **5 new DB tables**: `notifications`, `notification_settings`, `push_subscriptions`, `property_leads`, `agent_profiles` — all pushed to PostgreSQL
+- **WebSocket server** on `/api/ws` — `ws` package attached to the raw HTTP server alongside Express. Maintains `Map<userId, Set<WebSocket>>` for real-time fan-out. Client authenticates by sending `{ type: "auth", userId }` after connect; server confirms with `{ event: "auth_ok" }`. `broadcastToUser(userId, payload)` exported from index.ts and called whenever a notification is created
+- **Web Push** — VAPID keys generated (`web-push` package). `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_EMAIL` stored as shared env vars. Push delivery is gracefully disabled when env vars absent. Service worker at `/public/sw.js` handles `push` events and `notificationclick` to open the app
+- **`createNotification()` helper** exported from `notifications.ts` route — checks user's settings table before inserting, broadcasts via WS, sends push to all stored subscriptions
+- **5 new API endpoints** (all auth-protected): `GET /notifications`, `DELETE /notifications` (clear all), `PATCH /notifications/:id/read`, `POST /notifications/read-all`, `GET/PATCH /notifications/settings`, `POST /notifications/push-subscribe`
+- **Bell icon** in Navbar — `<NotificationBell>` component with `AnimatePresence` dropdown, real-time WS connection per user, rose badge for unread count, Mark All Read (CheckCheck icon), Clear All (Trash2), Settings link, per-item mark-read on hover, category color coding (Market=sky, Price=gold, Wealth=emerald, System=purple)
+- **`/notifications` page** — Sovereign Alerts Center with filter pills (All / Wealth / Price / Market / System), notification cards with emoji badges, time-ago stamps, animated entrance. Mark All + Clear All in the header
+- **`/notification-settings` page** — 4 category toggles (Market Alerts, Price Pulse, Wealth Alerts, System Updates) with animated gold toggle switch; Browser Push section with "Enable Sovereign Alerts" flow — requests browser permission, registers service worker, subscribes to push, stores endpoint in DB; graceful "Blocked" state
+- **Notification categories**: `market_alert` 🏠, `price_pulse` 📈, `wealth_alert` 💰, `system` 📢
+
+**Agent & Seller Dashboard (/agent/dashboard):**
+- **`GET /agent/dashboard`** — aggregates agent profile (auto-creates on first visit), all listings by `ownerId`, all leads by `agentId`; returns stats (totalListings, activeListings, totalLeads, totalViews), listing items with status (live/pending/sold), lead items
+- **`GET/PATCH /agent/profile`** — returns or upserts `agent_profiles` row
+- **`POST /agent/lead`** — any client can record a WhatsApp/contact inquiry; used from property detail page to feed agent's lead list
+- **Dashboard layout**: fixed left sidebar (desktop) + bottom tab bar (mobile) with 4 tabs: Inventory, Leads, Analytics, Profile
+- **Agent header**: agency logo/icon, agency name + verification badge, specialization + experience, "Quick Post" button → `/post-property`
+- **4 stat cards**: Total Views, Total Leads, Active Listings, All Listings
+- **Inventory tab**: full listing grid — building icon, title+city+price, view/lead counts, Live/Pending/Sold status badge, hover-reveal Edit/MarkSold/Delete action buttons. Empty state with CTA
+- **Leads tab**: chronological lead list with lead name, property title, WhatsApp/Contact source badge, date, one-click phone call button on hover. Empty state
+- **Analytics tab**: 4 computed metrics (Conversion Rate, Avg Lead/Listing, Views/Listing, Active Rate) + Top Performers table sorted by views
+- **Profile tab**: inline edit form — Agency Name, Specialization, Years Experience, Logo URL, Bio textarea; PATCH saves in real-time
+- **Navbar**: "Agent" link added to signed-in desktop bar + mobile menu; "🔔 Notifications" in mobile menu
+
 ### Module 12 — Investor Portfolio Dashboard (/portfolio)
 - Complete wealth-management dashboard replacing the old simple portfolio grid
 - **New API endpoint** `GET /portfolio/dashboard` — aggregates wallet balance, all portfolio positions with live P&L, investment ledger, and 6-month performance history; returns in a single request

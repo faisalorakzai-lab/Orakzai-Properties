@@ -542,3 +542,193 @@ export const GetPortfolioDashboardResponse = zod.object({
     }),
   ),
 });
+
+/**
+ * @summary List all notifications for the authenticated user
+ */
+export const ListNotificationsResponse = zod.object({
+  notifications: zod.array(
+    zod.object({
+      id: zod.number(),
+      userId: zod.string(),
+      type: zod
+        .string()
+        .describe("market_alert | price_pulse | wealth_alert | system"),
+      title: zod.string(),
+      body: zod.string(),
+      isRead: zod.boolean(),
+      metadata: zod.record(zod.string(), zod.unknown()).optional(),
+      createdAt: zod.string(),
+    }),
+  ),
+  unreadCount: zod.number(),
+});
+
+/**
+ * @summary Clear all notifications for the authenticated user
+ */
+export const ClearAllNotificationsResponse = zod.object({
+  success: zod.boolean(),
+});
+
+/**
+ * @summary Mark a single notification as read
+ */
+export const MarkNotificationReadParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const MarkNotificationReadResponse = zod.object({
+  success: zod.boolean(),
+});
+
+/**
+ * @summary Mark all notifications as read
+ */
+export const MarkAllNotificationsReadResponse = zod.object({
+  success: zod.boolean(),
+});
+
+/**
+ * @summary Get notification preferences for the user
+ */
+export const GetNotificationSettingsResponse = zod.object({
+  userId: zod.string(),
+  marketAlerts: zod.boolean(),
+  pricePulse: zod.boolean(),
+  wealthAlerts: zod.boolean(),
+  systemUpdates: zod.boolean(),
+  pushEnabled: zod.boolean(),
+});
+
+/**
+ * @summary Update notification preferences
+ */
+export const UpdateNotificationSettingsBody = zod.object({
+  marketAlerts: zod.boolean().optional(),
+  pricePulse: zod.boolean().optional(),
+  wealthAlerts: zod.boolean().optional(),
+  systemUpdates: zod.boolean().optional(),
+  pushEnabled: zod.boolean().optional(),
+});
+
+export const UpdateNotificationSettingsResponse = zod.object({
+  userId: zod.string(),
+  marketAlerts: zod.boolean(),
+  pricePulse: zod.boolean(),
+  wealthAlerts: zod.boolean(),
+  systemUpdates: zod.boolean(),
+  pushEnabled: zod.boolean(),
+});
+
+/**
+ * @summary Store a Web Push subscription for the user
+ */
+export const SubscribePushBody = zod.object({
+  endpoint: zod.string(),
+  keys: zod.object({
+    p256dh: zod.string(),
+    auth: zod.string(),
+  }),
+});
+
+export const SubscribePushResponse = zod.object({
+  success: zod.boolean(),
+});
+
+/**
+ * @summary Aggregated agent dashboard with stats, listings, and leads
+ */
+export const GetAgentDashboardResponse = zod.object({
+  profile: zod.object({
+    userId: zod.string(),
+    agencyName: zod.string().nullish(),
+    logoUrl: zod.string().nullish(),
+    experienceYears: zod.number().optional(),
+    specialization: zod.string().nullish(),
+    bio: zod.string().nullish(),
+    verificationStatus: zod.string(),
+  }),
+  stats: zod.object({
+    totalListings: zod.number(),
+    activeListings: zod.number(),
+    totalLeads: zod.number(),
+    totalViews: zod.number(),
+  }),
+  listings: zod.array(
+    zod.object({
+      id: zod.number(),
+      title: zod.string(),
+      city: zod.string(),
+      price: zod.number(),
+      category: zod.string(),
+      type: zod.string(),
+      isAvailable: zod.boolean(),
+      isVerified: zod.boolean(),
+      status: zod.string().describe("live | pending | sold"),
+      views: zod.number(),
+      leads: zod.number(),
+      createdAt: zod.string(),
+    }),
+  ),
+  leads: zod.array(
+    zod.object({
+      id: zod.number(),
+      propertyTitle: zod.string(),
+      leadName: zod.string().nullish(),
+      leadPhone: zod.string().nullish(),
+      source: zod.string(),
+      createdAt: zod.string(),
+    }),
+  ),
+});
+
+/**
+ * @summary Get agent profile for the authenticated user
+ */
+export const GetAgentProfileResponse = zod.object({
+  userId: zod.string(),
+  agencyName: zod.string().nullish(),
+  logoUrl: zod.string().nullish(),
+  experienceYears: zod.number().optional(),
+  specialization: zod.string().nullish(),
+  bio: zod.string().nullish(),
+  verificationStatus: zod.string(),
+});
+
+/**
+ * @summary Create or update agent profile
+ */
+export const UpdateAgentProfileBody = zod.object({
+  agencyName: zod.string().optional(),
+  logoUrl: zod.string().optional(),
+  experienceYears: zod.number().optional(),
+  specialization: zod.string().optional(),
+  bio: zod.string().optional(),
+});
+
+export const UpdateAgentProfileResponse = zod.object({
+  userId: zod.string(),
+  agencyName: zod.string().nullish(),
+  logoUrl: zod.string().nullish(),
+  experienceYears: zod.number().optional(),
+  specialization: zod.string().nullish(),
+  bio: zod.string().nullish(),
+  verificationStatus: zod.string(),
+});
+
+/**
+ * @summary Record an inquiry lead on a property
+ */
+export const RecordLeadBody = zod.object({
+  propertyId: zod.number(),
+  propertyTitle: zod.string(),
+  agentId: zod.string(),
+  leadName: zod.string().optional(),
+  leadPhone: zod.string().optional(),
+  source: zod.string(),
+});
+
+export const RecordLeadResponse = zod.object({
+  success: zod.boolean(),
+});

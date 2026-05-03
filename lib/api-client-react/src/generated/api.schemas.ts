@@ -334,6 +334,128 @@ export interface CreateInvestmentProjectBody {
   features?: string[];
 }
 
+export interface SuccessResponse {
+  success: boolean;
+}
+
+export type NotificationItemMetadata = { [key: string]: unknown };
+
+export interface NotificationItem {
+  id: number;
+  userId: string;
+  /** market_alert | price_pulse | wealth_alert | system */
+  type: string;
+  title: string;
+  body: string;
+  isRead: boolean;
+  metadata?: NotificationItemMetadata;
+  createdAt: string;
+}
+
+export interface NotificationList {
+  notifications: NotificationItem[];
+  unreadCount: number;
+}
+
+export interface NotificationSettingsResponse {
+  userId: string;
+  marketAlerts: boolean;
+  pricePulse: boolean;
+  wealthAlerts: boolean;
+  systemUpdates: boolean;
+  pushEnabled: boolean;
+}
+
+export interface UpdateNotificationSettingsBody {
+  marketAlerts?: boolean;
+  pricePulse?: boolean;
+  wealthAlerts?: boolean;
+  systemUpdates?: boolean;
+  pushEnabled?: boolean;
+}
+
+export type PushSubscribeBodyKeys = {
+  p256dh: string;
+  auth: string;
+};
+
+export interface PushSubscribeBody {
+  endpoint: string;
+  keys: PushSubscribeBodyKeys;
+}
+
+export interface AgentListing {
+  id: number;
+  title: string;
+  city: string;
+  price: number;
+  category: string;
+  type: string;
+  isAvailable: boolean;
+  isVerified: boolean;
+  /** live | pending | sold */
+  status: string;
+  views: number;
+  leads: number;
+  createdAt: string;
+}
+
+export interface AgentLead {
+  id: number;
+  propertyTitle: string;
+  /** @nullable */
+  leadName?: string | null;
+  /** @nullable */
+  leadPhone?: string | null;
+  source: string;
+  createdAt: string;
+}
+
+export interface AgentProfile {
+  userId: string;
+  /** @nullable */
+  agencyName?: string | null;
+  /** @nullable */
+  logoUrl?: string | null;
+  experienceYears?: number;
+  /** @nullable */
+  specialization?: string | null;
+  /** @nullable */
+  bio?: string | null;
+  verificationStatus: string;
+}
+
+export interface UpdateAgentProfileBody {
+  agencyName?: string;
+  logoUrl?: string;
+  experienceYears?: number;
+  specialization?: string;
+  bio?: string;
+}
+
+export interface AgentStats {
+  totalListings: number;
+  activeListings: number;
+  totalLeads: number;
+  totalViews: number;
+}
+
+export interface AgentDashboard {
+  profile: AgentProfile;
+  stats: AgentStats;
+  listings: AgentListing[];
+  leads: AgentLead[];
+}
+
+export interface CreateLeadBody {
+  propertyId: number;
+  propertyTitle: string;
+  agentId: string;
+  leadName?: string;
+  leadPhone?: string;
+  source: string;
+}
+
 export type ListPropertiesParams = {
   city?: string;
   category?: string;

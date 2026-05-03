@@ -18,6 +18,9 @@ import InvestDetail from "@/pages/InvestDetail";
 import Portfolio from "@/pages/Portfolio";
 import TradingFloor from "@/pages/TradingFloor";
 import Wallet from "@/pages/Wallet";
+import Notifications from "@/pages/Notifications";
+import NotificationSettings from "@/pages/NotificationSettings";
+import AgentDashboard from "@/pages/AgentDashboard";
 
 const queryClient = new QueryClient();
 
@@ -165,6 +168,9 @@ function ClerkProviderWithRoutes() {
             <Route path="/trade/:id" component={TradingFloor} />
             <Route path="/wallet" component={Wallet} />
             <Route path="/project/azan-smart-city" component={AzanSmartCity} />
+            <Route path="/notifications" component={Notifications} />
+            <Route path="/notification-settings" component={NotificationSettings} />
+            <Route path="/agent/dashboard" component={AgentDashboard} />
             <Route path="/sign-in/*?" component={SignInPage} />
             <Route path="/sign-up/*?" component={SignUpPage} />
             <Route component={NotFound} />
