@@ -21,6 +21,8 @@ import Wallet from "@/pages/Wallet";
 import Notifications from "@/pages/Notifications";
 import NotificationSettings from "@/pages/NotificationSettings";
 import AgentDashboard from "@/pages/AgentDashboard";
+import Pricing from "@/pages/Pricing";
+import Subscribe from "@/pages/Subscribe";
 
 const queryClient = new QueryClient();
 
@@ -171,6 +173,8 @@ function ClerkProviderWithRoutes() {
             <Route path="/notifications" component={Notifications} />
             <Route path="/notification-settings" component={NotificationSettings} />
             <Route path="/agent/dashboard" component={AgentDashboard} />
+            <Route path="/pricing" component={Pricing} />
+            <Route path="/subscribe/:planId" component={Subscribe} />
             <Route path="/sign-in/*?" component={SignInPage} />
             <Route path="/sign-up/*?" component={SignUpPage} />
             <Route component={NotFound} />

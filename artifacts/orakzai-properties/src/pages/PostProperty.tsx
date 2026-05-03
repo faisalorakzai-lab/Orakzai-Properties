@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
-import { useCreateProperty, getGetMyPropertiesQueryKey, getListPropertiesQueryKey } from "@workspace/api-client-react";
+import { useCreateProperty, getGetMyPropertiesQueryKey, getListPropertiesQueryKey, useGetSubscriptionMe, useGetListingCount } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Show } from "@clerk/react";
 import { Link } from "wouter";
@@ -411,12 +411,59 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
+/* ─── Plan limit gate popup ──────────────────────────────────────────────── */
+function UpgradeGate({ onClose }: { onClose: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm px-4"
+    >
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        className="relative bg-gradient-to-b from-[#0a1628] to-[#060d16] border-2 border-[#C9A84C] rounded-2xl p-8 max-w-sm w-full shadow-[0_0_80px_rgba(201,168,76,0.25)]"
+      >
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_30%_at_50%_0%,rgba(201,168,76,0.07),transparent)] rounded-2xl pointer-events-none" />
+        <div className="text-center relative z-10">
+          <div className="h-16 w-16 rounded-2xl bg-[#C9A84C]/10 border border-[#C9A84C]/30 flex items-center justify-center mx-auto mb-5">
+            <Crown className="h-8 w-8 text-[#C9A84C]" />
+          </div>
+          <h3 className="text-white font-black text-xl mb-2">Listing Limit Reached</h3>
+          <p className="text-[#4a6080] text-sm leading-relaxed mb-6">
+            Free agents can post <span className="text-white font-bold">2 listings</span>. Upgrade to <span className="text-[#C9A84C] font-bold">Premium</span> for 20 or <span className="text-[#C9A84C] font-bold">Sovereign</span> for unlimited listings.
+          </p>
+          <div className="space-y-3">
+            <Link href={`${basePath}/pricing`}>
+              <button className="w-full h-11 rounded-xl bg-gradient-to-r from-[#C9A84C] to-[#e8c060] text-[#080f1a] font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-[#C9A84C]/25 hover:shadow-[#C9A84C]/40 transition-all">
+                <Crown className="h-4 w-4" /> View Plans & Upgrade
+              </button>
+            </Link>
+            <button onClick={onClose} className="w-full h-9 rounded-xl border border-white/10 text-[#4a6080] hover:text-white text-sm transition-all">
+              Maybe Later
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 /* ─── Main Component ───────────────────────────────────────────────────── */
 export default function PostProperty() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const createProperty = useCreateProperty();
+  const { data: subData } = useGetSubscriptionMe();
+  const { data: countData } = useGetListingCount();
 
+  const planLimit = subData?.plan?.listingLimit ?? 2;
+  const listingCount = countData?.count ?? 0;
+  const atLimit = planLimit !== -1 && listingCount >= planLimit;
+
+  const [showUpgradeGate, setShowUpgradeGate] = useState(false);
   const [step, setStep] = useState(1);
   const [showBoost, setShowBoost] = useState(false);
   const [successId, setSuccessId] = useState<number | null>(null);
@@ -464,6 +511,7 @@ export default function PostProperty() {
   const prev = () => { setErrors({}); setStep(s => Math.max(s - 1, 1)); };
 
   const submit = async () => {
+    if (atLimit) { setShowUpgradeGate(true); return; }
     if (!validateStep(3)) return;
     createProperty.mutate(
       {
@@ -878,6 +926,11 @@ export default function PostProperty() {
           </motion.div>
         </Show>
       </div>
+
+      {/* ── Upgrade Gate ── */}
+      <AnimatePresence>
+        {showUpgradeGate && <UpgradeGate onClose={() => setShowUpgradeGate(false)} />}
+      </AnimatePresence>
 
       {/* ── Boost Popup ── */}
       <AnimatePresence>

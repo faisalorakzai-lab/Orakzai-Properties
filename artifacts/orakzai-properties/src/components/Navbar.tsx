@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Show, useUser } from "@clerk/react";
+import { Show } from "@clerk/react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Building2, Plus, BarChart3, Wallet, Briefcase } from "lucide-react";
+import { Menu, X, Building2, Plus, BarChart3, Wallet, Briefcase, Crown } from "lucide-react";
 import { useClerk } from "@clerk/react";
 import NotificationBell from "@/components/NotificationBell";
 
@@ -17,6 +17,7 @@ export default function Navbar() {
     { href: "/", label: "Home" },
     { href: "/browse", label: "Browse" },
     { href: "/invest", label: "Invest" },
+    { href: "/pricing", label: "Pricing" },
     { href: "/project/azan-smart-city", label: "Azan Smart City" },
   ];
 

@@ -732,3 +732,101 @@ export const RecordLeadBody = zod.object({
 export const RecordLeadResponse = zod.object({
   success: zod.boolean(),
 });
+
+/**
+ * @summary List all available subscription plans
+ */
+export const GetSubscriptionPlansResponseItem = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  monthlyPkr: zod.number(),
+  annualPkr: zod.number(),
+  listingLimit: zod.number(),
+  hotTags: zod.number(),
+  verifiedBadge: zod.boolean(),
+  featuredHome: zod.boolean(),
+  directLeads: zod.boolean(),
+  support: zod.string(),
+  perks: zod.array(zod.string()),
+});
+export const GetSubscriptionPlansResponse = zod.array(
+  GetSubscriptionPlansResponseItem,
+);
+
+/**
+ * @summary Get the current user's active subscription and plan
+ */
+export const GetSubscriptionMeResponse = zod.object({
+  planId: zod.string(),
+  plan: zod.object({
+    id: zod.string(),
+    name: zod.string(),
+    monthlyPkr: zod.number(),
+    annualPkr: zod.number(),
+    listingLimit: zod.number(),
+    hotTags: zod.number(),
+    verifiedBadge: zod.boolean(),
+    featuredHome: zod.boolean(),
+    directLeads: zod.boolean(),
+    support: zod.string(),
+    perks: zod.array(zod.string()),
+  }),
+  subscription: zod.union([
+    zod.object({
+      id: zod.number(),
+      userId: zod.string(),
+      planId: zod.string(),
+      billingCycle: zod.string(),
+      amountPaid: zod.string(),
+      currency: zod.string(),
+      startDate: zod.string(),
+      expiryDate: zod.string(),
+      isAutoRenew: zod.boolean(),
+      status: zod.string(),
+      txnId: zod.string().nullish(),
+      createdAt: zod.string(),
+    }),
+    zod.null(),
+  ]),
+});
+
+/**
+ * @summary Get count of current user's active property listings
+ */
+export const GetListingCountResponse = zod.object({
+  count: zod.number(),
+});
+
+/**
+ * @summary Subscribe to a plan (deducts from wallet)
+ */
+export const SubscribeSubscriptionBody = zod.object({
+  planId: zod.string(),
+  billingCycle: zod.string(),
+});
+
+export const SubscribeSubscriptionResponse = zod.object({
+  success: zod.boolean(),
+  subscription: zod.object({
+    id: zod.number(),
+    userId: zod.string(),
+    planId: zod.string(),
+    billingCycle: zod.string(),
+    amountPaid: zod.string(),
+    currency: zod.string(),
+    startDate: zod.string(),
+    expiryDate: zod.string(),
+    isAutoRenew: zod.boolean(),
+    status: zod.string(),
+    txnId: zod.string().nullish(),
+    createdAt: zod.string(),
+  }),
+  newBalance: zod.string(),
+});
+
+/**
+ * @summary Disable auto-renewal for the current subscription
+ */
+export const CancelSubscriptionResponse = zod.object({
+  success: zod.boolean(),
+});

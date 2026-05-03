@@ -31,6 +31,7 @@ import type {
   InvestmentTransaction,
   ListInvestmentProjectsParams,
   ListPropertiesParams,
+  ListingCountResponse,
   NotificationList,
   NotificationSettingsResponse,
   PortfolioDashboard,
@@ -40,6 +41,10 @@ import type {
   Property,
   PropertyStats,
   PushSubscribeBody,
+  SubscribeBody,
+  SubscribeResponse,
+  SubscriptionMeResponse,
+  SubscriptionPlan,
   SuccessResponse,
   UpdateAgentProfileBody,
   UpdateNotificationSettingsBody,
@@ -2626,4 +2631,396 @@ export const useRecordLead = <
   TContext
 > => {
   return useMutation(getRecordLeadMutationOptions(options));
+};
+
+/**
+ * @summary List all available subscription plans
+ */
+export const getGetSubscriptionPlansUrl = () => {
+  return `/api/subscription/plans`;
+};
+
+export const getSubscriptionPlans = async (
+  options?: RequestInit,
+): Promise<SubscriptionPlan[]> => {
+  return customFetch<SubscriptionPlan[]>(getGetSubscriptionPlansUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetSubscriptionPlansQueryKey = () => {
+  return [`/api/subscription/plans`] as const;
+};
+
+export const getGetSubscriptionPlansQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSubscriptionPlans>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getSubscriptionPlans>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetSubscriptionPlansQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getSubscriptionPlans>>
+  > = ({ signal }) => getSubscriptionPlans({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getSubscriptionPlans>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetSubscriptionPlansQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSubscriptionPlans>>
+>;
+export type GetSubscriptionPlansQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all available subscription plans
+ */
+
+export function useGetSubscriptionPlans<
+  TData = Awaited<ReturnType<typeof getSubscriptionPlans>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getSubscriptionPlans>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetSubscriptionPlansQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get the current user's active subscription and plan
+ */
+export const getGetSubscriptionMeUrl = () => {
+  return `/api/subscription/me`;
+};
+
+export const getSubscriptionMe = async (
+  options?: RequestInit,
+): Promise<SubscriptionMeResponse> => {
+  return customFetch<SubscriptionMeResponse>(getGetSubscriptionMeUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetSubscriptionMeQueryKey = () => {
+  return [`/api/subscription/me`] as const;
+};
+
+export const getGetSubscriptionMeQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSubscriptionMe>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getSubscriptionMe>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetSubscriptionMeQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getSubscriptionMe>>
+  > = ({ signal }) => getSubscriptionMe({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getSubscriptionMe>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetSubscriptionMeQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSubscriptionMe>>
+>;
+export type GetSubscriptionMeQueryError = ErrorType<void>;
+
+/**
+ * @summary Get the current user's active subscription and plan
+ */
+
+export function useGetSubscriptionMe<
+  TData = Awaited<ReturnType<typeof getSubscriptionMe>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getSubscriptionMe>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetSubscriptionMeQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get count of current user's active property listings
+ */
+export const getGetListingCountUrl = () => {
+  return `/api/subscription/listing-count`;
+};
+
+export const getListingCount = async (
+  options?: RequestInit,
+): Promise<ListingCountResponse> => {
+  return customFetch<ListingCountResponse>(getGetListingCountUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetListingCountQueryKey = () => {
+  return [`/api/subscription/listing-count`] as const;
+};
+
+export const getGetListingCountQueryOptions = <
+  TData = Awaited<ReturnType<typeof getListingCount>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getListingCount>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetListingCountQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getListingCount>>> = ({
+    signal,
+  }) => getListingCount({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getListingCount>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetListingCountQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getListingCount>>
+>;
+export type GetListingCountQueryError = ErrorType<void>;
+
+/**
+ * @summary Get count of current user's active property listings
+ */
+
+export function useGetListingCount<
+  TData = Awaited<ReturnType<typeof getListingCount>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getListingCount>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetListingCountQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Subscribe to a plan (deducts from wallet)
+ */
+export const getSubscribeSubscriptionUrl = () => {
+  return `/api/subscription/subscribe`;
+};
+
+export const subscribeSubscription = async (
+  subscribeBody: SubscribeBody,
+  options?: RequestInit,
+): Promise<SubscribeResponse> => {
+  return customFetch<SubscribeResponse>(getSubscribeSubscriptionUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(subscribeBody),
+  });
+};
+
+export const getSubscribeSubscriptionMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof subscribeSubscription>>,
+    TError,
+    { data: BodyType<SubscribeBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof subscribeSubscription>>,
+  TError,
+  { data: BodyType<SubscribeBody> },
+  TContext
+> => {
+  const mutationKey = ["subscribeSubscription"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof subscribeSubscription>>,
+    { data: BodyType<SubscribeBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return subscribeSubscription(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SubscribeSubscriptionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof subscribeSubscription>>
+>;
+export type SubscribeSubscriptionMutationBody = BodyType<SubscribeBody>;
+export type SubscribeSubscriptionMutationError = ErrorType<void>;
+
+/**
+ * @summary Subscribe to a plan (deducts from wallet)
+ */
+export const useSubscribeSubscription = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof subscribeSubscription>>,
+    TError,
+    { data: BodyType<SubscribeBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof subscribeSubscription>>,
+  TError,
+  { data: BodyType<SubscribeBody> },
+  TContext
+> => {
+  return useMutation(getSubscribeSubscriptionMutationOptions(options));
+};
+
+/**
+ * @summary Disable auto-renewal for the current subscription
+ */
+export const getCancelSubscriptionUrl = () => {
+  return `/api/subscription/cancel`;
+};
+
+export const cancelSubscription = async (
+  options?: RequestInit,
+): Promise<SuccessResponse> => {
+  return customFetch<SuccessResponse>(getCancelSubscriptionUrl(), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getCancelSubscriptionMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof cancelSubscription>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof cancelSubscription>>,
+  TError,
+  void,
+  TContext
+> => {
+  const mutationKey = ["cancelSubscription"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof cancelSubscription>>,
+    void
+  > = () => {
+    return cancelSubscription(requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CancelSubscriptionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof cancelSubscription>>
+>;
+
+export type CancelSubscriptionMutationError = ErrorType<void>;
+
+/**
+ * @summary Disable auto-renewal for the current subscription
+ */
+export const useCancelSubscription = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof cancelSubscription>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof cancelSubscription>>,
+  TError,
+  void,
+  TContext
+> => {
+  return useMutation(getCancelSubscriptionMutationOptions(options));
 };

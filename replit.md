@@ -66,6 +66,49 @@ Pakistan's premier real estate marketplace built for the Lahore & Islamabad mark
 - Owner Available/Rented toggle (PATCH `/properties/:id` with `isAvailable`)
 - My Rental Inquiries tracker in localStorage
 
+### Module 14 — Subscription & Monetization System
+
+**DB: `user_subscriptions` table** — `userId`, `planId`, `billingCycle` (monthly/annual), `amountPaid`, `currency` (PKR), `startDate`, `expiryDate`, `isAutoRenew`, `status`, `txnId`. Pushed to PostgreSQL.
+
+**3 Tiers (defined server-side in `PLANS` constant, exported):**
+- **Free**: 2 listings, no badge, community support — PKR 0
+- **Premium**: 20 listings, Verified Agent Badge, 5 Hot Tags, email support — PKR 9,900/mo (PKR 100,980/yr)
+- **Sovereign**: Unlimited listings, Featured on Home, Direct Lead Notifications, 24/7 support, all badges — PKR 24,900/mo (PKR 253,980/yr)
+
+**5 new API endpoints (all on `/api/subscription/*`):**
+- `GET /subscription/plans` — public; returns all 3 plan objects with full metadata
+- `GET /subscription/me` — returns `{ planId, plan, subscription }` for auth'd user; defaults to free
+- `GET /subscription/listing-count` — count of user's properties (used for gating)
+- `POST /subscription/subscribe` — deducts from Orakzai Wallet, cancels prior active sub, creates new subscription row, records wallet transaction of type `subscription`, fires a `wealth_alert` notification via `createNotification()`
+- `POST /subscription/cancel` — sets `isAutoRenew: false` (plan remains active until expiry)
+
+**`/pricing` page (Glassmorphic Choose Your Plan):**
+- "Sovereign Plans" pill badge header + gradient headline "Choose Your Command Level"
+- Monthly/Annual toggle with −15% badge; animated price flip per cycle; annual savings shown in emerald
+- 3 glassmorphic plan cards: Free (slate border), Premium (gold border), Sovereign (glowing gold border + `RECOMMENDED` badge + elevated layout via `-mt-4`)
+- Each card: icon, tagline, animated price, CTA button (auth-gated via `<Show>`), perk list with gold/emerald check marks vs strikethrough-cross for unavailable features
+- Signed-in users see "✓ Current Plan" button on their active plan
+- Full Feature Comparison table (7 features × 3 plans) with color-coded Sovereign column
+- Footer notes: payment via wallet · cancel anytime · contact support
+
+**`/subscribe/:planId` checkout page:**
+- Back → Pricing link; auth gate (Lock icon + Sign In if not signed in)
+- "Already on this plan" state with dashboard CTA
+- Cycle toggle (Monthly/Annual with savings display)
+- Plan summary card with full perks list
+- Wallet balance fetched via direct API call — shows green "Sufficient" or rose "Top Up" link
+- Amber warning block when balance insufficient, with deposit shortfall amount
+- Gold CTA button (gradient for Sovereign) with animated spinner while processing
+- On success: invalidates subscription query cache, reduces wallet display balance, toast, redirect → `/agent/dashboard`
+
+**Feature Gating in PostProperty.tsx:**
+- `useGetSubscriptionMe()` + `useGetListingCount()` hooks called at component mount
+- `atLimit = planLimit !== -1 && listingCount >= planLimit` flag
+- On submit attempt: if `atLimit`, fires `<UpgradeGate>` modal instead of creating property
+- `<UpgradeGate>` modal: Crown icon, glowing gold border, explains the limit, "View Plans & Upgrade" button → `/pricing`, "Maybe Later" dismiss
+
+**Navbar:** "Pricing" link added to desktop nav bar and mobile menu. Removed stale `useUser` import.
+
 ### Module 13 — Notification & Alert System + Agent Dashboard
 
 **Notification & Alert System:**

@@ -20,6 +20,8 @@ tags:
     description: Down-payment booking inquiries
   - name: investment
     description: Fractional investment projects
+  - name: subscription
+    description: Agent subscription plans and billing
 
 paths:
   /healthz:
@@ -634,6 +636,97 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
+
+  /subscription/plans:
+    get:
+      operationId: getSubscriptionPlans
+      tags: [subscription]
+      summary: List all available subscription plans
+      responses:
+        "200":
+          description: Plans list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SubscriptionPlan"
+
+  /subscription/me:
+    get:
+      operationId: getSubscriptionMe
+      tags: [subscription]
+      summary: Get the current user's active subscription and plan
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Subscription status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubscriptionMeResponse"
+        "401":
+          description: Unauthorized
+
+  /subscription/listing-count:
+    get:
+      operationId: getListingCount
+      tags: [subscription]
+      summary: Get count of current user's active property listings
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Listing count
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListingCountResponse"
+        "401":
+          description: Unauthorized
+
+  /subscription/subscribe:
+    post:
+      operationId: subscribeSubscription
+      tags: [subscription]
+      summary: Subscribe to a plan (deducts from wallet)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubscribeBody"
+      responses:
+        "200":
+          description: Subscription activated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubscribeResponse"
+        "400":
+          description: Insufficient balance or invalid plan
+        "401":
+          description: Unauthorized
+
+  /subscription/cancel:
+    post:
+      operationId: cancelSubscription
+      tags: [subscription]
+      summary: Disable auto-renewal for the current subscription
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Auto-renewal disabled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "401":
+          description: Unauthorized
 
 components:
   schemas:
@@ -1485,6 +1578,104 @@ components:
         - propertyTitle
         - source
         - createdAt
+
+    SubscriptionPlan:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        monthlyPkr:
+          type: number
+        annualPkr:
+          type: number
+        listingLimit:
+          type: integer
+        hotTags:
+          type: integer
+        verifiedBadge:
+          type: boolean
+        featuredHome:
+          type: boolean
+        directLeads:
+          type: boolean
+        support:
+          type: string
+        perks:
+          type: array
+          items:
+            type: string
+      required: [id, name, monthlyPkr, annualPkr, listingLimit, hotTags, verifiedBadge, featuredHome, directLeads, support, perks]
+
+    UserSubscription:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        planId:
+          type: string
+        billingCycle:
+          type: string
+        amountPaid:
+          type: string
+        currency:
+          type: string
+        startDate:
+          type: string
+        expiryDate:
+          type: string
+        isAutoRenew:
+          type: boolean
+        status:
+          type: string
+        txnId:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+      required: [id, userId, planId, billingCycle, amountPaid, currency, startDate, expiryDate, isAutoRenew, status, createdAt]
+
+    SubscriptionMeResponse:
+      type: object
+      properties:
+        planId:
+          type: string
+        plan:
+          $ref: "#/components/schemas/SubscriptionPlan"
+        subscription:
+          oneOf:
+            - $ref: "#/components/schemas/UserSubscription"
+            - type: "null"
+      required: [planId, plan, subscription]
+
+    SubscribeBody:
+      type: object
+      properties:
+        planId:
+          type: string
+        billingCycle:
+          type: string
+      required: [planId, billingCycle]
+
+    SubscribeResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        subscription:
+          $ref: "#/components/schemas/UserSubscription"
+        newBalance:
+          type: string
+      required: [success, subscription, newBalance]
+
+    ListingCountResponse:
+      type: object
+      properties:
+        count:
+          type: integer
+      required: [count]
 
     AgentProfile:
       type: object
