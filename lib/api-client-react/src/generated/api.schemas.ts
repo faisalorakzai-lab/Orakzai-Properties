@@ -411,6 +411,57 @@ export interface AgentLead {
   createdAt: string;
 }
 
+export interface SubscriptionPlan {
+  id: string;
+  name: string;
+  monthlyPkr: number;
+  annualPkr: number;
+  listingLimit: number;
+  hotTags: number;
+  verifiedBadge: boolean;
+  featuredHome: boolean;
+  directLeads: boolean;
+  support: string;
+  perks: string[];
+}
+
+export interface UserSubscription {
+  id: number;
+  userId: string;
+  planId: string;
+  billingCycle: string;
+  amountPaid: string;
+  currency: string;
+  startDate: string;
+  expiryDate: string;
+  isAutoRenew: boolean;
+  status: string;
+  /** @nullable */
+  txnId?: string | null;
+  createdAt: string;
+}
+
+export interface SubscriptionMeResponse {
+  planId: string;
+  plan: SubscriptionPlan;
+  subscription: UserSubscription | null;
+}
+
+export interface SubscribeBody {
+  planId: string;
+  billingCycle: string;
+}
+
+export interface SubscribeResponse {
+  success: boolean;
+  subscription: UserSubscription;
+  newBalance: string;
+}
+
+export interface ListingCountResponse {
+  count: number;
+}
+
 export interface AgentProfile {
   userId: string;
   /** @nullable */

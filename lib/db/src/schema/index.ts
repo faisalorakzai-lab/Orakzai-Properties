@@ -14,3 +14,4 @@ export * from "./notification_settings";
 export * from "./agent_profiles";
 export * from "./property_leads";
 export * from "./push_subscriptions";
+export * from "./user_subscriptions";
