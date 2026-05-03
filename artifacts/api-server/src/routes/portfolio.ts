@@ -5,8 +5,9 @@ import {
   userPortfoliosTable,
   investmentsLedgerTable,
   investmentProjectsTable,
+  walletsTable,
 } from "@workspace/db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 const router = Router();
@@ -18,6 +19,147 @@ const requireAuth = (req: any, res: any, next: any) => {
   req.userId = userId;
   next();
 };
+
+/* ─────────────────────────────────────────────────────────
+   GET /portfolio/dashboard  — aggregated investor dashboard
+───────────────────────────────────────────────────────── */
+router.get("/portfolio/dashboard", requireAuth, async (req: any, res) => {
+  try {
+    const userId = req.userId as string;
+
+    // 1. Wallet balance
+    let walletBalance = 0;
+    let walletCurrency = "PKR";
+    const [wallet] = await db.select().from(walletsTable).where(eq(walletsTable.userId, userId)).limit(1);
+    if (wallet) {
+      walletBalance = parseFloat(wallet.balance);
+      walletCurrency = wallet.currency;
+    }
+
+    // 2. Portfolio positions
+    const portfolioRows = await db
+      .select()
+      .from(userPortfoliosTable)
+      .where(eq(userPortfoliosTable.userId, userId));
+
+    const positions = (await Promise.all(
+      portfolioRows.map(async (row) => {
+        const [project] = await db
+          .select()
+          .from(investmentProjectsTable)
+          .where(eq(investmentProjectsTable.id, row.projectId));
+        if (!project) return null;
+
+        const sharePrice = parseFloat(project.totalValue) / project.totalShares;
+        const currentValue = sharePrice * row.totalShares;
+        const totalInvested = parseFloat(row.totalInvested);
+        const gain = currentValue - totalInvested;
+        const gainPct = totalInvested > 0 ? (gain / totalInvested) * 100 : 0;
+
+        const roiMatch = project.roi.match(/(\d+(\.\d+)?)/);
+        const roiPct = roiMatch ? parseFloat(roiMatch[1]) : 15;
+        const projectedMonthlyRoi = (totalInvested * (roiPct / 100)) / 12;
+
+        return {
+          portfolioId: row.id,
+          projectId: row.projectId,
+          projectTitle: project.title,
+          projectLocation: project.location,
+          projectStatus: project.status,
+          projectType: project.type,
+          roi: project.roi,
+          duration: project.duration,
+          totalShares: row.totalShares,
+          totalProjectShares: project.totalShares,
+          totalInvested,
+          currentValue,
+          sharePrice,
+          gain,
+          gainPct,
+          projectedMonthlyRoi,
+          updatedAt: row.updatedAt instanceof Date ? row.updatedAt.toISOString() : row.updatedAt,
+        };
+      }),
+    )).filter(Boolean) as any[];
+
+    // 3. Summary
+    const totalAssets = positions.reduce((s, p) => s + p.currentValue, 0);
+    const investedCapital = positions.reduce((s, p) => s + p.totalInvested, 0);
+    const unrealizedPnL = totalAssets - investedCapital;
+    const unrealizedPnLPct = investedCapital > 0 ? (unrealizedPnL / investedCapital) * 100 : 0;
+    const projectedAnnualIncome = positions.reduce((s, p) => s + p.projectedMonthlyRoi * 12, 0);
+    const totalShares = positions.reduce((s, p) => s + p.totalShares, 0);
+
+    // 4. Investment ledger (last 30 entries)
+    const ledgerRows = await db
+      .select()
+      .from(investmentsLedgerTable)
+      .where(eq(investmentsLedgerTable.userId, userId))
+      .orderBy(desc(investmentsLedgerTable.createdAt))
+      .limit(30);
+
+    const projectCache: Record<number, any> = {};
+    const ledger = await Promise.all(
+      ledgerRows.map(async (row) => {
+        if (!projectCache[row.projectId]) {
+          const [proj] = await db.select().from(investmentProjectsTable).where(eq(investmentProjectsTable.id, row.projectId));
+          projectCache[row.projectId] = proj;
+        }
+        const proj = projectCache[row.projectId];
+        const sharePrice = proj ? parseFloat(proj.totalValue) / proj.totalShares : 0;
+        return {
+          transactionId: row.transactionId,
+          projectId: row.projectId,
+          projectTitle: proj?.title ?? "Unknown Project",
+          sharesBought: row.sharesBought,
+          amountPaid: parseFloat(row.amountPaid),
+          sharePrice,
+          status: row.status,
+          createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : row.createdAt,
+        };
+      }),
+    );
+
+    // 5. 6-month performance history (cumulative portfolio value)
+    const now = new Date();
+    const performanceHistory = Array.from({ length: 6 }, (_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+      const label = d.toLocaleDateString("en-PK", { month: "short", year: "2-digit" });
+
+      // sum invested up to end of that month
+      const monthEnd = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
+      const investedSoFar = ledgerRows
+        .filter(r => new Date(r.createdAt) <= monthEnd)
+        .reduce((s, r) => s + parseFloat(r.amountPaid), 0);
+
+      // apply a modest simulated growth curve: each month prior has a small discount
+      const monthsAgo = 5 - i;
+      const growthFactor = 1 + (unrealizedPnLPct / 100) * ((6 - monthsAgo) / 6);
+      const value = investedSoFar * Math.max(growthFactor, 1);
+
+      return { month: label, value: Math.round(value), invested: Math.round(investedSoFar) };
+    });
+
+    res.json({
+      wallet: { balance: walletBalance, currency: walletCurrency },
+      summary: {
+        totalAssets: Math.round(totalAssets * 100) / 100,
+        investedCapital: Math.round(investedCapital * 100) / 100,
+        unrealizedPnL: Math.round(unrealizedPnL * 100) / 100,
+        unrealizedPnLPct: Math.round(unrealizedPnLPct * 100) / 100,
+        projectedAnnualIncome: Math.round(projectedAnnualIncome * 100) / 100,
+        totalPositions: positions.length,
+        totalShares,
+      },
+      positions,
+      ledger,
+      performanceHistory,
+    });
+  } catch (err) {
+    req.log.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 router.post("/investment-projects/:id/invest", requireAuth, async (req: any, res) => {
   try {

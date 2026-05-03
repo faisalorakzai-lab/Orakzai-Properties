@@ -483,3 +483,62 @@ export const GetMyPortfolioResponseItem = zod.object({
   updatedAt: zod.string(),
 });
 export const GetMyPortfolioResponse = zod.array(GetMyPortfolioResponseItem);
+
+/**
+ * @summary Aggregated investor dashboard with wallet, positions, ledger, and performance history
+ */
+export const GetPortfolioDashboardResponse = zod.object({
+  wallet: zod.object({
+    balance: zod.number(),
+    currency: zod.string(),
+  }),
+  summary: zod.object({
+    totalAssets: zod.number(),
+    investedCapital: zod.number(),
+    unrealizedPnL: zod.number(),
+    unrealizedPnLPct: zod.number(),
+    projectedAnnualIncome: zod.number(),
+    totalPositions: zod.number(),
+    totalShares: zod.number(),
+  }),
+  positions: zod.array(
+    zod.object({
+      portfolioId: zod.number(),
+      projectId: zod.number(),
+      projectTitle: zod.string(),
+      projectLocation: zod.string(),
+      projectStatus: zod.string(),
+      projectType: zod.string(),
+      roi: zod.string(),
+      duration: zod.string(),
+      totalShares: zod.number(),
+      totalProjectShares: zod.number(),
+      totalInvested: zod.number(),
+      currentValue: zod.number(),
+      sharePrice: zod.number(),
+      gain: zod.number(),
+      gainPct: zod.number(),
+      projectedMonthlyRoi: zod.number(),
+      updatedAt: zod.string(),
+    }),
+  ),
+  ledger: zod.array(
+    zod.object({
+      transactionId: zod.string(),
+      projectId: zod.number(),
+      projectTitle: zod.string(),
+      sharesBought: zod.number(),
+      amountPaid: zod.number(),
+      sharePrice: zod.number(),
+      status: zod.string(),
+      createdAt: zod.string(),
+    }),
+  ),
+  performanceHistory: zod.array(
+    zod.object({
+      month: zod.string(),
+      value: zod.number(),
+      invested: zod.number(),
+    }),
+  ),
+});

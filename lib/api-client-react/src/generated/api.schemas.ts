@@ -240,6 +240,66 @@ export interface InvestmentTransaction {
   portfolio: InvestmentTransactionPortfolio;
 }
 
+export interface PerformancePoint {
+  month: string;
+  value: number;
+  invested: number;
+}
+
+export interface LedgerItem {
+  transactionId: string;
+  projectId: number;
+  projectTitle: string;
+  sharesBought: number;
+  amountPaid: number;
+  sharePrice: number;
+  status: string;
+  createdAt: string;
+}
+
+export interface PortfolioPosition {
+  portfolioId: number;
+  projectId: number;
+  projectTitle: string;
+  projectLocation: string;
+  projectStatus: string;
+  projectType: string;
+  roi: string;
+  duration: string;
+  totalShares: number;
+  totalProjectShares: number;
+  totalInvested: number;
+  currentValue: number;
+  sharePrice: number;
+  gain: number;
+  gainPct: number;
+  projectedMonthlyRoi: number;
+  updatedAt: string;
+}
+
+export type PortfolioDashboardWallet = {
+  balance: number;
+  currency: string;
+};
+
+export type PortfolioDashboardSummary = {
+  totalAssets: number;
+  investedCapital: number;
+  unrealizedPnL: number;
+  unrealizedPnLPct: number;
+  projectedAnnualIncome: number;
+  totalPositions: number;
+  totalShares: number;
+};
+
+export interface PortfolioDashboard {
+  wallet: PortfolioDashboardWallet;
+  summary: PortfolioDashboardSummary;
+  positions: PortfolioPosition[];
+  ledger: LedgerItem[];
+  performanceHistory: PerformancePoint[];
+}
+
 export interface PortfolioItem {
   portfolioId: number;
   projectId: number;
