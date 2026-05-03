@@ -10,7 +10,7 @@ import {
 import { eq, desc, and, count, sql } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import { createNotification } from "./notifications";
-import { broadcastToUser } from "../index";
+import { broadcastToUser } from "../lib/ws";
 
 const router = Router();
 
