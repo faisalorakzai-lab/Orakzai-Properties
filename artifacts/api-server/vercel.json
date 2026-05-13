@@ -1,15 +1,7 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "src/app.ts",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "src/app.ts"
-    }
-  ]
+  "buildCommand": "pnpm build",
+  "installCommand": "pnpm install",
+  "framework": "express",
+  "rootDirectory": "artifacts/api-server"
 }
