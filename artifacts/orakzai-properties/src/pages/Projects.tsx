@@ -9,7 +9,7 @@ import {
   Sparkles,
   ArrowUpRight,
 } from "lucide-react";
-import { useGetInvestmentProjects } from "@workspace/api-client-react";
+import { useListInvestmentProjects } from "@workspace/api-client-react";
 
 const GOLD = "#D4AF37";
 const BG = "#050505";
@@ -21,7 +21,7 @@ function formatPKR(n: number) {
 }
 
 export default function Projects() {
-  const { data: projects } = useGetInvestmentProjects();
+  const { data: projects } = useListInvestmentProjects();
 
   const items = projects ?? [];
 
