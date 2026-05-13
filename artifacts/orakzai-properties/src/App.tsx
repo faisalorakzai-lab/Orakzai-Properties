@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Switch, Route, Router as WouterRouter, Redirect, useLocation } from "wouter";
+import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -23,6 +23,10 @@ import NotificationSettings from "@/pages/NotificationSettings";
 import AgentDashboard from "@/pages/AgentDashboard";
 import Pricing from "@/pages/Pricing";
 import Subscribe from "@/pages/Subscribe";
+import Profile from "@/pages/Profile";
+import Trades from "@/pages/Trades";
+import Projects from "@/pages/Projects";
+import BottomNav from "@/components/BottomNav";
 
 const queryClient = new QueryClient();
 
@@ -50,41 +54,41 @@ const clerkAppearance = {
     logoImageUrl: `${window.location.origin}${basePath}/logo.svg`,
   },
   variables: {
-    colorPrimary: "#C9A84C",
+    colorPrimary: "#D4AF37",
     colorForeground: "#f1f5f9",
     colorMutedForeground: "#94a3b8",
     colorDanger: "#ef4444",
-    colorBackground: "#0f1929",
-    colorInput: "#1a2940",
+    colorBackground: "#050505",
+    colorInput: "#111111",
     colorInputForeground: "#f1f5f9",
-    colorNeutral: "#1e3a5f",
+    colorNeutral: "#1a1a1a",
     fontFamily: "'Plus Jakarta Sans', sans-serif",
     borderRadius: "0.5rem",
   },
   elements: {
     rootBox: "w-full flex justify-center",
-    cardBox: "bg-[#0f1929] border border-[#C9A84C]/30 rounded-2xl w-[440px] max-w-full overflow-hidden shadow-2xl shadow-[#C9A84C]/10",
+    cardBox: "bg-[#050505] border border-[#D4AF37]/30 rounded-2xl w-[440px] max-w-full overflow-hidden shadow-2xl shadow-[#D4AF37]/10",
     card: "!shadow-none !border-0 !bg-transparent !rounded-none",
     footer: "!shadow-none !border-0 !bg-transparent !rounded-none",
     headerTitle: "text-[#f1f5f9] font-serif",
     headerSubtitle: "text-[#94a3b8]",
     socialButtonsBlockButtonText: "text-[#f1f5f9]",
     formFieldLabel: "text-[#94a3b8]",
-    footerActionLink: "text-[#C9A84C] hover:text-[#e8c060]",
+    footerActionLink: "text-[#D4AF37] hover:text-[#e8c060]",
     footerActionText: "text-[#94a3b8]",
     dividerText: "text-[#94a3b8]",
-    identityPreviewEditButton: "text-[#C9A84C]",
+    identityPreviewEditButton: "text-[#D4AF37]",
     formFieldSuccessText: "text-green-400",
     alertText: "text-red-300",
     logoBox: "flex justify-center mb-4",
     logoImage: "h-12",
-    socialButtonsBlockButton: "border-[#1e3a5f] bg-[#1a2940] hover:bg-[#1e3a5f] text-[#f1f5f9]",
-    formButtonPrimary: "bg-[#C9A84C] hover:bg-[#e8c060] text-[#0f1929] font-semibold",
-    formFieldInput: "bg-[#1a2940] border-[#1e3a5f] text-[#f1f5f9]",
-    footerAction: "bg-[#0a1220]",
-    dividerLine: "bg-[#1e3a5f]",
-    alert: "bg-[#1a2940] border-red-500/30",
-    otpCodeFieldInput: "bg-[#1a2940] border-[#C9A84C] text-[#f1f5f9]",
+    socialButtonsBlockButton: "border-[#1a1a1a] bg-[#111111] hover:bg-[#1a1a1a] text-[#f1f5f9]",
+    formButtonPrimary: "bg-[#D4AF37] hover:bg-[#e8c060] text-[#050505] font-semibold",
+    formFieldInput: "bg-[#111111] border-[#1a1a1a] text-[#f1f5f9]",
+    footerAction: "bg-[#020202]",
+    dividerLine: "bg-[#1a1a1a]",
+    alert: "bg-[#111111] border-red-500/30",
+    otpCodeFieldInput: "bg-[#111111] border-[#D4AF37] text-[#f1f5f9]",
     formFieldRow: "",
     main: "",
   },
@@ -138,6 +142,14 @@ function ClerkQueryClientCacheInvalidator() {
   return null;
 }
 
+function HideBottomNavOnAuthPages() {
+  const [location] = useLocation();
+  const hideOn = ["/sign-in", "/sign-up"];
+  const hidden = hideOn.some((p) => location.startsWith(p));
+  if (hidden) return null;
+  return <BottomNav />;
+}
+
 function ClerkProviderWithRoutes() {
   const [, setLocation] = useLocation();
 
@@ -175,10 +187,14 @@ function ClerkProviderWithRoutes() {
             <Route path="/agent/dashboard" component={AgentDashboard} />
             <Route path="/pricing" component={Pricing} />
             <Route path="/subscribe/:planId" component={Subscribe} />
+            <Route path="/profile" component={Profile} />
+            <Route path="/trades" component={Trades} />
+            <Route path="/projects" component={Projects} />
             <Route path="/sign-in/*?" component={SignInPage} />
             <Route path="/sign-up/*?" component={SignUpPage} />
             <Route component={NotFound} />
           </Switch>
+          <HideBottomNavOnAuthPages />
           <Toaster />
         </TooltipProvider>
       </QueryClientProvider>
