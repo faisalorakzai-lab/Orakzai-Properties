@@ -9,47 +9,19 @@ import {
   Award,
   Star,
   HardHat,
+  CheckCircle2,
+  Clock,
+  XCircle,
 } from "lucide-react";
 import { useUser, Show } from "@clerk/react";
+import { useKYCStatus } from "@/lib/useKYCStatus";
 
 const GOLD = "#D4AF37";
 const BG = "#050505";
 
-const menuItems = [
-  {
-    id: "kyc",
-    icon: Shield,
-    label: "KYC Verification",
-    subtitle: "Identity & documents",
-    badge: "Verified",
-    badgeColor: "#10b981",
-    href: "/kyc",
-  },
-  {
-    id: "properties",
-    icon: Home,
-    label: "My Properties",
-    subtitle: "Owned & listed assets",
-    href: "/my-properties",
-  },
-  {
-    id: "trade-history",
-    icon: BarChart2,
-    label: "Trade History",
-    subtitle: "All transactions & orders",
-    href: "/wallet",
-  },
-  {
-    id: "security",
-    icon: Lock,
-    label: "Security",
-    subtitle: "2FA, passwords, sessions",
-    href: "/security",
-  },
-];
-
 export default function Profile() {
   const { user } = useUser();
+  const { kycStatus, loading: kycLoading } = useKYCStatus();
 
   const displayName = user?.fullName ?? user?.firstName ?? "Faisal Orakzai";
   const email = user?.primaryEmailAddress?.emailAddress ?? "faisal@orakzaiproperties.com";
@@ -59,6 +31,47 @@ export default function Profile() {
     .join("")
     .toUpperCase()
     .slice(0, 2);
+
+  const kycBadge = (() => {
+    if (kycLoading) return null;
+    if (kycStatus === "approved") return { label: "KYC Verified", color: "#10b981", icon: CheckCircle2 };
+    if (kycStatus === "pending_review") return { label: "KYC Pending", color: "#f59e0b", icon: Clock };
+    if (kycStatus === "rejected") return { label: "KYC Rejected", color: "#ef4444", icon: XCircle };
+    return { label: "KYC Required", color: "rgba(255,255,255,0.3)", icon: Shield };
+  })();
+
+  const menuItems = [
+    {
+      id: "kyc",
+      icon: Shield,
+      label: "KYC Verification",
+      subtitle: "Identity & documents",
+      badge: kycStatus === "approved" ? "Verified" : kycStatus === "pending_review" ? "Pending" : kycStatus === "rejected" ? "Rejected" : undefined,
+      badgeColor: kycStatus === "approved" ? "#10b981" : kycStatus === "pending_review" ? "#f59e0b" : kycStatus === "rejected" ? "#ef4444" : undefined,
+      href: "/kyc",
+    },
+    {
+      id: "properties",
+      icon: Home,
+      label: "My Properties",
+      subtitle: "Owned & listed assets",
+      href: "/my-properties",
+    },
+    {
+      id: "trade-history",
+      icon: BarChart2,
+      label: "Trade History",
+      subtitle: "All transactions & orders",
+      href: "/wallet",
+    },
+    {
+      id: "security",
+      icon: Lock,
+      label: "Security",
+      subtitle: "2FA, passwords, sessions",
+      href: "/security",
+    },
+  ];
 
   return (
     <div
@@ -115,7 +128,7 @@ export default function Profile() {
             textAlign: "center",
           }}
         >
-          {/* Avatar */}
+          {/* Avatar with gold border if verified */}
           <motion.div
             initial={{ scale: 0.85, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -125,19 +138,41 @@ export default function Profile() {
               height: 88,
               borderRadius: "50%",
               background: `linear-gradient(135deg, rgba(212,175,55,0.25) 0%, rgba(212,175,55,0.08) 100%)`,
-              border: `2px solid ${GOLD}`,
+              border: kycStatus === "approved" ? `3px solid ${GOLD}` : `2px solid ${GOLD}`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               margin: "0 auto 16px",
-              boxShadow: `0 0 32px rgba(212,175,55,0.25)`,
+              boxShadow: kycStatus === "approved"
+                ? `0 0 32px rgba(212,175,55,0.45), 0 0 64px rgba(212,175,55,0.15)`
+                : `0 0 32px rgba(212,175,55,0.25)`,
               fontSize: 28,
               fontWeight: 700,
               color: GOLD,
               fontFamily: "'Playfair Display', serif",
+              position: "relative",
             }}
           >
             {initials}
+            {/* Gold tick overlay for verified users */}
+            {kycStatus === "approved" && (
+              <div style={{
+                position: "absolute",
+                bottom: -4,
+                right: -4,
+                width: 26,
+                height: 26,
+                borderRadius: "50%",
+                background: `linear-gradient(135deg, ${GOLD} 0%, #c49b28 100%)`,
+                border: "2px solid #050505",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: `0 0 10px rgba(212,175,55,0.6)`,
+              }}>
+                <CheckCircle2 size={14} color="#050505" strokeWidth={3} />
+              </div>
+            )}
           </motion.div>
 
           {/* Name */}
@@ -174,12 +209,45 @@ export default function Profile() {
             <Show when="signed-out">faisal@orakzaiproperties.com</Show>
           </motion.p>
 
+          {/* KYC Status Badge */}
+          {kycBadge && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.18 }}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "5px 12px",
+                borderRadius: 999,
+                background: `${kycBadge.color}18`,
+                border: `1px solid ${kycBadge.color}40`,
+                color: kycBadge.color,
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: "0.04em",
+                textTransform: "uppercase",
+                marginBottom: 8,
+              }}
+            >
+              <kycBadge.icon size={11} />
+              {kycBadge.label}
+              {kycStatus === "approved" && <Star size={10} style={{ fill: kycBadge.color }} />}
+            </motion.div>
+          )}
+
           {/* Institutional Badge */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 }}
+            transition={{ delay: 0.22 }}
             style={{
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <div style={{
               display: "inline-flex",
               alignItems: "center",
               gap: 6,
@@ -192,11 +260,11 @@ export default function Profile() {
               fontWeight: 700,
               letterSpacing: "0.06em",
               textTransform: "uppercase",
-            }}
-          >
-            <Star size={12} style={{ fill: GOLD, color: GOLD }} />
-            Institutional Investor
-            <Award size={12} />
+            }}>
+              <Star size={12} style={{ fill: GOLD, color: GOLD }} />
+              Institutional Investor
+              <Award size={12} />
+            </div>
           </motion.div>
         </div>
 
@@ -321,7 +389,7 @@ export default function Profile() {
                     </div>
 
                     {/* Badge */}
-                    {item.badge && (
+                    {item.badge && item.badgeColor && (
                       <div
                         style={{
                           position: "absolute",
@@ -336,8 +404,14 @@ export default function Profile() {
                           padding: "2px 7px",
                           letterSpacing: "0.04em",
                           textTransform: "uppercase",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 3,
                         }}
                       >
+                        {item.id === "kyc" && kycStatus === "approved" && (
+                          <CheckCircle2 size={8} />
+                        )}
                         {item.badge}
                       </div>
                     )}

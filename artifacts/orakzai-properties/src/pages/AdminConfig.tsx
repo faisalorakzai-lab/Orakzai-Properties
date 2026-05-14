@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
+import { useUser } from "@clerk/react";
 import { adminSetABP, getABP, initEngine } from "@/lib/priceEngine";
-import { Shield, CheckCircle, AlertCircle } from "lucide-react";
+import { Shield, CheckCircle, AlertCircle, Users, ChevronRight } from "lucide-react";
 
 const GOLD = "#F3BA2F";
 const BG   = "#0B0E11";
@@ -10,6 +12,8 @@ const GREEN = "#0ECB81";
 const RED   = "#F6465D";
 const FG    = "#EAECEF";
 const DIM   = "#848E9C";
+
+const ADMIN_EMAIL = "faisal@orakzaibond.com";
 
 const ASSETS = [
   { ticker: "ASC",  name: "Azan Smart City",    defaultPrice: 1.2400 },
@@ -21,11 +25,21 @@ const ASSETS = [
 ];
 
 export default function AdminConfig() {
+  const { user, isLoaded } = useUser();
+  const [, setLocation] = useLocation();
   const [selected, setSelected] = useState(ASSETS[0]);
   const [newPrice, setNewPrice] = useState("");
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [currentABP, setCurrentABP] = useState(0);
   const [history, setHistory] = useState<{ticker: string; price: number; time: string}[]>([]);
+
+  const isAdmin = user?.primaryEmailAddress?.emailAddress === ADMIN_EMAIL;
+
+  useEffect(() => {
+    if (isLoaded && !isAdmin) {
+      setLocation("/");
+    }
+  }, [isLoaded, isAdmin, setLocation]);
 
   useEffect(() => {
     ASSETS.forEach(a => initEngine(a.ticker, a.defaultPrice));
@@ -43,6 +57,20 @@ export default function AdminConfig() {
     setTimeout(() => setStatus("idle"), 2500);
   };
 
+  if (!isLoaded) return null;
+
+  if (!isAdmin) {
+    return (
+      <div style={{ minHeight: "100dvh", background: BG, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center", padding: 32 }}>
+          <AlertCircle size={48} color={RED} style={{ marginBottom: 16 }} />
+          <div style={{ color: FG, fontWeight: 700, fontSize: 18 }}>Access Denied</div>
+          <div style={{ color: DIM, fontSize: 13, marginTop: 8 }}>Admin access only</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ minHeight: "100dvh", background: BG, color: FG, fontFamily: "'Inter', sans-serif", paddingBottom: 40 }}>
       {/* Header */}
@@ -51,8 +79,8 @@ export default function AdminConfig() {
           <Shield size={16} color={GOLD} />
         </div>
         <div>
-          <div style={{ fontWeight: 800, fontSize: 16, color: FG }}>Admin Price Controller</div>
-          <div style={{ fontSize: 11, color: DIM }}>Orakzai Properties · Hidden Route</div>
+          <div style={{ fontWeight: 800, fontSize: 16, color: FG }}>Admin Panel</div>
+          <div style={{ fontSize: 11, color: DIM }}>Orakzai Properties · Admin Only</div>
         </div>
         <div style={{ marginLeft: "auto", background: "rgba(243,186,47,0.1)", border: `1px solid rgba(243,186,47,0.25)`, borderRadius: 6, padding: "3px 10px", fontSize: 10, color: GOLD, fontWeight: 700 }}>
           ADMIN
@@ -60,6 +88,35 @@ export default function AdminConfig() {
       </div>
 
       <div style={{ padding: "16px", maxWidth: 480, margin: "0 auto" }}>
+
+        {/* ── KYC Management Link ── */}
+        <div
+          onClick={() => setLocation("/admin/kyc")}
+          style={{
+            background: CARD,
+            border: `1px solid ${BORD}`,
+            borderRadius: 12,
+            padding: "16px",
+            marginBottom: 16,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+            transition: "border-color 0.15s",
+          }}
+          onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = `${GOLD}50`}
+          onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = BORD}
+        >
+          <div style={{ width: 40, height: 40, borderRadius: 10, background: "rgba(243,186,47,0.12)", border: `1px solid rgba(243,186,47,0.25)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Users size={18} color={GOLD} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 700, fontSize: 14, color: FG }}>KYC Management</div>
+            <div style={{ fontSize: 11, color: DIM, marginTop: 2 }}>Review, approve or reject user KYC submissions</div>
+          </div>
+          <ChevronRight size={16} color={DIM} />
+        </div>
+
         {/* Warning banner */}
         <div style={{ background: "rgba(246,70,93,0.08)", border: `1px solid rgba(246,70,93,0.25)`, borderRadius: 8, padding: "10px 14px", marginBottom: 16, fontSize: 11, color: "#FF8090" }}>
           ⚠️ Changes push immediately to the live market. ABP update creates a Gap Candle on all active charts.

@@ -3,7 +3,7 @@ import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ClerkProvider, SignIn, SignUp, useClerk } from "@clerk/react";
+import { ClerkProvider, SignIn, SignUp, useClerk, useUser } from "@clerk/react";
 import { publishableKeyFromHost } from "@clerk/react/internal";
 import { shadcn } from "@clerk/themes";
 import NotFound from "@/pages/not-found";
@@ -28,6 +28,7 @@ import Trades from "@/pages/Trades";
 import Projects from "@/pages/Projects";
 import KYC from "@/pages/KYC";
 import AdminConfig from "@/pages/AdminConfig";
+import AdminKYC from "@/pages/AdminKYC";
 import TradingPortfolio from "@/pages/TradingPortfolio";
 import BottomNav from "@/components/BottomNav";
 
@@ -39,16 +40,24 @@ const queryClient = new QueryClient({
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-// Safe key resolution — never throws, returns null if unavailable
+// Resolve Clerk publishable key
+const HARDCODED_CLERK_KEY = "pk_test_cG93ZXJmdWwtYmVlLTUwLmNsZXJrLmFjY291bnRzLmRldiQ";
+
 let clerkPubKey: string | null = null;
 try {
-  const k = publishableKeyFromHost(
-    window.location.hostname,
-    import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
-  );
-  if (k && k.startsWith("pk_")) clerkPubKey = k;
+  const envKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string | undefined;
+  const keyToTry = envKey || HARDCODED_CLERK_KEY;
+  if (keyToTry && keyToTry.startsWith("pk_")) {
+    clerkPubKey = keyToTry;
+  } else {
+    const k = publishableKeyFromHost(
+      window.location.hostname,
+      keyToTry,
+    );
+    if (k && k.startsWith("pk_")) clerkPubKey = k;
+  }
 } catch {
-  clerkPubKey = null;
+  clerkPubKey = HARDCODED_CLERK_KEY;
 }
 
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL as string | undefined;
@@ -99,7 +108,6 @@ const clerkAppearance = {
 };
 
 function SignInPage() {
-  const [, setLocation] = useLocation();
   return (
     <div style={{ minHeight: "100dvh", background: "#070B14", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
       <SignIn
@@ -129,11 +137,53 @@ function SignUpPage() {
   );
 }
 
+// Auth Guard — redirects unauthenticated users to sign-in
+function AuthGuard({ children }: { children: React.ReactNode }) {
+  const { isLoaded, isSignedIn } = useUser();
+  const [location, setLocation] = useLocation();
+
+  const publicPaths = ["/sign-in", "/sign-up"];
+  const isPublic = publicPaths.some(p => location.startsWith(p));
+
+  useEffect(() => {
+    if (isLoaded && !isSignedIn && !isPublic) {
+      setLocation("/sign-in");
+    }
+  }, [isLoaded, isSignedIn, isPublic, location, setLocation]);
+
+  if (!isLoaded) {
+    return (
+      <div style={{
+        minHeight: "100dvh",
+        background: "#070B14",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}>
+        <div style={{
+          width: 40,
+          height: 40,
+          borderRadius: "50%",
+          border: "3px solid rgba(243,186,47,0.3)",
+          borderTop: "3px solid #F3BA2F",
+          animation: "spin 0.9s linear infinite",
+        }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+
+  if (!isSignedIn && !isPublic) return null;
+
+  return <>{children}</>;
+}
+
 function HideBottomNavOnAuthPages() {
   const [location] = useLocation();
+  const { isSignedIn } = useUser();
   const hideOn = ["/sign-in", "/sign-up"];
   const hidden = hideOn.some((p) => location.startsWith(p));
-  if (hidden) return null;
+  if (hidden || !isSignedIn) return null;
   return <BottomNav />;
 }
 
@@ -179,6 +229,7 @@ const appRoutes = (
     <Route path="/projects" component={Projects} />
     <Route path="/kyc" component={KYC} />
     <Route path="/admin/config" component={AdminConfig} />
+    <Route path="/admin/kyc" component={AdminKYC} />
     <Route path="/trading-portfolio" component={TradingPortfolio} />
     <Route path="/sign-in/*?" component={SignInPage} />
     <Route path="/sign-up/*?" component={SignUpPage} />
@@ -206,8 +257,10 @@ function AppWithClerk() {
       <QueryClientProvider client={queryClient}>
         <ClerkQueryClientCacheInvalidator />
         <TooltipProvider>
-          {appRoutes}
-          <HideBottomNavOnAuthPages />
+          <AuthGuard>
+            {appRoutes}
+            <HideBottomNavOnAuthPages />
+          </AuthGuard>
           <Toaster />
         </TooltipProvider>
       </QueryClientProvider>
@@ -220,7 +273,7 @@ function AppWithoutClerk() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         {appRoutes}
-        <HideBottomNavOnAuthPages />
+        <BottomNav />
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>

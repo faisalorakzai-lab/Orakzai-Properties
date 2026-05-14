@@ -14,10 +14,9 @@ import {
   CheckCircle2,
   Clock,
   X,
-  Eye,
-  EyeOff,
 } from "lucide-react";
 import { useUser } from "@clerk/react";
+import { submitKYC } from "@/lib/supabase";
 
 const GOLD = "#D4AF37";
 const BG = "#050505";
@@ -37,6 +36,13 @@ const DOC_TYPES = [
   { value: "cnic", label: "CNIC (National ID Card)" },
   { value: "passport", label: "Passport" },
   { value: "driving_license", label: "Driving License" },
+];
+
+const COUNTRIES = [
+  "Pakistan", "United Arab Emirates", "Saudi Arabia", "United Kingdom",
+  "United States", "Canada", "Australia", "Germany", "France",
+  "Turkey", "Qatar", "Kuwait", "Bahrain", "Oman", "Malaysia",
+  "China", "India", "Afghanistan", "Other",
 ];
 
 function ProgressBar({ step, total }: { step: number; total: number }) {
@@ -221,6 +227,31 @@ function FileUploadZone({
   );
 }
 
+function FormField({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.5)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "12px 14px",
+  borderRadius: 12,
+  background: "rgba(255,255,255,0.04)",
+  border: "1px solid rgba(255,255,255,0.1)",
+  color: "#f1f5f9",
+  fontSize: 13,
+  outline: "none",
+  fontFamily: "'Plus Jakarta Sans', sans-serif",
+  boxSizing: "border-box",
+  transition: "border-color 0.2s",
+};
+
 function Step0PersonalInfo({
   data,
   onChange,
@@ -250,39 +281,46 @@ function Step0PersonalInfo({
           { key: "city", label: "City", placeholder: "e.g. Lahore" },
           { key: "occupation", label: "Occupation", placeholder: "e.g. Business Owner" },
         ].map((field) => (
-          <div key={field.key}>
-            <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.5)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-              {field.label}
-            </label>
+          <FormField key={field.key} label={field.label}>
             <input
               type={field.type ?? "text"}
               value={data[field.key] ?? ""}
               onChange={(e) => onChange(field.key, e.target.value)}
               placeholder={field.placeholder}
-              style={{
-                width: "100%",
-                padding: "12px 14px",
-                borderRadius: 12,
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.1)",
-                color: "#f1f5f9",
-                fontSize: 13,
-                outline: "none",
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
-                boxSizing: "border-box",
-                transition: "border-color 0.2s",
-              }}
+              style={inputStyle}
               onFocus={(e) => (e.target.style.borderColor = `rgba(212,175,55,0.5)`)}
               onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.1)")}
             />
-          </div>
+          </FormField>
         ))}
 
+        {/* Country */}
+        <FormField label="Country of Residence">
+          <select
+            value={data.country ?? ""}
+            onChange={(e) => onChange("country", e.target.value)}
+            style={{
+              width: "100%",
+              padding: "12px 14px",
+              borderRadius: 12,
+              background: "#0a0a0a",
+              border: "1px solid rgba(255,255,255,0.1)",
+              color: data.country ? "#f1f5f9" : "rgba(255,255,255,0.3)",
+              fontSize: 13,
+              outline: "none",
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              cursor: "pointer",
+            }}
+          >
+            <option value="">Select country</option>
+            {COUNTRIES.map(c => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </FormField>
+
         {/* Source of Funds */}
-        <div>
-          <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.5)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-            Source of Funds
-          </label>
+        <FormField label="Source of Funds">
           <select
             value={data.sourceOfFunds ?? ""}
             onChange={(e) => onChange("sourceOfFunds", e.target.value)}
@@ -307,7 +345,7 @@ function Step0PersonalInfo({
             <option value="rental">Rental Income</option>
             <option value="other">Other</option>
           </select>
-        </div>
+        </FormField>
       </div>
     </div>
   );
@@ -502,6 +540,7 @@ function Step4Review({ data }: { data: any }) {
         { label: "Date of Birth", value: data.personal?.dob },
         { label: "Phone", value: data.personal?.phone },
         { label: "City", value: data.personal?.city },
+        { label: "Country", value: data.personal?.country },
         { label: "Occupation", value: data.personal?.occupation },
         { label: "Source of Funds", value: data.personal?.sourceOfFunds },
       ],
@@ -653,8 +692,12 @@ function KYCStatusBanner({ status }: { status: KYCStatus }) {
 }
 
 export default function KYC() {
+  const { user } = useUser();
+  const [, setLocation] = useLocation();
   const [step, setStep] = useState<Step>(0);
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [kycStatus, setKycStatus] = useState<KYCStatus>("not_started");
 
   const [personalData, setPersonalData] = useState<Record<string, string>>({});
@@ -675,9 +718,30 @@ export default function KYC() {
     return true;
   };
 
-  const handleSubmit = () => {
-    setSubmitted(true);
-    setKycStatus("pending_review");
+  const handleSubmit = async () => {
+    if (!user) return;
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      const email = user.primaryEmailAddress?.emailAddress ?? "";
+      const ok = await submitKYC(
+        user.id,
+        email,
+        personalData,
+        docData.docType ?? "cnic",
+        addressData.addressDocType ?? ""
+      );
+      if (ok) {
+        setSubmitted(true);
+        setKycStatus("pending_review");
+      } else {
+        setSubmitError("Failed to submit. Please check your connection and try again.");
+      }
+    } catch (err) {
+      setSubmitError("An unexpected error occurred. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -777,7 +841,6 @@ export default function KYC() {
         paddingBottom: 120,
       }}
     >
-      {/* Ambient */}
       <div style={{ position: "fixed", inset: 0, pointerEvents: "none" }}>
         <div style={{ position: "absolute", top: "5%", right: "15%", width: 260, height: 260, borderRadius: "50%", background: "rgba(212,175,55,0.04)", filter: "blur(90px)" }} />
       </div>
@@ -841,6 +904,14 @@ export default function KYC() {
           </motion.div>
         </AnimatePresence>
 
+        {/* Submit Error */}
+        {submitError && (
+          <div style={{ marginTop: 16, padding: "12px 14px", borderRadius: 12, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", display: "flex", gap: 8, alignItems: "center" }}>
+            <AlertCircle size={14} color="#ef4444" style={{ flexShrink: 0 }} />
+            <span style={{ fontSize: 12, color: "#ef4444" }}>{submitError}</span>
+          </div>
+        )}
+
         {/* Navigation Buttons */}
         <div style={{ display: "flex", gap: 12, marginTop: 32 }}>
           {step > 0 && (
@@ -897,16 +968,17 @@ export default function KYC() {
           ) : (
             <button
               onClick={handleSubmit}
+              disabled={submitting}
               style={{
                 flex: 2,
                 padding: "15px",
                 borderRadius: 16,
-                background: `linear-gradient(135deg, ${GOLD} 0%, #c49b28 100%)`,
+                background: submitting ? "rgba(212,175,55,0.4)" : `linear-gradient(135deg, ${GOLD} 0%, #c49b28 100%)`,
                 border: "none",
                 color: "#050505",
                 fontSize: 14,
                 fontWeight: 800,
-                cursor: "pointer",
+                cursor: submitting ? "not-allowed" : "pointer",
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
                 display: "flex",
                 alignItems: "center",
@@ -915,7 +987,7 @@ export default function KYC() {
                 boxShadow: `0 4px 20px rgba(212,175,55,0.3)`,
               }}
             >
-              <Shield size={16} /> Submit for Verification
+              <Shield size={16} /> {submitting ? "Submitting..." : "Submit for Verification"}
             </button>
           )}
         </div>

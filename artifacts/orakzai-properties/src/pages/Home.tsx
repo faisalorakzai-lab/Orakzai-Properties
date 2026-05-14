@@ -7,6 +7,9 @@ import {
   TrendingUp, TrendingDown, Heart, ArrowRight, ShieldCheck,
   Star, Bed, Bath, Maximize2, X,
 } from "lucide-react";
+import { useUser } from "@clerk/react";
+import { useKYCStatus } from "@/lib/useKYCStatus";
+import KYCGateModal from "@/components/KYCGateModal";
 
 const GOLD = "#F3BA2F";
 const BG = "#070B14";
@@ -138,15 +141,18 @@ const MOCK_PROPERTIES = [
 
 const CATEGORIES = ["All", "Buy", "Sell", "Rent", "Booking", "Investment", "Construction"];
 
+// Services that require KYC verification
+const KYC_REQUIRED_TYPES = new Set(["buy", "sell", "booking", "construction"]);
+
 const SERVICES = [
-  { icon: HomeIcon, label: "Buy", type: "buy", color: GOLD, bg: "rgba(243,186,47,0.12)" },
-  { icon: ArrowRight, label: "Sell", type: "sell", color: "#10b981", bg: "rgba(16,185,129,0.12)" },
-  { icon: KeyRound, label: "Rent", type: "rent", color: "#8b5cf6", bg: "rgba(139,92,246,0.12)" },
-  { icon: BookOpen, label: "Booking", type: "booking", color: "#3b82f6", bg: "rgba(59,130,246,0.12)" },
-  { icon: Shuffle, label: "Token Trade", type: null, color: "#f97316", bg: "rgba(249,115,22,0.12)", href: "/trades" },
-  { icon: BarChart3, label: "Investment", type: "investment", color: "#06b6d4", bg: "rgba(6,182,212,0.12)" },
-  { icon: HardHat, label: "Projects", type: null, color: "#ec4899", bg: "rgba(236,72,153,0.12)", href: "/projects" },
-  { icon: Hammer, label: "Construction", type: "construction", color: "#a78bfa", bg: "rgba(167,139,250,0.12)" },
+  { icon: HomeIcon, label: "Buy", type: "buy", color: GOLD, bg: "rgba(243,186,47,0.12)", kycRequired: true },
+  { icon: ArrowRight, label: "Sell", type: "sell", color: "#10b981", bg: "rgba(16,185,129,0.12)", kycRequired: true },
+  { icon: KeyRound, label: "Rent", type: "rent", color: "#8b5cf6", bg: "rgba(139,92,246,0.12)", kycRequired: false },
+  { icon: BookOpen, label: "Booking", type: "booking", color: "#3b82f6", bg: "rgba(59,130,246,0.12)", kycRequired: true },
+  { icon: Shuffle, label: "Token Trade", type: null, color: "#f97316", bg: "rgba(249,115,22,0.12)", href: "/trades", kycRequired: true },
+  { icon: BarChart3, label: "Investment", type: "investment", color: "#06b6d4", bg: "rgba(6,182,212,0.12)", kycRequired: false },
+  { icon: HardHat, label: "Projects", type: null, color: "#ec4899", bg: "rgba(236,72,153,0.12)", href: "/projects", kycRequired: false },
+  { icon: Hammer, label: "Construction", type: "construction", color: "#a78bfa", bg: "rgba(167,139,250,0.12)", kycRequired: true },
 ];
 
 const MARKET_PULSE = [
@@ -231,6 +237,9 @@ function PropertyListCard({ p, onSave, saved }: { p: typeof MOCK_PROPERTIES[0]; 
 
 export default function Home() {
   const [, setLocation] = useLocation();
+  const { user } = useUser();
+  const { isVerified } = useKYCStatus();
+
   const [activeCategory, setActiveCategory] = useState("All");
   const [search, setSearch] = useState("");
   const [viewMode, setViewMode] = useState<"scroll" | "list">("scroll");
@@ -238,6 +247,10 @@ export default function Home() {
   const [priceFilter, setPriceFilter] = useState("all");
   const [notifOpen, setNotifOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // KYC Gate state
+  const [kycModalOpen, setKycModalOpen] = useState(false);
+  const [kycModalFeature, setKycModalFeature] = useState<string | undefined>(undefined);
 
   const filtered = useMemo(() => {
     let list = MOCK_PROPERTIES;
@@ -257,12 +270,28 @@ export default function Home() {
   };
 
   const handleServiceClick = (svc: typeof SERVICES[0]) => {
+    // Check KYC for restricted services
+    if (svc.kycRequired && !isVerified) {
+      setKycModalFeature(svc.label);
+      setKycModalOpen(true);
+      return;
+    }
+
     if (svc.href) { setLocation(svc.href); return; }
     if (svc.type) {
       const cat = CATEGORIES.find(c => c.toLowerCase() === svc.type!.toLowerCase());
       if (cat) setActiveCategory(cat);
       document.getElementById("listings-section")?.scrollIntoView({ behavior: "smooth" });
     }
+  };
+
+  const handleWalletClick = () => {
+    if (!isVerified) {
+      setKycModalFeature("Wallet & Deposits");
+      setKycModalOpen(true);
+      return;
+    }
+    setLocation("/wallet");
   };
 
   const cyclePriceFilter = () => {
@@ -272,6 +301,13 @@ export default function Home() {
 
   return (
     <div style={{ minHeight: "100dvh", background: BG, color: "#F5F5F5", fontFamily: "'Plus Jakarta Sans', sans-serif", paddingBottom: 90 }}>
+      {/* KYC Gate Modal */}
+      <KYCGateModal
+        open={kycModalOpen}
+        onClose={() => setKycModalOpen(false)}
+        featureName={kycModalFeature}
+      />
+
       {/* Ambient glow */}
       <div style={{ position: "fixed", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 0 }}>
         <div style={{ position: "absolute", top: 0, right: "10%", width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(243,186,47,0.06) 0%, transparent 70%)", filter: "blur(60px)" }} />
@@ -321,20 +357,29 @@ export default function Home() {
               <button onClick={() => { setMenuOpen(v => !v); setNotifOpen(false); }}
                 style={{ display: "flex", alignItems: "center", gap: 6, height: 36, padding: "0 10px", borderRadius: 10, background: "rgba(255,255,255,0.05)", border: `1px solid ${BORDER}`, cursor: "pointer" }}>
                 <User size={14} color={GOLD} />
-                <span style={{ color: "#8B93A7", fontSize: 12 }}>Menu</span>
+                <span style={{ color: "#8B93A7", fontSize: 12 }}>{user?.firstName ?? "Menu"}</span>
                 <ChevronDown size={12} color="#8B93A7" />
               </button>
               {menuOpen && (
                 <div style={{ position: "absolute", right: 0, top: 44, width: 200, background: "#0D1421", border: "1px solid rgba(243,186,47,0.2)", borderRadius: 16, zIndex: 100, boxShadow: "0 20px 60px rgba(0,0,0,0.6)", overflow: "hidden" }}>
                   {[
-                    { label: "Sign In / Register", href: "/sign-in" },
                     { label: "Post Property", href: "/post-property" },
                     { label: "My Listings", href: "/my-properties" },
                     { label: "Portfolio", href: "/portfolio" },
-                    { label: "Wallet", href: "/wallet" },
+                    { label: "Wallet", href: "/wallet", kycRequired: true },
                     { label: "Profile", href: "/profile" },
+                    { label: "KYC Verification", href: "/kyc" },
                   ].map(item => (
-                    <div key={item.label} onClick={() => { setLocation(item.href); setMenuOpen(false); }}
+                    <div key={item.label} onClick={() => {
+                      if (item.kycRequired && !isVerified) {
+                        setMenuOpen(false);
+                        setKycModalFeature(item.label);
+                        setKycModalOpen(true);
+                        return;
+                      }
+                      setLocation(item.href);
+                      setMenuOpen(false);
+                    }}
                       style={{ padding: "11px 16px", cursor: "pointer", color: "#8B93A7", fontSize: 13, borderBottom: "1px solid rgba(255,255,255,0.04)" }}
                       onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)")}
                       onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "none")}>
@@ -402,35 +447,39 @@ export default function Home() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10 }}>
             {SERVICES.map(svc => (
               <button key={svc.label} onClick={() => handleServiceClick(svc)}
-                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "12px 6px", borderRadius: 16, background: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}`, cursor: "pointer" }}
+                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "12px 6px", borderRadius: 16, background: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}`, cursor: "pointer", position: "relative" }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = svc.color; (e.currentTarget as HTMLElement).style.background = svc.bg; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = BORDER; (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)"; }}>
                 <div style={{ width: 40, height: 40, borderRadius: 12, background: svc.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <svc.icon size={18} color={svc.color} />
                 </div>
                 <span style={{ color: "#F5F5F5", fontSize: 10, fontWeight: 600, textAlign: "center" }}>{svc.label}</span>
+                {svc.kycRequired && !isVerified && (
+                  <div style={{ position: "absolute", top: 6, right: 6, width: 8, height: 8, borderRadius: "50%", background: "#f59e0b", boxShadow: "0 0 6px rgba(245,158,11,0.6)" }} />
+                )}
               </button>
             ))}
           </div>
+          {!isVerified && (
+            <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "rgba(245,158,11,0.7)" }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#f59e0b", flexShrink: 0 }} />
+              KYC required for marked services — <button onClick={() => { setKycModalOpen(true); setKycModalFeature("KYC Verification"); }} style={{ background: "none", border: "none", cursor: "pointer", color: GOLD, fontWeight: 700, fontSize: 11, padding: 0 }}>Verify Now</button>
+            </div>
+          )}
         </div>
 
         {/* ── MARKET PULSE ── */}
         <div style={{ marginBottom: 24 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
-            <TrendingUp size={14} color={GOLD} />
-            <span style={{ fontSize: 11, color: "#8B93A7", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>Market Pulse</span>
-          </div>
-          <div style={{ background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 16, overflow: "hidden" }}>
-            {MARKET_PULSE.map((m, i) => (
-              <div key={m.city} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderBottom: i < MARKET_PULSE.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
-                <div>
-                  <div style={{ color: "#F5F5F5", fontSize: 13, fontWeight: 600 }}>{m.city}</div>
-                  <div style={{ color: "#8B93A7", fontSize: 11 }}>{m.desc}</div>
+          <div style={{ fontSize: 11, color: "#8B93A7", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, marginBottom: 12 }}>Market Pulse</div>
+          <div style={{ display: "flex", gap: 10, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 4 }}>
+            {MARKET_PULSE.map(m => (
+              <div key={m.city} style={{ flexShrink: 0, background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 14, padding: "12px 14px", minWidth: 140 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "#F5F5F5", marginBottom: 4 }}>{m.city}</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  {m.up ? <TrendingUp size={12} color="#10b981" /> : <TrendingDown size={12} color="#ef4444" />}
+                  <span style={{ fontSize: 13, fontWeight: 800, color: m.up ? "#10b981" : "#ef4444" }}>{m.trend}</span>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 4, color: m.up ? "#10b981" : "#ef4444", fontWeight: 700, fontSize: 14 }}>
-                  {m.up ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                  {m.trend}
-                </div>
+                <div style={{ fontSize: 10, color: "#8B93A7", marginTop: 2 }}>{m.desc}</div>
               </div>
             ))}
           </div>
@@ -438,67 +487,46 @@ export default function Home() {
 
         {/* ── LISTINGS ── */}
         <div id="listings-section">
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-            <div>
-              <div style={{ fontSize: 11, color: "#8B93A7", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>
-                {activeCategory === "All" ? "All Properties" : activeCategory}
-              </div>
-              <div style={{ color: "#F5F5F5", fontWeight: 700, fontSize: 16, marginTop: 2 }}>
-                {filtered.length} {filtered.length === 1 ? "Result" : "Results"}{search && ` for "${search}"`}
-              </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <div style={{ fontSize: 11, color: "#8B93A7", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>
+              {activeCategory === "All" ? "All Listings" : activeCategory} ({filtered.length})
             </div>
-            <div style={{ display: "flex", gap: 6 }}>
-              {(["scroll", "list"] as const).map(v => (
-                <button key={v} onClick={() => setViewMode(v)}
-                  style={{ width: 32, height: 32, borderRadius: 8, background: viewMode === v ? "rgba(243,186,47,0.15)" : "rgba(255,255,255,0.04)", border: viewMode === v ? "1px solid rgba(243,186,47,0.4)" : `1px solid ${BORDER}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  {v === "scroll" ? <LayoutList size={14} color={viewMode === v ? GOLD : "#8B93A7"} /> : <Star size={14} color={viewMode === v ? GOLD : "#8B93A7"} />}
-                </button>
-              ))}
-            </div>
+            <button onClick={() => setViewMode(v => v === "scroll" ? "list" : "scroll")}
+              style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+              <LayoutList size={14} color="#8B93A7" />
+            </button>
           </div>
 
-          {filtered.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "48px 16px", background: CARD_BG, borderRadius: 20, border: `1px solid ${BORDER}` }}>
-              <Search size={32} color="#8B93A7" style={{ opacity: 0.3, display: "block", margin: "0 auto 12px" }} />
-              <div style={{ color: "#8B93A7", fontSize: 14 }}>No properties found</div>
-              <button onClick={() => { setActiveCategory("All"); setSearch(""); setPriceFilter("all"); }}
-                style={{ marginTop: 16, padding: "8px 20px", borderRadius: 20, background: GOLD, color: "#070B14", fontWeight: 700, fontSize: 12, border: "none", cursor: "pointer" }}>
-                Clear Filters
-              </button>
-            </div>
-          ) : viewMode === "scroll" ? (
-            <div style={{ display: "flex", gap: 14, overflowX: "auto", paddingBottom: 8, scrollbarWidth: "none", marginLeft: -16, paddingLeft: 16, marginRight: -16, paddingRight: 16 }}>
-              {filtered.map(p => <PropertyCard key={p.id} p={p} onSave={() => toggleSave(p.id)} saved={savedIds.has(p.id)} />)}
+          {viewMode === "scroll" ? (
+            <div style={{ display: "flex", gap: 12, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 8 }}>
+              {filtered.map(p => (
+                <PropertyCard key={p.id} p={p} onSave={() => toggleSave(p.id)} saved={savedIds.has(p.id)} />
+              ))}
+              {filtered.length === 0 && (
+                <div style={{ color: "#8B93A7", fontSize: 13, padding: "24px 0" }}>No listings match your filter</div>
+              )}
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {filtered.map(p => <PropertyListCard key={p.id} p={p} onSave={() => toggleSave(p.id)} saved={savedIds.has(p.id)} />)}
+              {filtered.map(p => (
+                <PropertyListCard key={p.id} p={p} onSave={() => toggleSave(p.id)} saved={savedIds.has(p.id)} />
+              ))}
+              {filtered.length === 0 && (
+                <div style={{ color: "#8B93A7", fontSize: 13, textAlign: "center", padding: "32px 0" }}>No listings match your filter</div>
+              )}
             </div>
           )}
         </div>
 
-        {/* ── CTA BANNER ── */}
-        <div style={{ marginTop: 24, background: "linear-gradient(135deg, rgba(243,186,47,0.12), rgba(243,186,47,0.05))", border: "1px solid rgba(243,186,47,0.25)", borderRadius: 20, padding: "20px" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div>
-              <div style={{ color: "#F5F5F5", fontWeight: 700, fontSize: 16 }}>Post Your Property</div>
-              <div style={{ color: "#8B93A7", fontSize: 12, marginTop: 4 }}>Reach 50,000+ verified buyers</div>
-            </div>
-            <button onClick={() => setLocation("/post-property")}
-              style={{ padding: "10px 20px", borderRadius: 12, background: GOLD, color: "#070B14", fontWeight: 700, fontSize: 13, border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-              <Plus size={14} /> List Now
-            </button>
-          </div>
-        </div>
-
-        <div style={{ marginTop: 24, textAlign: "center" }}>
-          <div style={{ color: "#8B93A7", fontSize: 10 }}>© 2025 Orakzai Properties · Assets of Today | Legacies of Tomorrow</div>
+        {/* ── POST PROPERTY CTA ── */}
+        <div style={{ marginTop: 28 }}>
+          <button onClick={() => setLocation("/post-property")}
+            style={{ width: "100%", padding: "16px", borderRadius: 18, background: `linear-gradient(135deg, rgba(243,186,47,0.12) 0%, rgba(243,186,47,0.06) 100%)`, border: "1px solid rgba(243,186,47,0.3)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
+            <Plus size={18} color={GOLD} />
+            <span style={{ color: GOLD, fontWeight: 700, fontSize: 14 }}>List Your Property</span>
+          </button>
         </div>
       </div>
-
-      {(notifOpen || menuOpen) && (
-        <div onClick={() => { setNotifOpen(false); setMenuOpen(false); }} style={{ position: "fixed", inset: 0, zIndex: 50 }} />
-      )}
     </div>
   );
 }
