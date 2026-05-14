@@ -5,6 +5,7 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { Search, ChevronDown, X, AlertTriangle, ArrowLeft, Star, Bell, TrendingUp, TrendingDown, ExternalLink, Settings } from "lucide-react";
 import { Link } from "wouter";
 import { initEngine, getPrice, getABP, getTA, applyTrade, tickPrice } from "@/lib/priceEngine";
+import { getWallet, executeTrade, calculateFee, type Currency } from "@/lib/walletEngine";
 
 /* ── Theme ──────────────────────────────────────────────────────────────────── */
 const BG    = "#0B0E11";
@@ -206,39 +207,58 @@ function TradeHistory({trades}:{trades:Trade[]}) {
 /* ── Order Entry Panel ───────────────────────────────────────────────────────── */
 const BAL_USDT=500;
 
-function OrderEntry({asset,livePrice,onTrade}:{asset:Asset;livePrice:number;onTrade:(side:"BUY"|"SELL",total:number)=>void}) {
-  const [side,setSide]=useState<"BUY"|"SELL">("BUY");
-  const [ot,setOt]=useState<"Limit"|"Market">("Limit");
-  const [priceIn,setPriceIn]=useState(livePrice.toFixed(5));
-  const [amount,setAmount]=useState("");
-  const [orders,setOrders]=useState<OOrder[]>([]);
-  const [showMenu,setShowMenu]=useState(false);
-  const [tab,setTab]=useState<"entry"|"open">("entry");
-  const balToken = 250;
+type QuoteCurrency = "USDT" | "USDC" | "OKBOND";
 
-  // sync price input when livePrice changes (for market mode)
+function OrderEntry({asset,livePrice,quote,onTrade}:{asset:Asset;livePrice:number;quote:QuoteCurrency;onTrade:(side:"BUY"|"SELL",total:number)=>void}) {
+  const [side,setSide]       = useState<"BUY"|"SELL">("BUY");
+  const [ot,setOt]           = useState<"Limit"|"Market">("Limit");
+  const [priceIn,setPriceIn] = useState(livePrice.toFixed(5));
+  const [amount,setAmount]   = useState("");
+  const [orders,setOrders]   = useState<OOrder[]>([]);
+  const [showMenu,setShowMenu] = useState(false);
+  const [tab,setTab]         = useState<"entry"|"open">("entry");
+  const [wallet,setWallet]   = useState(getWallet());
+  const [tradeMsg,setTradeMsg] = useState<{ok:boolean;text:string}|null>(null);
+
   useEffect(()=>{ if(ot==="Market") setPriceIn(livePrice.toFixed(5)); },[livePrice,ot]);
+  useEffect(()=>{ setWallet(getWallet()); },[quote,side]);
 
-  const pN=parseFloat(priceIn)||0;
-  const aN=parseFloat(amount)||0;
-  const total=ot==="Market"?livePrice*aN:pN*aN;
-  const ok=total>=1;
-  const estTokens=side==="BUY"&&total>0?(total/livePrice).toFixed(4):"—";
-  const balUsdt=BAL_USDT;
+  const pN = parseFloat(priceIn)||0;
+  const aN = parseFloat(amount)||0;
+  const total = ot==="Market"?livePrice*aN:pN*aN;
+  const { fee, feeRate } = calculateFee(total, quote as Currency);
+  const costBuy  = +(total + fee).toFixed(6);
+  const netSell  = +(total - fee).toFixed(6);
+  const ok = total >= 1;
+
+  const walletBal = wallet ? wallet.balances[quote as Currency] : 0;
+  const estTokens = side==="BUY"&&total>0?(total/livePrice).toFixed(4):"—";
 
   const pct=(p:number)=>{
-    if(side==="BUY"){setAmount(((balUsdt/(pN||livePrice))*p).toFixed(2));}
-    else{setAmount((balToken*p).toFixed(2));}
+    const execP = ot==="Market"?livePrice:pN||livePrice;
+    if(side==="BUY") { const maxTokens = walletBal / (execP * (1 + feeRate)); setAmount((maxTokens*p).toFixed(4)); }
+    else { setAmount(((aN||100)*p).toFixed(4)); }
   };
 
   const submit=()=>{
-    if(!ok)return;
-    const execPrice=ot==="Market"?livePrice:pN;
-    const execTotal=execPrice*aN;
-    onTrade(side,execTotal);
-    setOrders(prev=>[{id:Date.now(),side,type:ot,price:execPrice,amt:aN,total:execTotal,time:new Date().toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"})}, ...prev]);
+    if(!ok) return;
+    const execPrice = ot==="Market"?livePrice:pN;
+    const result = executeTrade(asset.ticker, side, aN, quote as Currency, execPrice);
+    if(!result.ok) {
+      setTradeMsg({ok:false,text:result.error||"Trade failed"});
+      setTimeout(()=>setTradeMsg(null),3000);
+      return;
+    }
+    setWallet(getWallet());
+    onTrade(side, total);
+    setOrders(prev=>[{id:Date.now(),side,type:ot,price:execPrice,amt:aN,total,time:new Date().toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"})}, ...prev]);
+    setTradeMsg({ok:true,text:`${side} ${aN} ${asset.ticker} executed!`});
+    setTimeout(()=>setTradeMsg(null),2500);
     setAmount("");
   };
+
+  const feeLabel = quote==="OKBOND"?"0.30% ⬡":"0.50%";
+  const feeColor = quote==="OKBOND"?"#F3BA2F":DIM;
 
   return(
     <div style={{display:"flex",flexDirection:"column",height:"100%",overflow:"hidden"}}>
@@ -253,18 +273,20 @@ function OrderEntry({asset,livePrice,onTrade}:{asset:Asset;livePrice:number;onTr
       {tab==="entry"?(
         <div style={{flex:1,overflowY:"auto",padding:"6px 7px"}}>
           {/* BUY/SELL */}
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:4,marginBottom:6}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:4,marginBottom:5}}>
             {(["BUY","SELL"] as const).map(s=>(
               <button key={s} onClick={()=>setSide(s)} style={{padding:"6px 0",fontWeight:800,fontSize:12,border:"none",cursor:"pointer",borderRadius:4,background:side===s?(s==="BUY"?GREEN:RED):ACT,color:side===s?"#fff":DIM,transition:"all .15s"}}>
                 {s}
               </button>
             ))}
           </div>
-          {/* Balance */}
-          <div style={{display:"flex",justifyContent:"space-between",fontSize:9,color:DIM,marginBottom:5}}>
-            <span>Avail</span>
-            <span style={{color:FG}}>{side==="BUY"?`${balUsdt} USDT`:`${balToken} ${asset.ticker}`}</span>
+
+          {/* Pair + Balance */}
+          <div style={{display:"flex",justifyContent:"space-between",fontSize:9,color:DIM,marginBottom:4}}>
+            <span>Pair: <span style={{color:GOLD,fontWeight:700}}>{asset.ticker}/{quote}</span></span>
+            <span>Avail: <span style={{color:GREEN,fontWeight:700,fontVariantNumeric:"tabular-nums"}}>{walletBal.toFixed(4)} {quote}</span></span>
           </div>
+
           {/* Order type */}
           <div style={{position:"relative",marginBottom:5}}>
             <button onClick={()=>setShowMenu(v=>!v)} style={{width:"100%",display:"flex",justifyContent:"space-between",alignItems:"center",background:ACT,border:`1px solid ${BORD}`,borderRadius:4,padding:"4px 7px",color:FG,fontSize:10,cursor:"pointer"}}>
@@ -280,27 +302,39 @@ function OrderEntry({asset,livePrice,onTrade}:{asset:Asset;livePrice:number;onTr
               )}
             </AnimatePresence>
           </div>
+
           {/* Price */}
           <div style={{marginBottom:5}}>
-            <div style={{fontSize:9,color:DIM,marginBottom:2}}>Price (USDT)</div>
+            <div style={{fontSize:9,color:DIM,marginBottom:2}}>Price ({quote})</div>
             <input type="number" value={ot==="Market"?livePrice.toFixed(5):priceIn} onChange={e=>setPriceIn(e.target.value)} readOnly={ot==="Market"} step="0.00001" style={{width:"100%",background:ot==="Market"?"#0c1016":ACT,border:`1px solid ${BORD}`,borderRadius:4,padding:"5px 7px",color:ot==="Market"?DIM:FG,fontSize:11,outline:"none",boxSizing:"border-box",fontVariantNumeric:"tabular-nums"}}/>
           </div>
+
           {/* Amount */}
           <div style={{marginBottom:5}}>
             <div style={{fontSize:9,color:DIM,marginBottom:2}}>Amount ({asset.ticker})</div>
             <input type="number" value={amount} onChange={e=>setAmount(e.target.value)} placeholder="0.00" style={{width:"100%",background:ACT,border:`1px solid ${BORD}`,borderRadius:4,padding:"5px 7px",color:FG,fontSize:11,outline:"none",boxSizing:"border-box"}}/>
           </div>
-          {/* Pct */}
+
+          {/* Pct shortcuts */}
           <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:3,marginBottom:5}}>
             {[.25,.5,.75,1].map(p=>(
               <button key={p} onClick={()=>pct(p)} style={{padding:"3px 0",fontSize:9,fontWeight:600,borderRadius:3,cursor:"pointer",border:`1px solid ${BORD}`,background:ACT,color:DIM}}>{p*100}%</button>
             ))}
           </div>
-          {/* Total + est tokens */}
+
+          {/* Order summary with FEE */}
           <div style={{background:ACT,borderRadius:5,padding:"5px 7px",marginBottom:5,fontSize:9}}>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
               <span style={{color:DIM}}>Total</span>
-              <span style={{color:ok||total===0?FG:RED,fontVariantNumeric:"tabular-nums"}}>{total>0?total.toFixed(4):"0.0000"} USDT</span>
+              <span style={{color:FG,fontVariantNumeric:"tabular-nums"}}>{total>0?total.toFixed(4):"0.0000"} {quote}</span>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
+              <span style={{color:feeColor}}>Fee ({feeLabel})</span>
+              <span style={{color:feeColor,fontVariantNumeric:"tabular-nums"}}>{fee>0?fee.toFixed(5):"0.00000"} {quote}</span>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",paddingTop:3,borderTop:`1px solid ${BORD}`,marginBottom:2}}>
+              <span style={{color:DIM,fontWeight:700}}>{side==="BUY"?"You Pay":"You Receive"}</span>
+              <span style={{color:side==="BUY"?RED:GREEN,fontWeight:700,fontVariantNumeric:"tabular-nums"}}>{total>0?(side==="BUY"?costBuy.toFixed(4):netSell.toFixed(4)):"0.0000"} {quote}</span>
             </div>
             {side==="BUY"&&(
               <div style={{display:"flex",justifyContent:"space-between"}}>
@@ -309,25 +343,49 @@ function OrderEntry({asset,livePrice,onTrade}:{asset:Asset;livePrice:number;onTr
               </div>
             )}
           </div>
-          {/* ABP indicator */}
+
+          {/* ABP / TA */}
           <div style={{display:"flex",justifyContent:"space-between",fontSize:8,color:DIM,marginBottom:5,padding:"0 2px"}}>
             <span>ABP: <span style={{color:GOLD,fontVariantNumeric:"tabular-nums"}}>{getABP(asset.ticker).toFixed(4)}</span></span>
             <span>TA: <span style={{color:getTA(asset.ticker)>=0?GREEN:RED}}>{(getTA(asset.ticker)*100).toFixed(4)}%</span></span>
           </div>
-          {/* Min warning */}
+
+          {/* Insufficient balance warning */}
           <AnimatePresence>
+            {ok && side==="BUY" && walletBal < costBuy && (
+              <motion.div initial={{opacity:0,height:0}} animate={{opacity:1,height:"auto"}} exit={{opacity:0,height:0}} style={{overflow:"hidden",marginBottom:4}}>
+                <div style={{display:"flex",alignItems:"center",gap:4,background:"rgba(246,70,93,0.1)",border:`1px solid rgba(246,70,93,0.3)`,borderRadius:4,padding:"3px 6px"}}>
+                  <AlertTriangle size={8} color={RED}/><span style={{fontSize:9,color:RED}}>Insufficient {quote} balance</span>
+                </div>
+              </motion.div>
+            )}
             {total>0&&!ok&&(
               <motion.div initial={{opacity:0,height:0}} animate={{opacity:1,height:"auto"}} exit={{opacity:0,height:0}} style={{overflow:"hidden",marginBottom:4}}>
                 <div style={{display:"flex",alignItems:"center",gap:4,background:"rgba(246,70,93,0.1)",border:`1px solid rgba(246,70,93,0.3)`,borderRadius:4,padding:"3px 6px"}}>
-                  <AlertTriangle size={8} color={RED}/><span style={{fontSize:9,color:RED}}>Min order $1 USDT</span>
+                  <AlertTriangle size={8} color={RED}/><span style={{fontSize:9,color:RED}}>Min order $1 {quote}</span>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Trade message */}
+          <AnimatePresence>
+            {tradeMsg&&(
+              <motion.div initial={{opacity:0,y:-4}} animate={{opacity:1,y:0}} exit={{opacity:0}} style={{background:tradeMsg.ok?"rgba(14,203,129,0.1)":"rgba(246,70,93,0.1)",border:`1px solid ${tradeMsg.ok?"rgba(14,203,129,0.3)":"rgba(246,70,93,0.3)"}`,borderRadius:4,padding:"4px 7px",fontSize:9,color:tradeMsg.ok?GREEN:RED,marginBottom:4,textAlign:"center"}}>{tradeMsg.text}</motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Submit */}
           <button onClick={submit} disabled={!ok} style={{width:"100%",padding:"8px 0",borderRadius:4,border:"none",cursor:ok?"pointer":"not-allowed",fontWeight:800,fontSize:12,background:ok?(side==="BUY"?GREEN:RED):ACT,color:ok?"#fff":DIM,opacity:ok?1:.6,transition:"all .15s"}}>
-            {side==="BUY"?`Buy ${asset.ticker}`:`Sell ${asset.ticker}`}
+            {side==="BUY"?`Buy ${asset.ticker} with ${quote}`:`Sell ${asset.ticker} → ${quote}`}
           </button>
+
+          {/* No wallet warning */}
+          {!wallet&&(
+            <div style={{marginTop:5,fontSize:9,color:DIM,textAlign:"center"}}>
+              <Link href={`${bp()}/wallet`}><span style={{color:GOLD,cursor:"pointer",textDecoration:"underline"}}>Create a wallet</span></Link> to trade with real balances
+            </div>
+          )}
         </div>
       ):(
         <div style={{flex:1,overflowY:"auto"}}>
@@ -338,7 +396,7 @@ function OrderEntry({asset,livePrice,onTrade}:{asset:Asset;livePrice:number;onTr
                 <button onClick={()=>setOrders(p=>p.filter(x=>x.id!==o.id))} style={{background:"rgba(246,70,93,0.12)",border:`1px solid rgba(246,70,93,0.3)`,borderRadius:3,padding:"1px 4px",cursor:"pointer",display:"flex",alignItems:"center"}}><X size={8} color={RED}/></button>
               </div>
               <div style={{color:FG,fontVariantNumeric:"tabular-nums"}}>{o.price.toFixed(4)} · {o.amt} {asset.ticker}</div>
-              <div style={{color:DIM,fontSize:8}}>{o.type} · Total: {o.total.toFixed(2)} USDT · {o.time}</div>
+              <div style={{color:DIM,fontSize:8}}>{o.type} · {o.total.toFixed(4)} {quote} · {o.time}</div>
             </div>
           ))}
         </div>
@@ -514,6 +572,7 @@ function Terminal({asset,onBack}:{asset:Asset;onBack:()=>void}) {
   const [tf,setTf]=useState("15m");
   const [inds,setInds]=useState<Set<string>>(new Set(["MA","VOL"]));
   const [starred,setStarred]=useState(false);
+  const [quote,setQuote]=useState<QuoteCurrency>("USDT");
   const showVol=inds.has("VOL");
   const showMA=inds.has("MA");
   const showEMA=inds.has("EMA");
@@ -569,8 +628,12 @@ function Terminal({asset,onBack}:{asset:Asset;onBack:()=>void}) {
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:3}}>
           <div style={{display:"flex",alignItems:"center",gap:6}}>
             <button onClick={onBack} style={{background:"none",border:"none",cursor:"pointer",padding:2,display:"flex"}}><ArrowLeft size={16} color={FG}/></button>
-            <span style={{fontWeight:800,fontSize:15,color:FG}}>{asset.ticker}<span style={{color:DIM,fontWeight:400}}>/USDT</span></span>
-            <ChevronDown size={11} color={DIM}/>
+            <span style={{fontWeight:800,fontSize:15,color:FG}}>{asset.ticker}<span style={{color:DIM,fontWeight:400}}>/{quote}</span></span>
+            <div style={{display:"flex",gap:2,marginLeft:4}}>
+              {(["USDT","USDC","OKBOND"] as QuoteCurrency[]).map(q=>(
+                <button key={q} onClick={()=>setQuote(q)} style={{padding:"1px 5px",fontSize:8,fontWeight:700,borderRadius:3,border:`1px solid ${quote===q?"#F3BA2F":"#1E2329"}`,background:quote===q?"rgba(243,186,47,0.15)":"transparent",color:quote===q?"#F3BA2F":"#848E9C",cursor:"pointer"}}>{q}</button>
+              ))}
+            </div>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:7}}>
             <Link href="/admin/config" style={{display:"flex",alignItems:"center",gap:3,background:"rgba(243,186,47,0.08)",border:`1px solid rgba(243,186,47,0.2)`,borderRadius:5,padding:"3px 6px",textDecoration:"none"}}>
@@ -668,7 +731,7 @@ function Terminal({asset,onBack}:{asset:Asset;onBack:()=>void}) {
               </div>
               {bkTab==="Order Book"?<OrderBook book={book} mid={live}/>:<TradeHistory trades={trades}/>}
             </div>
-            <OrderEntry asset={asset} livePrice={live} onTrade={handleTrade}/>
+            <OrderEntry asset={asset} livePrice={live} quote={quote} onTrade={handleTrade}/>
           </div>
 
           {/* Period performance */}
