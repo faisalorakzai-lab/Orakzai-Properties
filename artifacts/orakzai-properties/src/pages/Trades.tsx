@@ -65,7 +65,7 @@ function genTrades(mid:number,n=25):Trade[] {
 
 /* ── OHLC candle tracker ────────────────────────────────────────────────────── */
 function useCandles(ticker:string, initPrice:number) {
-  const candlesRef  = useRef<Candle[]>([]);
+  const candlesRef  = useRef<Candle[]>(genHistory(initPrice));
   const seriesRef   = useRef<any>(null);
   const intervalRef = useRef<number>(0);
   const candleStart = useRef<number>(Math.floor(Date.now()/1000/60)*60);
