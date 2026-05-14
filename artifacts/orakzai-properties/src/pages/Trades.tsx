@@ -586,21 +586,25 @@ function Terminal({asset,onBack}:{asset:Asset;onBack:()=>void}) {
     init(initPrice);
   },[asset.ticker]);
 
-  // Real-time price via Supabase Broadcast — ticks broadcast from Edge Function every 2s
+  // Real-time price via Supabase postgres_changes — fires on every trade or Edge Function tick
   useEffect(()=>{
     const sb=createClient(
       import.meta.env.VITE_SUPABASE_URL,
       import.meta.env.VITE_SUPABASE_ANON_KEY
     );
-    const ch=sb.channel("price-feed")
-      .on("broadcast",{event:"tick"},(msg)=>{
-        if(msg.payload?.ticker!==asset.ticker) return;
-        const next=Number(msg.payload.price);
-        setLive(next);
-        setBook(genBook(next));
-        setTrades(()=>genTrades(next,25));
-        updateCandle(next);
-      })
+    const ch=sb
+      .channel(`price:${asset.ticker}`)
+      .on(
+        "postgres_changes" as any,
+        { event:"INSERT", schema:"public", table:"price_ticks", filter:`ticker=eq.${asset.ticker}` },
+        (payload:any)=>{
+          const next=Number(payload.new.price);
+          setLive(next);
+          setBook(genBook(next));
+          setTrades(()=>genTrades(next,25));
+          updateCandle(next);
+        }
+      )
       .subscribe();
     return ()=>{ sb.removeChannel(ch); };
   },[asset.ticker]);
@@ -622,6 +626,12 @@ function Terminal({asset,onBack}:{asset:Asset;onBack:()=>void}) {
 
   const handleTrade=(side:"BUY"|"SELL",total:number)=>{
     const newP=applyTrade(asset.ticker,side,total);
+    // Insert into Supabase trades → DB trigger creates price_tick → Realtime echoes to all clients
+    createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY)
+      .from("trades")
+      .insert({ ticker:asset.ticker, side, price:newP, amount:Number((total/newP).toFixed(8)), total_usdt:total })
+      .then(({ error }) => { if(error) console.warn("trade insert:", error.message); });
+    // Optimistic local update — chart updates immediately, Realtime confirms to all other clients
     setLive(newP);
     setBook(genBook(newP));
     updateCandle(newP);
