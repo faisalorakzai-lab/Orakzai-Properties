@@ -3,7 +3,7 @@ import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ClerkProvider, SignIn, SignUp, Show, useClerk } from "@clerk/react";
+import { ClerkProvider, SignIn, SignUp, useClerk } from "@clerk/react";
 import { publishableKeyFromHost } from "@clerk/react/internal";
 import { shadcn } from "@clerk/themes";
 import NotFound from "@/pages/not-found";
@@ -29,16 +29,27 @@ import Projects from "@/pages/Projects";
 import KYC from "@/pages/KYC";
 import BottomNav from "@/components/BottomNav";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { retry: 1, staleTime: 30_000 },
+  },
+});
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-const clerkPubKey = publishableKeyFromHost(
-  window.location.hostname,
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
-);
+// Safe key resolution — never throws, returns null if unavailable
+let clerkPubKey: string | null = null;
+try {
+  const k = publishableKeyFromHost(
+    window.location.hostname,
+    import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
+  );
+  if (k && k.startsWith("pk_")) clerkPubKey = k;
+} catch {
+  clerkPubKey = null;
+}
 
-const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
+const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL as string | undefined;
 
 function stripBase(path: string): string {
   return basePath && path.startsWith(basePath)
@@ -55,12 +66,12 @@ const clerkAppearance = {
     logoImageUrl: `${window.location.origin}${basePath}/logo.svg`,
   },
   variables: {
-    colorPrimary: "#D4AF37",
+    colorPrimary: "#F3BA2F",
     colorForeground: "#f1f5f9",
     colorMutedForeground: "#94a3b8",
     colorDanger: "#ef4444",
-    colorBackground: "#050505",
-    colorInput: "#111111",
+    colorBackground: "#070B14",
+    colorInput: "#0D1421",
     colorInputForeground: "#f1f5f9",
     colorNeutral: "#1a1a1a",
     fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -68,60 +79,60 @@ const clerkAppearance = {
   },
   elements: {
     rootBox: "w-full flex justify-center",
-    cardBox: "bg-[#050505] border border-[#D4AF37]/30 rounded-2xl w-[440px] max-w-full overflow-hidden shadow-2xl shadow-[#D4AF37]/10",
+    cardBox: "bg-[#070B14] border border-[#F3BA2F]/30 rounded-2xl w-[440px] max-w-full overflow-hidden shadow-2xl shadow-[#F3BA2F]/10",
     card: "!shadow-none !border-0 !bg-transparent !rounded-none",
     footer: "!shadow-none !border-0 !bg-transparent !rounded-none",
     headerTitle: "text-[#f1f5f9] font-serif",
     headerSubtitle: "text-[#94a3b8]",
     socialButtonsBlockButtonText: "text-[#f1f5f9]",
     formFieldLabel: "text-[#94a3b8]",
-    footerActionLink: "text-[#D4AF37] hover:text-[#e8c060]",
+    footerActionLink: "text-[#F3BA2F] hover:text-[#e8c060]",
     footerActionText: "text-[#94a3b8]",
     dividerText: "text-[#94a3b8]",
-    identityPreviewEditButton: "text-[#D4AF37]",
-    formFieldSuccessText: "text-green-400",
-    alertText: "text-red-300",
-    logoBox: "flex justify-center mb-4",
-    logoImage: "h-12",
-    socialButtonsBlockButton: "border-[#1a1a1a] bg-[#111111] hover:bg-[#1a1a1a] text-[#f1f5f9]",
-    formButtonPrimary: "bg-[#D4AF37] hover:bg-[#e8c060] text-[#050505] font-semibold",
-    formFieldInput: "bg-[#111111] border-[#1a1a1a] text-[#f1f5f9]",
-    footerAction: "bg-[#020202]",
-    dividerLine: "bg-[#1a1a1a]",
-    alert: "bg-[#111111] border-red-500/30",
-    otpCodeFieldInput: "bg-[#111111] border-[#D4AF37] text-[#f1f5f9]",
-    formFieldRow: "",
-    main: "",
+    formButtonPrimary: "bg-[#F3BA2F] text-[#070B14] font-bold hover:bg-[#e8c060]",
+    identityPreviewText: "text-[#f1f5f9]",
+    identityPreviewEditButton: "text-[#F3BA2F]",
+    formFieldInputShowPasswordButton: "text-[#94a3b8]",
   },
 };
 
 function SignInPage() {
+  const [, setLocation] = useLocation();
   return (
-    <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4">
-      <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} />
+    <div style={{ minHeight: "100dvh", background: "#070B14", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+      <SignIn
+        appearance={clerkAppearance}
+        signUpUrl={`${basePath}/sign-up`}
+        forceRedirectUrl={`${basePath}/`}
+        afterSignInUrl={`${basePath}/`}
+        routing="path"
+        path={`${basePath}/sign-in`}
+      />
     </div>
   );
 }
 
 function SignUpPage() {
   return (
-    <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4">
-      <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} />
+    <div style={{ minHeight: "100dvh", background: "#070B14", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+      <SignUp
+        appearance={clerkAppearance}
+        signInUrl={`${basePath}/sign-in`}
+        forceRedirectUrl={`${basePath}/`}
+        afterSignUpUrl={`${basePath}/`}
+        routing="path"
+        path={`${basePath}/sign-up`}
+      />
     </div>
   );
 }
 
-function HomeRedirect() {
-  return (
-    <>
-      <Show when="signed-in">
-        <Home />
-      </Show>
-      <Show when="signed-out">
-        <Home />
-      </Show>
-    </>
-  );
+function HideBottomNavOnAuthPages() {
+  const [location] = useLocation();
+  const hideOn = ["/sign-in", "/sign-up"];
+  const hidden = hideOn.some((p) => location.startsWith(p));
+  if (hidden) return null;
+  return <BottomNav />;
 }
 
 function ClerkQueryClientCacheInvalidator() {
@@ -143,15 +154,35 @@ function ClerkQueryClientCacheInvalidator() {
   return null;
 }
 
-function HideBottomNavOnAuthPages() {
-  const [location] = useLocation();
-  const hideOn = ["/sign-in", "/sign-up"];
-  const hidden = hideOn.some((p) => location.startsWith(p));
-  if (hidden) return null;
-  return <BottomNav />;
-}
+const appRoutes = (
+  <Switch>
+    <Route path="/" component={Home} />
+    <Route path="/browse" component={Browse} />
+    <Route path="/property/:id" component={PropertyDetail} />
+    <Route path="/post-property" component={PostProperty} />
+    <Route path="/my-properties" component={MyProperties} />
+    <Route path="/invest" component={InvestPortal} />
+    <Route path="/invest/:id" component={InvestDetail} />
+    <Route path="/portfolio" component={Portfolio} />
+    <Route path="/trade/:id" component={TradingFloor} />
+    <Route path="/wallet" component={Wallet} />
+    <Route path="/project/azan-smart-city" component={AzanSmartCity} />
+    <Route path="/notifications" component={Notifications} />
+    <Route path="/notification-settings" component={NotificationSettings} />
+    <Route path="/agent/dashboard" component={AgentDashboard} />
+    <Route path="/pricing" component={Pricing} />
+    <Route path="/subscribe/:planId" component={Subscribe} />
+    <Route path="/profile" component={Profile} />
+    <Route path="/trades" component={Trades} />
+    <Route path="/projects" component={Projects} />
+    <Route path="/kyc" component={KYC} />
+    <Route path="/sign-in/*?" component={SignInPage} />
+    <Route path="/sign-up/*?" component={SignUpPage} />
+    <Route component={NotFound} />
+  </Switch>
+);
 
-function ClerkProviderWithRoutes() {
+function AppWithClerk() {
   const [, setLocation] = useLocation();
 
   return (
@@ -171,31 +202,7 @@ function ClerkProviderWithRoutes() {
       <QueryClientProvider client={queryClient}>
         <ClerkQueryClientCacheInvalidator />
         <TooltipProvider>
-          <Switch>
-            <Route path="/" component={HomeRedirect} />
-            <Route path="/browse" component={Browse} />
-            <Route path="/property/:id" component={PropertyDetail} />
-            <Route path="/post-property" component={PostProperty} />
-            <Route path="/my-properties" component={MyProperties} />
-            <Route path="/invest" component={InvestPortal} />
-            <Route path="/invest/:id" component={InvestDetail} />
-            <Route path="/portfolio" component={Portfolio} />
-            <Route path="/trade/:id" component={TradingFloor} />
-            <Route path="/wallet" component={Wallet} />
-            <Route path="/project/azan-smart-city" component={AzanSmartCity} />
-            <Route path="/notifications" component={Notifications} />
-            <Route path="/notification-settings" component={NotificationSettings} />
-            <Route path="/agent/dashboard" component={AgentDashboard} />
-            <Route path="/pricing" component={Pricing} />
-            <Route path="/subscribe/:planId" component={Subscribe} />
-            <Route path="/profile" component={Profile} />
-            <Route path="/trades" component={Trades} />
-            <Route path="/projects" component={Projects} />
-            <Route path="/kyc" component={KYC} />
-            <Route path="/sign-in/*?" component={SignInPage} />
-            <Route path="/sign-up/*?" component={SignUpPage} />
-            <Route component={NotFound} />
-          </Switch>
+          {appRoutes}
           <HideBottomNavOnAuthPages />
           <Toaster />
         </TooltipProvider>
@@ -204,10 +211,29 @@ function ClerkProviderWithRoutes() {
   );
 }
 
+function AppWithoutClerk() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        {appRoutes}
+        <HideBottomNavOnAuthPages />
+        <Toaster />
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+}
+
+function AppRoutes() {
+  if (clerkPubKey) {
+    return <AppWithClerk />;
+  }
+  return <AppWithoutClerk />;
+}
+
 function App() {
   return (
     <WouterRouter base={basePath}>
-      <ClerkProviderWithRoutes />
+      <AppRoutes />
     </WouterRouter>
   );
 }
