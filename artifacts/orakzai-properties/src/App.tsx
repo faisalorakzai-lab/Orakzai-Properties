@@ -72,67 +72,105 @@ const clerkAppearance = {
   theme: shadcn,
   cssLayerName: "clerk",
   options: {
-    logoPlacement: "inside" as const,
+    logoPlacement: "none" as const,
     logoLinkUrl: basePath || "/",
-    logoImageUrl: `${window.location.origin}${basePath}/logo.svg`,
   },
   variables: {
-    colorPrimary: "#F3BA2F",
-    colorForeground: "#f1f5f9",
-    colorMutedForeground: "#94a3b8",
+    colorPrimary: "#D4AF37",
+    colorForeground: "#f8f8f8",
+    colorMutedForeground: "rgba(255,255,255,0.4)",
     colorDanger: "#ef4444",
-    colorBackground: "#070B14",
-    colorInput: "#0D1421",
-    colorInputForeground: "#f1f5f9",
-    colorNeutral: "#1a1a1a",
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
-    borderRadius: "0.5rem",
+    colorBackground: "#080604",
+    colorInput: "rgba(255,255,255,0.04)",
+    colorInputForeground: "#ffffff",
+    colorNeutral: "#1a1510",
+    fontFamily: "'Inter', 'Plus Jakarta Sans', sans-serif",
+    borderRadius: "0.875rem",
+    fontSize: "14px",
+    spacingUnit: "18px",
   },
   elements: {
-    rootBox: "w-full flex justify-center",
-    cardBox: "bg-[#070B14] border border-[#F3BA2F]/30 rounded-2xl w-[440px] max-w-full overflow-hidden shadow-2xl shadow-[#F3BA2F]/10",
-    card: "!shadow-none !border-0 !bg-transparent !rounded-none",
-    footer: "!shadow-none !border-0 !bg-transparent !rounded-none",
-    headerTitle: "text-[#f1f5f9] font-serif",
-    headerSubtitle: "text-[#94a3b8]",
-    socialButtonsBlockButtonText: "text-[#f1f5f9]",
-    formFieldLabel: "text-[#94a3b8]",
-    footerActionLink: "text-[#F3BA2F] hover:text-[#e8c060]",
-    footerActionText: "text-[#94a3b8]",
-    dividerText: "text-[#94a3b8]",
-    formButtonPrimary: "bg-[#F3BA2F] text-[#070B14] font-bold hover:bg-[#e8c060]",
-    identityPreviewText: "text-[#f1f5f9]",
-    identityPreviewEditButton: "text-[#F3BA2F]",
-    formFieldInputShowPasswordButton: "text-[#94a3b8]",
+    rootBox: "w-full",
+    cardBox: "w-full",
+    card: "w-full",
   },
 };
 
+function OrakzaiBranding() {
+  const logoSrc = `${window.location.origin}${basePath}/logo-ob-shield.png`;
+  return (
+    <div className="orakzai-auth-branding">
+      <img
+        src={logoSrc}
+        alt="Orakzai Properties"
+        className="orakzai-auth-logo"
+        onError={(e) => {
+          (e.target as HTMLImageElement).src = `${window.location.origin}${basePath}/logo-shield.png`;
+        }}
+      />
+      <div className="orakzai-auth-wordmark">
+        <div className="orakzai-auth-wordmark-title">ORAKZAI</div>
+        <div className="orakzai-auth-wordmark-sub">Properties</div>
+        <div className="orakzai-auth-divider-line" />
+      </div>
+    </div>
+  );
+}
+
 function SignInPage() {
   return (
-    <div style={{ minHeight: "100dvh", background: "#070B14", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
-      <SignIn
-        appearance={clerkAppearance}
-        signUpUrl={`${basePath}/sign-up`}
-        forceRedirectUrl={`${basePath}/`}
-        afterSignInUrl={`${basePath}/`}
-        routing="path"
-        path={`${basePath}/sign-in`}
-      />
+    <div className="orakzai-auth-page">
+      <OrakzaiBranding />
+      <div className="orakzai-auth-clerk">
+        <SignIn
+          appearance={clerkAppearance}
+          signUpUrl={`${basePath}/sign-up`}
+          forceRedirectUrl={`${basePath}/`}
+          afterSignInUrl={`${basePath}/`}
+          routing="path"
+          path={`${basePath}/sign-in`}
+        />
+      </div>
+      <p style={{
+        marginTop: 28,
+        fontSize: 11,
+        color: "rgba(255,255,255,0.18)",
+        letterSpacing: "0.06em",
+        fontFamily: "'Inter', sans-serif",
+        textTransform: "uppercase",
+        textAlign: "center",
+      }}>
+        Assets of Today · Legacies of Tomorrow
+      </p>
     </div>
   );
 }
 
 function SignUpPage() {
   return (
-    <div style={{ minHeight: "100dvh", background: "#070B14", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
-      <SignUp
-        appearance={clerkAppearance}
-        signInUrl={`${basePath}/sign-in`}
-        forceRedirectUrl={`${basePath}/`}
-        afterSignUpUrl={`${basePath}/`}
-        routing="path"
-        path={`${basePath}/sign-up`}
-      />
+    <div className="orakzai-auth-page">
+      <OrakzaiBranding />
+      <div className="orakzai-auth-clerk">
+        <SignUp
+          appearance={clerkAppearance}
+          signInUrl={`${basePath}/sign-in`}
+          forceRedirectUrl={`${basePath}/`}
+          afterSignUpUrl={`${basePath}/`}
+          routing="path"
+          path={`${basePath}/sign-up`}
+        />
+      </div>
+      <p style={{
+        marginTop: 28,
+        fontSize: 11,
+        color: "rgba(255,255,255,0.18)",
+        letterSpacing: "0.06em",
+        fontFamily: "'Inter', sans-serif",
+        textTransform: "uppercase",
+        textAlign: "center",
+      }}>
+        Assets of Today · Legacies of Tomorrow
+      </p>
     </div>
   );
 }
