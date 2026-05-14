@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, Plus, BarChart3, Wallet, Briefcase } from "lucide-react";
 import { useClerk } from "@clerk/react";
 import NotificationBell from "@/components/NotificationBell";
-import logoShield from "@assets/91ff4a70-4a67-11f1-8227-eb654f8e3c35_1778728050316.png";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+const logoShield = `${basePath}/logo-shield.png`;
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
