@@ -27,6 +27,7 @@ import Profile from "@/pages/Profile";
 import Trades from "@/pages/Trades";
 import Projects from "@/pages/Projects";
 import KYC from "@/pages/KYC";
+import AdminConfig from "@/pages/AdminConfig";
 import BottomNav from "@/components/BottomNav";
 
 const queryClient = new QueryClient({
@@ -176,6 +177,7 @@ const appRoutes = (
     <Route path="/trades" component={Trades} />
     <Route path="/projects" component={Projects} />
     <Route path="/kyc" component={KYC} />
+    <Route path="/admin/config" component={AdminConfig} />
     <Route path="/sign-in/*?" component={SignInPage} />
     <Route path="/sign-up/*?" component={SignUpPage} />
     <Route component={NotFound} />
