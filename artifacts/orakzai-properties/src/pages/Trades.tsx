@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { createClient } from "@supabase/supabase-js";
 import { motion, AnimatePresence } from "framer-motion";
 import { createChart, ColorType, CandlestickSeries, LineStyle } from "lightweight-charts";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { Search, ChevronDown, X, AlertTriangle, ArrowLeft, Star, Bell, TrendingUp, TrendingDown, ExternalLink, Settings } from "lucide-react";
 import { Link } from "wouter";
-import { initEngine, getPrice, getABP, getTA, applyTrade, tickPrice } from "@/lib/priceEngine";
+import { initEngine, getPrice, getABP, getTA, applyTrade } from "@/lib/priceEngine";
 import { getWallet, executeTrade, calculateFee, type Currency } from "@/lib/walletEngine";
 
 /* ── Theme ──────────────────────────────────────────────────────────────────── */
@@ -585,16 +586,23 @@ function Terminal({asset,onBack}:{asset:Asset;onBack:()=>void}) {
     init(initPrice);
   },[asset.ticker]);
 
-  // Price tick every 2s
+  // Real-time price via Supabase Broadcast — ticks broadcast from Edge Function every 2s
   useEffect(()=>{
-    const iv=setInterval(()=>{
-      const next=tickPrice(asset.ticker);
-      setLive(next);
-      setBook(genBook(next));
-      setTrades(t=>{ const nt=genTrades(next,25); return nt; });
-      updateCandle(next);
-    },2000);
-    return ()=>clearInterval(iv);
+    const sb=createClient(
+      import.meta.env.VITE_SUPABASE_URL,
+      import.meta.env.VITE_SUPABASE_ANON_KEY
+    );
+    const ch=sb.channel("price-feed")
+      .on("broadcast",{event:"tick"},(msg)=>{
+        if(msg.payload?.ticker!==asset.ticker) return;
+        const next=Number(msg.payload.price);
+        setLive(next);
+        setBook(genBook(next));
+        setTrades(()=>genTrades(next,25));
+        updateCandle(next);
+      })
+      .subscribe();
+    return ()=>{ sb.removeChannel(ch); };
   },[asset.ticker]);
 
   // Listen for admin price jump
