@@ -6,7 +6,9 @@ import {
   Search, ChevronDown, X, AlertTriangle, ArrowLeft,
   Star, Bell, ChevronRight, TrendingUp, TrendingDown, ExternalLink,
 } from "lucide-react";
-import logoShield from "@assets/91ff4a70-4a67-11f1-8227-eb654f8e3c35_1778728050316.png";
+
+const _basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+const logoShield = `${_basePath}/logo-shield.png`;
 
 // ─── Theme ───────────────────────────────────────────────────────────────────
 const BG       = "#0B0E11";
