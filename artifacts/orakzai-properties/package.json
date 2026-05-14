@@ -41,7 +41,6 @@
     "@replit/vite-plugin-cartographer": "catalog:",
     "@replit/vite-plugin-dev-banner": "catalog:",
     "@replit/vite-plugin-runtime-error-modal": "catalog:",
-    "@supabase/supabase-js": "^2.105.4",
     "@tailwindcss/typography": "^0.5.15",
     "@tailwindcss/vite": "catalog:",
     "@tanstack/react-query": "catalog:",
@@ -76,8 +75,9 @@
     "zod": "catalog:"
   },
   "dependencies": {
-    "@clerk/react": "^6.5.0",
+    "@clerk/react": "^6.6.2",
     "@clerk/themes": "^2.4.57",
+    "@supabase/supabase-js": "^2.105.4",
     "lightweight-charts": "^5.2.0"
   }
 }
