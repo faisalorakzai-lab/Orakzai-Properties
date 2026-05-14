@@ -2,9 +2,10 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Show } from "@clerk/react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Building2, Plus, BarChart3, Wallet, Briefcase, Crown } from "lucide-react";
+import { Menu, X, Plus, BarChart3, Wallet, Briefcase } from "lucide-react";
 import { useClerk } from "@clerk/react";
 import NotificationBell from "@/components/NotificationBell";
+import logoShield from "@assets/91ff4a70-4a67-11f1-8227-eb654f8e3c35_1778728050316.png";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -26,7 +27,11 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14">
           <Link href="/" className="flex items-center gap-2 group">
-            <Building2 className="h-6 w-6 text-[#C9A84C]" />
+            <img
+              src={logoShield}
+              alt="Orakzai Properties"
+              style={{ width: 32, height: 32, objectFit: "contain", flexShrink: 0 }}
+            />
             <div>
               <div className="font-serif text-[#C9A84C] font-semibold text-sm leading-none">Orakzai</div>
               <div className="text-[9px] text-[#4a6080] tracking-widest uppercase">Properties</div>
