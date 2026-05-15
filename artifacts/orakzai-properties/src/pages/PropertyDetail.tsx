@@ -10,7 +10,8 @@ import {
   Grid3X3, Image,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import { useGetProperty, getGetPropertyQueryKey } from "@workspace/api-client-react";
+import { createClient } from "@supabase/supabase-js";
+const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY);
 import { formatPrice } from "@/components/PropertyCard";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -368,9 +369,18 @@ export default function PropertyDetail() {
   const { saved, toggle: toggleSave } = useSaved(id);
   const [saveFlash, setSaveFlash] = useState(false);
 
-  const { data: property, isLoading } = useGetProperty(id, {
-    query: { enabled: !!id, queryKey: getGetPropertyQueryKey(id) },
-  });
+  const [property, setProperty] = useState<Record<string, any> | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!id) { setIsLoading(false); return; }
+    setIsLoading(true);
+    supabase.from("properties").select("*").eq("id", id).single()
+      .then(({ data, error }) => {
+        if (!error && data) setProperty(data);
+        setIsLoading(false);
+      });
+  }, [id]);
 
   const isRental   = property?.category === "rent";
   const isAvailable = (property as any)?.isAvailable !== false;
