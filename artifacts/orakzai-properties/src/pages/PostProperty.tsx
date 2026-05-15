@@ -10,9 +10,38 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
-import { useCreateProperty, getGetMyPropertiesQueryKey, getListPropertiesQueryKey, useGetSubscriptionMe, useGetListingCount } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
 import { Show } from "@/contexts/AuthContext";
+import { createClient } from "@supabase/supabase-js";
+const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY);
+
+/* ─── Mapbox city coords ─── */
+const CITY_COORDS: Record<string, [number, number]> = {
+  "Lahore": [74.3587, 31.5204], "Islamabad": [73.0479, 33.6844],
+  "Karachi": [67.0099, 24.8607], "Rawalpindi": [73.0479, 33.6006],
+  "Peshawar": [71.5249, 34.0150], "Faisalabad": [73.0946, 31.4504],
+};
+
+function MapPreview({ city, area }: { city: string; area: string }) {
+  if (!city) return null;
+  const [lng, lat] = CITY_COORDS[city] ?? [74.3587, 31.5204];
+  const token = import.meta.env.VITE_MAPBOX_PUBLIC_KEY;
+  if (!token) return (
+    <div className="rounded-xl border border-[#C9A84C]/20 bg-[#0a1628] p-4 text-center text-[#4a6080] text-xs">
+      Add <code className="text-[#C9A84C]/70">VITE_MAPBOX_PUBLIC_KEY</code> to Vercel to enable map preview.
+    </div>
+  );
+  const label = area ? `${area}, ${city}` : city;
+  const mapUrl = `https://api.mapbox.com/styles/v1/faisalorakzai/cmp6m332s001a01s93rqk58ew/static/pin-s+F3BA2F(${lng},${lat})/${lng},${lat},13,0/600x220@2x?access_token=${token}`;
+  return (
+    <div className="rounded-2xl overflow-hidden border border-[#C9A84C]/25 relative" style={{ height: 180 }}>
+      <img src={mapUrl} alt={label} className="w-full h-full object-cover" />
+      <div className="absolute bottom-0 left-0 right-0 px-3 py-2 bg-gradient-to-t from-[#040b14]/90 to-transparent flex items-center gap-2">
+        <MapPin className="h-3 w-3 text-[#C9A84C] flex-shrink-0" />
+        <span className="text-white/80 text-xs font-medium">{label}</span>
+      </div>
+    </div>
+  );
+}
 import { Link } from "wouter";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -454,16 +483,8 @@ function UpgradeGate({ onClose }: { onClose: () => void }) {
 /* ─── Main Component ───────────────────────────────────────────────────── */
 export default function PostProperty() {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const createProperty = useCreateProperty();
-  const { data: subData } = useGetSubscriptionMe();
-  const { data: countData } = useGetListingCount();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const planLimit = subData?.plan?.listingLimit ?? 2;
-  const listingCount = countData?.count ?? 0;
-  const atLimit = planLimit !== -1 && listingCount >= planLimit;
-
-  const [showUpgradeGate, setShowUpgradeGate] = useState(false);
   const [step, setStep] = useState(1);
   const [showBoost, setShowBoost] = useState(false);
   const [successId, setSuccessId] = useState<number | null>(null);
@@ -511,40 +532,41 @@ export default function PostProperty() {
   const prev = () => { setErrors({}); setStep(s => Math.max(s - 1, 1)); };
 
   const submit = async () => {
-    if (atLimit) { setShowUpgradeGate(true); return; }
     if (!validateStep(3)) return;
-    createProperty.mutate(
-      {
-        data: {
-          title, category, type: propType, description,
-          price: Number(price),
-          city, area: area || null,
-          images,
-          ownerName: ownerName || null,
-          ownerPhone: ownerPhone || null,
-          whatsappNumber: whatsapp || ownerPhone || null,
-          beds: beds ? Number(beds) : null,
-          baths: baths ? Number(baths) : null,
-          areaSqft: areaSqft ? Number(areaSqft) : null,
-          ...(category === "rent" ? {
-            furnishedStatus: furnished || null,
-            occupancyType: occupancy || null,
-            rentalDuration: rentalDur || null,
-          } : {}),
-        } as any,
-      },
-      {
-        onSuccess: (prop) => {
-          queryClient.invalidateQueries({ queryKey: getGetMyPropertiesQueryKey() });
-          queryClient.invalidateQueries({ queryKey: getListPropertiesQueryKey() });
-          setShowBoost(true);
-          setSuccessId((prop as any).id);
-        },
-        onError: () => {
-          toast({ title: "Failed to post", description: "Please sign in and try again.", variant: "destructive" });
-        },
-      }
-    );
+    setIsSubmitting(true);
+    try {
+      const priceNum = Number(price);
+      const priceLabel = priceNum >= 10000000
+        ? `₨ ${(priceNum / 10000000).toFixed(2)} Cr`
+        : `₨ ${(priceNum / 100000).toFixed(0)}L`;
+      const coords = CITY_COORDS[city] ?? [74.3587, 31.5204];
+      const { data, error } = await supabase.from("properties").insert({
+        title, category, type: propType, description,
+        price: priceNum, price_label: priceLabel,
+        city, location: area ? `${area}, ${city}` : city,
+        area_sqft: areaSqft ? Number(areaSqft) : null,
+        images, tag: null, tag_color: null,
+        owner_name: ownerName || null,
+        owner_phone: ownerPhone || null,
+        whatsapp_number: whatsapp || ownerPhone || null,
+        agent_name: ownerName || null,
+        agent_phone: ownerPhone || null,
+        agent_whatsapp: whatsapp || ownerPhone || null,
+        beds: beds ? Number(beds) : null,
+        baths: baths ? Number(baths) : null,
+        is_verified: reqVerify,
+        is_available: true,
+        longitude: coords[0], latitude: coords[1],
+        status: "Available",
+      }).select("id").single();
+      if (error) throw error;
+      setSuccessId(data.id);
+      setShowBoost(true);
+    } catch (err: any) {
+      toast({ title: "Failed to publish", description: err?.message ?? "Please try again.", variant: "destructive" });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const finishFlow = () => {
@@ -724,6 +746,9 @@ export default function PostProperty() {
                         <input value={area} onChange={e => setArea(e.target.value)} placeholder="e.g. DHA Phase 6" className={goldInput} data-testid="input-area" />
                       </div>
                     </div>
+
+                    {/* Mapbox live preview */}
+                    {city && <MapPreview city={city} area={area} />}
 
                     {/* specs */}
                     <div>
@@ -909,11 +934,11 @@ export default function PostProperty() {
                   <button
                     type="button"
                     onClick={submit}
-                    disabled={createProperty.isPending}
+                    disabled={isSubmitting}
                     data-testid="button-submit-property"
                     className="flex items-center gap-2 h-11 px-8 rounded-xl bg-gradient-to-r from-[#C9A84C] to-[#e8c060] text-[#080f1a] font-black text-sm shadow-lg shadow-[#C9A84C]/25 hover:shadow-[#C9A84C]/40 transition-all disabled:opacity-60"
                   >
-                    {createProperty.isPending ? (
+                    {isSubmitting ? (
                       <><motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
                         className="h-4 w-4 border-2 border-[#080f1a]/30 border-t-[#080f1a] rounded-full" /> Publishing...</>
                     ) : (
@@ -926,11 +951,6 @@ export default function PostProperty() {
           </motion.div>
         </Show>
       </div>
-
-      {/* ── Upgrade Gate ── */}
-      <AnimatePresence>
-        {showUpgradeGate && <UpgradeGate onClose={() => setShowUpgradeGate(false)} />}
-      </AnimatePresence>
 
       {/* ── Boost Popup ── */}
       <AnimatePresence>
