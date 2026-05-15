@@ -232,55 +232,67 @@ function Gallery({ images, title }: { images: string[]; title: string }) {
   );
 }
 
-/* ─── 3D Map ─── */
-function MapBlock({ city, area }: { city: string; area?: string | null }) {
+/* ─── Real Mapbox Map ─── */
+const CITY_COORDS: Record<string, [number, number]> = {
+  "Lahore":      [74.3587, 31.5204],
+  "Islamabad":   [73.0479, 33.6844],
+  "Karachi":     [67.0099, 24.8607],
+  "Rawalpindi":  [73.0479, 33.6006],
+  "Peshawar":    [71.5249, 34.0150],
+  "Faisalabad":  [73.0946, 31.4504],
+  "Multan":      [71.4687, 30.1575],
+  "Quetta":      [67.0011, 30.1798],
+};
+
+function MapBlock({ city, area, latitude, longitude }: {
+  city: string; area?: string | null;
+  latitude?: number | null; longitude?: number | null;
+}) {
   const loc = area ? `${area}, ${city}` : city;
+  const fallbackCoords = CITY_COORDS[city] ?? [74.3587, 31.5204];
+  const lng = longitude ?? fallbackCoords[0];
+  const lat = latitude  ?? fallbackCoords[1];
+  const token = import.meta.env.VITE_MAPBOX_PUBLIC_KEY;
+  const STYLE = "faisalorakzai/cmp6m332s001a01s93rqk58ew";
+  const mapUrl = token
+    ? `https://api.mapbox.com/styles/v1/${STYLE}/static/pin-s+F3BA2F(${lng},${lat})/${lng},${lat},14,0/800x400@2x?access_token=${token}`
+    : null;
+
   return (
-    <div className="relative rounded-2xl overflow-hidden border border-[#C9A84C]/20"
-      style={{ height: 260, background: "linear-gradient(135deg, #0b1a2e, #0d2040, #080f1a)" }}>
-      <div className="absolute inset-0 opacity-[0.12]"
-        style={{
-          backgroundImage: "linear-gradient(rgba(201,168,76,.8) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,.8) 1px,transparent 1px)",
-          backgroundSize: "40px 40px",
-          transform: "rotateX(50deg) scale(1.7) translateY(18%)",
-          transformOrigin: "bottom center",
-        }} />
-      <svg className="absolute inset-0 w-full h-full opacity-25" viewBox="0 0 400 260" preserveAspectRatio="none">
-        <line x1="0" y1="160" x2="400" y2="110" stroke="#C9A84C" strokeWidth="4" strokeLinecap="round" />
-        <line x1="190" y1="0" x2="215" y2="260" stroke="#C9A84C" strokeWidth="2.5" />
-        <line x1="0" y1="90" x2="400" y2="70" stroke="#C9A84C" strokeWidth="1.5" strokeDasharray="10 10" opacity=".6" />
-        <line x1="60" y1="0" x2="80" y2="260" stroke="#C9A84C" strokeWidth="1" strokeDasharray="8 12" opacity=".5" />
-        <line x1="320" y1="0" x2="340" y2="260" stroke="#C9A84C" strokeWidth="1" strokeDasharray="8 12" opacity=".5" />
-        <rect x="105" y="90" width="75" height="52" rx="5" fill="rgba(201,168,76,.06)" stroke="rgba(201,168,76,.25)" strokeWidth="1.5" />
-        <rect x="240" y="55" width="95" height="65" rx="5" fill="rgba(201,168,76,.06)" stroke="rgba(201,168,76,.25)" strokeWidth="1.5" />
-        <rect x="45" y="150" width="60" height="45" rx="5" fill="rgba(201,168,76,.06)" stroke="rgba(201,168,76,.25)" strokeWidth="1.5" />
-        <rect x="295" y="140" width="55" height="50" rx="5" fill="rgba(201,168,76,.04)" stroke="rgba(201,168,76,.18)" strokeWidth="1" />
-      </svg>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="h-36 w-36 rounded-full bg-[#C9A84C]/8 blur-2xl" />
-      </div>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="flex flex-col items-center">
-          <motion.div
-            animate={{ y: [0, -5, 0] }}
-            transition={{ repeat: Infinity, duration: 2.2, ease: "easeInOut" }}
-            className="h-14 w-14 rounded-full bg-gradient-to-br from-[#C9A84C] to-[#a07830] shadow-2xl shadow-[#C9A84C]/60 flex items-center justify-center z-10">
-            <MapPin className="h-7 w-7 text-[#080f1a]" />
-          </motion.div>
-          <motion.div animate={{ scale: [1, 2.4], opacity: [0.5, 0] }} transition={{ repeat: Infinity, duration: 2, ease: "easeOut" }}
-            className="absolute h-14 w-14 rounded-full border-2 border-[#C9A84C]/60" />
-          <motion.div animate={{ scale: [1, 3.2], opacity: [0.25, 0] }} transition={{ repeat: Infinity, duration: 2, delay: 0.5, ease: "easeOut" }}
-            className="absolute h-14 w-14 rounded-full border border-[#C9A84C]/30" />
-          <div className="mt-3 bg-[#040b14]/90 border border-[#C9A84C]/50 rounded-2xl px-4 py-2 backdrop-blur-sm shadow-xl z-10">
-            <p className="text-[#C9A84C] text-xs font-bold text-center">{loc}</p>
+    <div className="relative rounded-2xl overflow-hidden border border-[#C9A84C]/20" style={{ height: 260 }}>
+      {mapUrl ? (
+        <>
+          <img
+            src={mapUrl}
+            alt={`Map of ${loc}`}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).style.display = "none";
+              (e.currentTarget.parentElement?.querySelector(".fallback-map") as HTMLElement | null)?.style.removeProperty("display");
+            }}
+          />
+          {/* fallback shown only if img fails */}
+          <div className="fallback-map absolute inset-0 hidden bg-gradient-to-br from-[#0b1a2e] to-[#080f1a]">
+            <div className="flex h-full items-center justify-center">
+              <MapPin className="h-10 w-10 text-[#C9A84C]/40" />
+            </div>
           </div>
+        </>
+      ) : (
+        <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-[#0b1a2e] to-[#080f1a]">
+          <MapPin className="h-10 w-10 text-[#C9A84C]/40 mb-3" />
+          <p className="text-[#4a6080] text-xs text-center px-4">
+            Add <code className="text-[#C9A84C]/70">VITE_MAPBOX_PUBLIC_KEY</code> to Vercel env to enable live map.
+          </p>
         </div>
-      </div>
-      <div className="absolute bottom-0 left-0 right-0 px-4 py-3 bg-gradient-to-t from-[#040b14] to-transparent flex items-center justify-between">
-        <span className="flex items-center gap-1.5 text-[#4a6080] text-xs">
+      )}
+      <div className="absolute bottom-0 left-0 right-0 px-4 py-3 bg-gradient-to-t from-[#040b14]/95 to-transparent flex items-center justify-between pointer-events-none">
+        <span className="flex items-center gap-1.5 text-white/70 text-xs font-medium">
           <MapPin className="h-3 w-3 text-[#C9A84C]" />{loc}
         </span>
-        <span className="text-[9px] font-bold tracking-widest text-[#2a3a50] border border-white/8 px-2 py-0.5 rounded-full uppercase">Orakzai Map</span>
+        <span className="text-[9px] font-bold tracking-widest text-[#C9A84C]/60 border border-[#C9A84C]/20 px-2 py-0.5 rounded-full uppercase bg-[#040b14]/50">
+          {mapUrl ? "Mapbox" : "Map Preview"}
+        </span>
       </div>
     </div>
   );
@@ -703,7 +715,7 @@ export default function PropertyDetail() {
                 <div className="h-5 w-1 rounded-full bg-gradient-to-b from-[#C9A84C] to-[#e8c060]" />
                 Location
               </h3>
-              <MapBlock city={property.city} area={property.area} />
+              <MapBlock city={property.city} area={property.area} latitude={(property as any).latitude} longitude={(property as any).longitude} />
               <p className="text-[#2a3a50] text-[10px] text-center mt-2">Approximate location shown for privacy</p>
             </motion.div>
           </div>
