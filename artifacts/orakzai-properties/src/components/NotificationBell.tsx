@@ -5,7 +5,7 @@ import {
   Bell, X, Check, CheckCheck, Trash2, Settings,
   TrendingUp, Home, DollarSign, Megaphone, ChevronRight,
 } from "lucide-react";
-import { useUser } from "@clerk/react";
+import { useUser } from "@/contexts/AuthContext";
 import {
   useListNotifications,
   getListNotificationsQueryKey,

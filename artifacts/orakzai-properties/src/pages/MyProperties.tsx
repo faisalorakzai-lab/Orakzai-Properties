@@ -14,7 +14,7 @@ import {
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { Show } from "@clerk/react";
+import { Show } from "@/contexts/AuthContext";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 

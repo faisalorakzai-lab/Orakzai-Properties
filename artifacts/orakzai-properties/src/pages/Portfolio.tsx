@@ -12,7 +12,7 @@ import {
   ResponsiveContainer, Area, AreaChart, ReferenceLine,
 } from "recharts";
 import Navbar from "@/components/Navbar";
-import { Show, useUser } from "@clerk/react";
+import { Show, useUser } from "@/contexts/AuthContext";
 import {
   useGetPortfolioDashboard,
   getGetPortfolioDashboardQueryKey,

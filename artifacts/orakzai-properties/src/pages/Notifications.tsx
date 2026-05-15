@@ -4,7 +4,7 @@ import {
   CheckCheck, Trash2, Filter, Clock,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import { Show } from "@clerk/react";
+import { Show } from "@/contexts/AuthContext";
 import { Link } from "wouter";
 import {
   useListNotifications,

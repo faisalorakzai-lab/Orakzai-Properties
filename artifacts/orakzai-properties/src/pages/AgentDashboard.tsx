@@ -11,7 +11,7 @@ import {
   CheckCircle2, Calendar, Handshake, TrendingDown, Filter,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import { Show, useUser } from "@clerk/react";
+import { Show, useUser } from "@/contexts/AuthContext";
 import {
   useGetAgentDashboard,
   getGetAgentDashboardQueryKey,
@@ -1161,7 +1161,7 @@ function AgentDashboardContent() {
         {chatOpen && selectedLead && user && (
           <ChatPanel
             lead={selectedLead}
-            agentId={user.id}
+            agentId={user.uid}
             onClose={() => { setChatOpen(false); setSelectedLead(null); }}
           />
         )}

@@ -13,7 +13,7 @@ import {
   Clock,
   XCircle,
 } from "lucide-react";
-import { useUser, Show } from "@clerk/react";
+import { useUser, Show } from "@/contexts/AuthContext";
 import { useKYCStatus } from "@/lib/useKYCStatus";
 
 const GOLD = "#D4AF37";

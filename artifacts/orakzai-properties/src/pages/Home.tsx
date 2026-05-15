@@ -7,7 +7,7 @@ import {
   TrendingUp, TrendingDown, Heart, ArrowRight, ShieldCheck,
   Star, Bed, Bath, Maximize2, X,
 } from "lucide-react";
-import { useUser } from "@clerk/react";
+import { useUser } from "@/contexts/AuthContext";
 import { useKYCStatus } from "@/lib/useKYCStatus";
 import KYCGateModal from "@/components/KYCGateModal";
 

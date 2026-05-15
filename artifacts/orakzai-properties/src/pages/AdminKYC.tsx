@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { useUser } from "@clerk/react";
+import { useUser } from "@/contexts/AuthContext";
 import { getAllProfiles, updateKYCStatus, type Profile, type KYCStatus } from "@/lib/supabase";
 import {
   Shield, CheckCircle2, XCircle, Clock, Eye, ChevronLeft,

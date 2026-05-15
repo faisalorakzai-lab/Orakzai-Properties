@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 import { useCreateProperty, getGetMyPropertiesQueryKey, getListPropertiesQueryKey, useGetSubscriptionMe, useGetListingCount } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Show } from "@clerk/react";
+import { Show } from "@/contexts/AuthContext";
 import { Link } from "wouter";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");

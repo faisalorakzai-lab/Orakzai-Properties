@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { useUser } from "@clerk/react";
+import { useUser } from "@/contexts/AuthContext";
 import { adminSetABP, getABP, initEngine } from "@/lib/priceEngine";
 import { Shield, CheckCircle, AlertCircle, Users, ChevronRight } from "lucide-react";
 

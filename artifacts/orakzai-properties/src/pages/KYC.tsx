@@ -15,7 +15,7 @@ import {
   Clock,
   X,
 } from "lucide-react";
-import { useUser } from "@clerk/react";
+import { useUser } from "@/contexts/AuthContext";
 import { submitKYC } from "@/lib/supabase";
 
 const GOLD = "#D4AF37";
@@ -723,9 +723,9 @@ export default function KYC() {
     setSubmitting(true);
     setSubmitError(null);
     try {
-      const email = user.primaryEmailAddress?.emailAddress ?? "";
+      const email = user.email ?? "" ?? "";
       const ok = await submitKYC(
-        user.id,
+        user.uid,
         email,
         personalData,
         docData.docType ?? "cnic",

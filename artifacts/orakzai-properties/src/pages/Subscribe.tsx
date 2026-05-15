@@ -3,7 +3,7 @@ import { useParams, useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { Crown, Star, Check, ArrowLeft, Wallet, AlertTriangle, Sparkles, Lock } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import { Show } from "@clerk/react";
+import { Show } from "@/contexts/AuthContext";
 import { Link } from "wouter";
 import {
   useGetSubscriptionMe,

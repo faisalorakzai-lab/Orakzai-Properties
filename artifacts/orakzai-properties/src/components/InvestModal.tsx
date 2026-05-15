@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useBuyShares } from "@workspace/api-client-react";
-import { useUser } from "@clerk/react";
+import { useUser } from "@/contexts/AuthContext";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 

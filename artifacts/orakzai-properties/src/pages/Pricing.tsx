@@ -6,7 +6,7 @@ import {
   Building2, Users, Headphones, Sparkles, ArrowRight, BadgeCheck,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import { Show } from "@clerk/react";
+import { Show } from "@/contexts/AuthContext";
 import { useGetSubscriptionMe } from "@workspace/api-client-react";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");

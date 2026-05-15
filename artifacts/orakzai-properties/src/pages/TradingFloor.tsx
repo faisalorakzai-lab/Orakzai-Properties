@@ -7,7 +7,7 @@ import {
   ArrowUpRight, ArrowDownRight, Wifi, WifiOff,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import { useUser, Show } from "@clerk/react";
+import { useUser, Show } from "@/contexts/AuthContext";
 import { createChart, ColorType, LineStyle, AreaSeries } from "lightweight-charts";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
