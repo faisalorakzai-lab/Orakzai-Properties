@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useParams, Link } from "wouter";
 import {
@@ -8,7 +8,8 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import InvestModal from "@/components/InvestModal";
-import { useGetInvestmentProject, getGetInvestmentProjectQueryKey } from "@workspace/api-client-react";
+import { createClient } from "@supabase/supabase-js";
+const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY);
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -77,14 +78,21 @@ const DEMO_PROJECT = {
 
 export default function InvestDetail() {
   const { id } = useParams<{ id: string }>();
-  const isDemo = !id || isNaN(Number(id));
   const numId = Number(id);
-  const { data: apiProject, isLoading, isError } = useGetInvestmentProject(
-    numId,
-    { query: { enabled: !isDemo, retry: false, queryKey: getGetInvestmentProjectQueryKey(numId) } },
-  );
+  const [dbProject, setDbProject] = useState<typeof DEMO_PROJECT | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const project = (isDemo || isError || !apiProject) ? DEMO_PROJECT : apiProject;
+  useEffect(() => {
+    if (!numId || isNaN(numId)) { setIsLoading(false); return; }
+    setIsLoading(true);
+    supabase.from("investment_projects").select("*").eq("id", numId).single()
+      .then(({ data, error }) => {
+        if (!error && data) setDbProject(data as typeof DEMO_PROJECT);
+        setIsLoading(false);
+      });
+  }, [numId]);
+
+  const project = dbProject ?? DEMO_PROJECT;
 
   const roiPct = parseRoiPercent(project.roi);
   const durationMonths = parseDurationMonths(project.duration);
