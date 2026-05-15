@@ -164,9 +164,12 @@ const MARKET_PULSE = [
 ];
 
 function PropertyCard({ p, onSave, saved }: { p: typeof MOCK_PROPERTIES[0]; onSave: () => void; saved: boolean }) {
+  const [, nav] = useLocation();
   const isInvest = p.type === "investment" || p.type === "booking";
+  const handleClick = () => isInvest ? nav(`/invest/${p.id}`) : nav(`/property/${p.id}`);
   return (
-    <div style={{ background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 20, overflow: "hidden", position: "relative", flexShrink: 0, width: 240, cursor: "pointer" }}>
+    <div style={{ background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 20, overflow: "hidden", position: "relative", flexShrink: 0, width: 240, cursor: "pointer" }}
+      onClick={handleClick}>
       <div style={{ position: "relative", height: 140 }}>
         <img src={p.image} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover" }}
           onError={(e) => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&q=80"; }} />
@@ -208,8 +211,11 @@ function PropertyCard({ p, onSave, saved }: { p: typeof MOCK_PROPERTIES[0]; onSa
 }
 
 function PropertyListCard({ p, onSave, saved }: { p: typeof MOCK_PROPERTIES[0]; onSave: () => void; saved: boolean }) {
+  const [, nav] = useLocation();
+  const isInvest = p.type === "investment" || p.type === "booking";
   return (
-    <div style={{ background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 16, display: "flex", gap: 12, padding: 12, cursor: "pointer", alignItems: "flex-start" }}>
+    <div style={{ background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 16, display: "flex", gap: 12, padding: 12, cursor: "pointer", alignItems: "flex-start" }}
+      onClick={() => isInvest ? nav(`/invest/${p.id}`) : nav(`/property/${p.id}`)}>
       <div style={{ flexShrink: 0, width: 90, height: 80, borderRadius: 12, overflow: "hidden" }}>
         <img src={p.image} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover" }}
           onError={(e) => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&q=80"; }} />
