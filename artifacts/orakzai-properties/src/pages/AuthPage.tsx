@@ -4,15 +4,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   signInWithEmailAndPassword, createUserWithEmailAndPassword,
   signInWithPopup, GoogleAuthProvider, signInWithPhoneNumber,
-  RecaptchaVerifier, updateProfile, type ConfirmationResult,
+  RecaptchaVerifier, updateProfile, sendPasswordResetEmail,
+  type ConfirmationResult,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import { Eye, EyeOff, Mail, Lock, User, Phone, ArrowRight, RotateCcw, ChevronDown } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, Phone, ArrowRight, RotateCcw, ChevronDown, ArrowLeft, CheckCircle2 } from "lucide-react";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 const GOLD = "#D4AF37";
 
-type AuthMode = "signin" | "signup";
+type AuthMode = "signin" | "signup" | "forgot";
 type AuthMethod = "email" | "phone";
 
 const COUNTRY_CODES = [
@@ -28,16 +29,16 @@ const COUNTRY_CODES = [
   { code: "+60", flag: "🇲🇾", name: "Malaysia" },
 ];
 
-function LuxInput({ icon: Icon, type = "text", placeholder, value, onChange, autoComplete, }: {
-  icon: React.ElementType; type?: string; placeholder: string; value: string; onChange: (v: string) => void; autoComplete?: string;
+function LuxInput({ icon: Icon, type = "text", placeholder, value, onChange, autoComplete, disabled }: {
+  icon: React.ElementType; type?: string; placeholder: string; value: string; onChange: (v: string) => void; autoComplete?: string; disabled?: boolean;
 }) {
   const [focused, setFocused] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
   const isPassword = type === "password";
   return (
-    <div style={{ display: "flex", alignItems: "center", background: "rgba(255,255,255,0.04)", border: `1px solid ${focused ? "rgba(212,175,55,0.55)" : "rgba(255,255,255,0.09)"}`, borderRadius: 14, padding: "0 14px", height: 52, gap: 10, transition: "border-color 0.2s, box-shadow 0.2s", boxShadow: focused ? "0 0 0 3px rgba(212,175,55,0.08)" : "none" }}>
+    <div style={{ display: "flex", alignItems: "center", background: disabled ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.04)", border: `1px solid ${focused ? "rgba(212,175,55,0.55)" : "rgba(255,255,255,0.09)"}`, borderRadius: 14, padding: "0 14px", height: 52, gap: 10, transition: "border-color 0.2s, box-shadow 0.2s", boxShadow: focused ? "0 0 0 3px rgba(212,175,55,0.08)" : "none", opacity: disabled ? 0.5 : 1 }}>
       <Icon size={16} color={focused ? GOLD : "rgba(255,255,255,0.3)"} style={{ flexShrink: 0, transition: "color 0.2s" }} />
-      <input type={isPassword ? (showPwd ? "text" : "password") : type} placeholder={placeholder} value={value} autoComplete={autoComplete} onChange={(e) => onChange(e.target.value)} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+      <input type={isPassword ? (showPwd ? "text" : "password") : type} placeholder={placeholder} value={value} autoComplete={autoComplete} onChange={(e) => onChange(e.target.value)} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} disabled={disabled}
         style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "#ffffff", fontSize: 14, fontFamily: "'Inter', sans-serif" }} />
       {isPassword && (
         <button type="button" onClick={() => setShowPwd(!showPwd)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}>
@@ -53,7 +54,7 @@ function GoldButton({ children, onClick, loading, disabled, type = "button" }: {
 }) {
   return (
     <button type={type} onClick={onClick} disabled={disabled || loading}
-      style={{ width: "100%", height: 52, background: disabled || loading ? "rgba(212,175,55,0.35)" : "linear-gradient(135deg, #D4AF37 0%, #c49b28 45%, #b8891f 100%)", border: "none", borderRadius: 14, color: "#050505", fontSize: 14, fontWeight: 700, fontFamily: "'Inter', sans-serif", letterSpacing: "0.04em", cursor: disabled || loading ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: disabled || loading ? "none" : "0 6px 28px rgba(212,175,55,0.35)" }}>
+      style={{ width: "100%", height: 52, background: disabled || loading ? "rgba(212,175,55,0.35)" : "linear-gradient(135deg, #D4AF37 0%, #c49b28 45%, #b8891f 100%)", border: "none", borderRadius: 14, color: "#050505", fontSize: 14, fontWeight: 700, fontFamily: "'Inter', sans-serif", letterSpacing: "0.04em", cursor: disabled || loading ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: disabled || loading ? "none" : "0 6px 28px rgba(212,175,55,0.35)", transition: "transform 0.15s, box-shadow 0.15s" }}>
       {loading ? <div style={{ width: 18, height: 18, borderRadius: "50%", border: "2.5px solid rgba(5,5,5,0.25)", borderTop: "2.5px solid #050505", animation: "spin 0.8s linear infinite" }} /> : children}
     </button>
   );
@@ -68,7 +69,120 @@ function ErrorMsg({ msg }: { msg: string }) {
   );
 }
 
-function EmailAuth({ mode, onSwitch }: { mode: AuthMode; onSwitch: () => void }) {
+function SuccessMsg({ msg }: { msg: string }) {
+  return (
+    <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+      style={{ padding: "11px 14px", borderRadius: 12, background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.25)", color: "#86efac", fontSize: 12, fontFamily: "'Inter', sans-serif", lineHeight: 1.5, display: "flex", alignItems: "flex-start", gap: 8 }}>
+      <CheckCircle2 size={14} style={{ flexShrink: 0, marginTop: 1 }} />
+      {msg}
+    </motion.div>
+  );
+}
+
+/* ─── Forgot Password Panel ─── */
+function ForgotPasswordPanel({ onBack }: { onBack: () => void }) {
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [sent, setSent] = useState(false);
+
+  const handleReset = async () => {
+    setError("");
+    if (!email) { setError("Please enter your email address."); return; }
+    const emailRx = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRx.test(email)) { setError("Please enter a valid email address."); return; }
+    setLoading(true);
+    try {
+      await sendPasswordResetEmail(auth, email, {
+        url: `${window.location.origin}${basePath}/sign-in`,
+        handleCodeInApp: false,
+      });
+      setSent(true);
+    } catch (err: any) {
+      const code = err?.code ?? "";
+      if (code === "auth/user-not-found") {
+        // Don't reveal if user exists — security best practice
+        setSent(true);
+      } else if (code === "auth/invalid-email") {
+        setError("Please enter a valid email address.");
+      } else if (code === "auth/too-many-requests") {
+        setError("Too many requests. Please wait a moment before trying again.");
+      } else {
+        setError("Failed to send reset email. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (sent) {
+    return (
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20, paddingTop: 8 }}>
+        <motion.div
+          initial={{ scale: 0 }} animate={{ scale: 1 }}
+          transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.1 }}
+          style={{ width: 72, height: 72, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: "radial-gradient(circle, rgba(212,175,55,0.15) 0%, rgba(212,175,55,0.05) 70%)", border: "1.5px solid rgba(212,175,55,0.35)" }}
+        >
+          <Mail size={28} color={GOLD} />
+        </motion.div>
+
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 18, fontWeight: 700, color: "#fff", fontFamily: "'Inter', sans-serif", marginBottom: 10 }}>
+            Check Your Inbox
+          </div>
+          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", fontFamily: "'Inter', sans-serif", lineHeight: 1.65, maxWidth: 280 }}>
+            If an account exists for <strong style={{ color: "rgba(255,255,255,0.7)" }}>{email}</strong>, you'll receive a password reset link shortly.
+          </div>
+        </div>
+
+        <div style={{ width: "100%", padding: "14px 16px", borderRadius: 14, background: "rgba(212,175,55,0.07)", border: "1px solid rgba(212,175,55,0.2)" }}>
+          <div style={{ fontSize: 11, color: "rgba(212,175,55,0.8)", fontFamily: "'Inter', sans-serif", lineHeight: 1.7 }}>
+            📬 Check spam/junk folder if you don't see it within 2 minutes.<br />
+            🔗 The link expires in 24 hours.<br />
+            🔒 Do not share the link with anyone.
+          </div>
+        </div>
+
+        <button onClick={() => { setSent(false); setEmail(""); }}
+          style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(212,175,55,0.7)", fontSize: 13, fontFamily: "'Inter', sans-serif", display: "flex", alignItems: "center", gap: 6 }}>
+          <RotateCcw size={13} /> Send to a different email
+        </button>
+
+        <button onClick={onBack}
+          style={{ width: "100%", height: 50, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 14, color: "rgba(255,255,255,0.6)", fontSize: 13, fontFamily: "'Inter', sans-serif", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+          <ArrowLeft size={14} /> Back to Sign In
+        </button>
+      </motion.div>
+    );
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <div style={{ textAlign: "center", marginBottom: 4 }}>
+        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6 }}>
+          Enter your email address and we'll send you a link to reset your password.
+        </div>
+      </div>
+
+      <LuxInput icon={Mail} type="email" placeholder="Email address" value={email} onChange={setEmail} autoComplete="email" disabled={loading} />
+
+      {error && <ErrorMsg msg={error} />}
+
+      <GoldButton onClick={handleReset} loading={loading} disabled={!email}>
+        Send Reset Link
+        <ArrowRight size={16} />
+      </GoldButton>
+
+      <button onClick={onBack}
+        style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.35)", fontSize: 13, fontFamily: "'Inter', sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "4px 0" }}>
+        <ArrowLeft size={13} /> Back to Sign In
+      </button>
+    </div>
+  );
+}
+
+/* ─── Email/Password Auth ─── */
+function EmailAuth({ mode, onSwitch, onForgot }: { mode: AuthMode; onSwitch: () => void; onForgot: () => void; }) {
   const [, setLocation] = useLocation();
   const [name, setName] = useState(""); const [email, setEmail] = useState(""); const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false); const [error, setError] = useState("");
@@ -86,7 +200,7 @@ function EmailAuth({ mode, onSwitch }: { mode: AuthMode; onSwitch: () => void })
     } catch (err: any) {
       const code = err?.code ?? "";
       if (code === "auth/user-not-found" || code === "auth/wrong-password" || code === "auth/invalid-credential") setError("Invalid email or password. Please try again.");
-      else if (code === "auth/email-already-in-use") setError("An account with this email already exists.");
+      else if (code === "auth/email-already-in-use") setError("An account with this email already exists. Please sign in.");
       else if (code === "auth/invalid-email") setError("Please enter a valid email address.");
       else if (code === "auth/too-many-requests") setError("Too many attempts. Please wait and try again.");
       else setError(err?.message ?? "Authentication failed. Please try again.");
@@ -97,7 +211,20 @@ function EmailAuth({ mode, onSwitch }: { mode: AuthMode; onSwitch: () => void })
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       {mode === "signup" && <LuxInput icon={User} placeholder="Full Name" value={name} onChange={setName} autoComplete="name" />}
       <LuxInput icon={Mail} type="email" placeholder="Email address" value={email} onChange={setEmail} autoComplete="email" />
-      <LuxInput icon={Lock} type="password" placeholder="Password" value={password} onChange={setPassword} autoComplete={mode === "signin" ? "current-password" : "new-password"} />
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        <LuxInput icon={Lock} type="password" placeholder="Password" value={password} onChange={setPassword} autoComplete={mode === "signin" ? "current-password" : "new-password"} />
+        {mode === "signin" && (
+          <div style={{ textAlign: "right" }}>
+            <button onClick={onForgot}
+              style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(212,175,55,0.65)", fontSize: 12, fontFamily: "'Inter', sans-serif", padding: "2px 0", transition: "color 0.2s" }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = GOLD; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "rgba(212,175,55,0.65)"; }}
+            >
+              Forgot password?
+            </button>
+          </div>
+        )}
+      </div>
       {error && <ErrorMsg msg={error} />}
       <GoldButton onClick={handleSubmit} loading={loading}>{mode === "signin" ? "Sign In" : "Create Account"}<ArrowRight size={16} /></GoldButton>
       <p style={{ textAlign: "center", fontSize: 13, color: "rgba(255,255,255,0.35)", margin: 0, fontFamily: "'Inter', sans-serif" }}>
@@ -110,6 +237,7 @@ function EmailAuth({ mode, onSwitch }: { mode: AuthMode; onSwitch: () => void })
   );
 }
 
+/* ─── Google ─── */
 function GoogleButton() {
   const [, setLocation] = useLocation();
   const [loading, setLoading] = useState(false); const [error, setError] = useState("");
@@ -122,7 +250,9 @@ function GoogleButton() {
   return (
     <div>
       <button onClick={handleGoogle} disabled={loading}
-        style={{ width: "100%", height: 50, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 14, color: "rgba(255,255,255,0.75)", fontSize: 13, fontWeight: 500, fontFamily: "'Inter', sans-serif", cursor: loading ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, transition: "all 0.2s" }}>
+        style={{ width: "100%", height: 50, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 14, color: "rgba(255,255,255,0.75)", fontSize: 13, fontWeight: 500, fontFamily: "'Inter', sans-serif", cursor: loading ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, transition: "all 0.2s" }}
+        onMouseEnter={(e) => { if (!loading) { (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(212,175,55,0.35)"; (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.07)"; }}}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(255,255,255,0.12)"; (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.04)"; }}>
         {loading ? <div style={{ width: 16, height: 16, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.15)", borderTop: "2px solid rgba(255,255,255,0.6)", animation: "spin 0.8s linear infinite" }} /> : (
           <svg width="18" height="18" viewBox="0 0 18 18" style={{ opacity: 0.7 }}>
             <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/>
@@ -138,6 +268,7 @@ function GoogleButton() {
   );
 }
 
+/* ─── Phone Auth ─── */
 function PhoneAuth() {
   const [, setLocation] = useLocation();
   const [countryCode, setCountryCode] = useState("+92"); const [showDropdown, setShowDropdown] = useState(false);
@@ -229,70 +360,99 @@ function PhoneAuth() {
   );
 }
 
-export default function AuthPage({ defaultMode = "signin" }: { defaultMode?: AuthMode }) {
+/* ─── Main Auth Page ─── */
+export default function AuthPage({ defaultMode = "signin" }: { defaultMode?: "signin" | "signup" }) {
   const [mode, setMode] = useState<AuthMode>(defaultMode);
   const [method, setMethod] = useState<AuthMethod>("email");
   const logoSrc = `${window.location.origin}${basePath}/logo-ob-shield.png`;
 
   useEffect(() => { setMode(defaultMode); }, [defaultMode]);
 
+  const isForgot = mode === "forgot";
+  const isEmailMode = method === "email" || isForgot;
+
   return (
     <div style={{ minHeight: "100dvh", background: "#050505", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 16px 48px", position: "relative", overflow: "hidden", fontFamily: "'Inter', sans-serif" }}>
       <div style={{ position: "fixed", top: "-20%", right: "-10%", width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle, rgba(212,175,55,0.07) 0%, transparent 70%)", pointerEvents: "none" }} />
       <div style={{ position: "fixed", bottom: "-20%", left: "-10%", width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(212,175,55,0.04) 0%, transparent 70%)", pointerEvents: "none" }} />
 
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 32 }}>
-        <img src={logoSrc} alt="Orakzai Properties" onError={(e) => { (e.target as HTMLImageElement).src = `${window.location.origin}${basePath}/logo-shield.png`; }}
-          style={{ width: 80, height: 80, objectFit: "contain", filter: "drop-shadow(0 0 24px rgba(212,175,55,0.45))" }} />
-        <div style={{ marginTop: 14, textAlign: "center" }}>
-          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 19, fontWeight: 800, color: GOLD, letterSpacing: "0.22em", textTransform: "uppercase" }}>ORAKZAI</div>
-          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 9, fontWeight: 500, color: "rgba(212,175,55,0.5)", letterSpacing: "0.35em", textTransform: "uppercase", marginTop: 3 }}>Properties</div>
-          <div style={{ width: 48, height: 1, background: `linear-gradient(90deg, transparent, ${GOLD}, transparent)`, margin: "10px auto 0" }} />
+      {/* Branding */}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 28 }}>
+        <img src={logoSrc} alt="Orakzai Properties"
+          onError={(e) => { (e.target as HTMLImageElement).src = `${window.location.origin}${basePath}/logo-shield.png`; }}
+          style={{ width: 76, height: 76, objectFit: "contain", filter: "drop-shadow(0 0 24px rgba(212,175,55,0.45))" }} />
+        <div style={{ marginTop: 12, textAlign: "center" }}>
+          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 18, fontWeight: 800, color: GOLD, letterSpacing: "0.22em", textTransform: "uppercase" }}>ORAKZAI</div>
+          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 9, color: "rgba(212,175,55,0.5)", letterSpacing: "0.35em", textTransform: "uppercase", marginTop: 2 }}>Properties</div>
+          <div style={{ width: 44, height: 1, background: `linear-gradient(90deg, transparent, ${GOLD}, transparent)`, margin: "8px auto 0" }} />
         </div>
       </div>
 
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
-        style={{ width: "100%", maxWidth: 420, background: "rgba(12,10,8,0.92)", backdropFilter: "blur(24px)", border: "1px solid rgba(212,175,55,0.28)", borderRadius: 24, boxShadow: "0 0 0 1px rgba(212,175,55,0.06), 0 32px 80px rgba(0,0,0,0.85)", padding: "36px 32px", position: "relative", overflow: "hidden" }}>
+      {/* Card */}
+      <motion.div
+        layout
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
+        style={{ width: "100%", maxWidth: 420, background: "rgba(12,10,8,0.92)", backdropFilter: "blur(24px)", border: "1px solid rgba(212,175,55,0.28)", borderRadius: 24, boxShadow: "0 0 0 1px rgba(212,175,55,0.06), 0 32px 80px rgba(0,0,0,0.85)", padding: "32px 28px", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg, transparent, rgba(212,175,55,0.8), transparent)" }} />
 
-        <div style={{ marginBottom: 28, textAlign: "center" }}>
-          <h1 style={{ fontFamily: "'Inter', sans-serif", fontSize: 24, fontWeight: 700, color: "#ffffff", letterSpacing: "-0.02em", margin: "0 0 8px" }}>
-            {mode === "signin" ? "Welcome Back" : "Create Account"}
-          </h1>
-          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.38)", margin: 0, lineHeight: 1.6 }}>
-            {mode === "signin" ? "Sign in to your Orakzai Properties account" : "Join the sovereign real estate platform"}
-          </p>
-        </div>
-
-        <div style={{ display: "flex", background: "rgba(255,255,255,0.04)", borderRadius: 12, padding: 3, marginBottom: 24 }}>
-          {(["email", "phone"] as AuthMethod[]).map((m) => (
-            <button key={m} onClick={() => setMethod(m)}
-              style={{ flex: 1, padding: "9px 0", borderRadius: 10, border: "none", background: method === m ? "rgba(212,175,55,0.18)" : "transparent", color: method === m ? GOLD : "rgba(255,255,255,0.4)", fontSize: 12, fontWeight: 600, fontFamily: "'Inter', sans-serif", cursor: "pointer", transition: "all 0.2s" }}>
-              {m === "email" ? "✉ Email" : "📱 Phone"}
-            </button>
-          ))}
-        </div>
-
+        {/* Header */}
         <AnimatePresence mode="wait">
-          <motion.div key={method} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
-            {method === "email" ? <EmailAuth mode={mode} onSwitch={() => setMode(mode === "signin" ? "signup" : "signin")} /> : <PhoneAuth />}
+          <motion.div key={mode} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}
+            style={{ marginBottom: 24, textAlign: "center" }}>
+            <h1 style={{ fontFamily: "'Inter', sans-serif", fontSize: 22, fontWeight: 700, color: "#ffffff", letterSpacing: "-0.02em", margin: "0 0 6px" }}>
+              {isForgot ? "Reset Password" : mode === "signin" ? "Welcome Back" : "Create Account"}
+            </h1>
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", margin: 0, lineHeight: 1.6 }}>
+              {isForgot ? "Enter your email to receive a reset link" : mode === "signin" ? "Sign in to your Orakzai Properties account" : "Join the sovereign real estate platform"}
+            </p>
           </motion.div>
         </AnimatePresence>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "20px 0" }}>
-          <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
-          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", fontFamily: "'Inter', sans-serif" }}>or</span>
-          <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
-        </div>
-        <GoogleButton />
-        <div style={{ marginTop: 20, paddingTop: 18, borderTop: "1px solid rgba(255,255,255,0.07)", textAlign: "center" }}>
+        {/* Method tabs — only show when not in forgot mode */}
+        {!isForgot && (
+          <div style={{ display: "flex", background: "rgba(255,255,255,0.04)", borderRadius: 12, padding: 3, marginBottom: 22 }}>
+            {(["email", "phone"] as AuthMethod[]).map((m) => (
+              <button key={m} onClick={() => setMethod(m)}
+                style={{ flex: 1, padding: "9px 0", borderRadius: 10, border: "none", background: method === m ? "rgba(212,175,55,0.18)" : "transparent", color: method === m ? GOLD : "rgba(255,255,255,0.4)", fontSize: 12, fontWeight: 600, fontFamily: "'Inter', sans-serif", cursor: "pointer", transition: "all 0.2s" }}>
+                {m === "email" ? "✉ Email" : "📱 Phone"}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Auth form */}
+        <AnimatePresence mode="wait">
+          <motion.div key={`${mode}-${method}`} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
+            {isForgot ? (
+              <ForgotPasswordPanel onBack={() => setMode("signin")} />
+            ) : method === "email" ? (
+              <EmailAuth mode={mode} onSwitch={() => setMode(mode === "signin" ? "signup" : "signin")} onForgot={() => setMode("forgot")} />
+            ) : (
+              <PhoneAuth />
+            )}
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Google + divider — only show when not in forgot mode */}
+        {!isForgot && (
+          <>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "18px 0" }}>
+              <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
+              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", fontFamily: "'Inter', sans-serif" }}>or</span>
+              <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
+            </div>
+            <GoogleButton />
+          </>
+        )}
+
+        <div style={{ marginTop: 18, paddingTop: 16, borderTop: "1px solid rgba(255,255,255,0.07)", textAlign: "center" }}>
           <p style={{ fontSize: 10, color: "rgba(255,255,255,0.15)", fontFamily: "'Inter', sans-serif", lineHeight: 1.7, margin: 0 }}>
             By continuing you agree to our Terms of Service and Privacy Policy.<br />256-bit encrypted · SECP compliant
           </p>
         </div>
       </motion.div>
 
-      <p style={{ marginTop: 28, fontSize: 11, color: "rgba(255,255,255,0.15)", letterSpacing: "0.06em", fontFamily: "'Inter', sans-serif", textTransform: "uppercase" }}>
+      <p style={{ marginTop: 24, fontSize: 11, color: "rgba(255,255,255,0.13)", letterSpacing: "0.06em", fontFamily: "'Inter', sans-serif", textTransform: "uppercase" }}>
         Assets of Today · Legacies of Tomorrow
       </p>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
