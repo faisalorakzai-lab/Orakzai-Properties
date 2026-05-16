@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, memo } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -6,7 +6,7 @@ import {
   Check, ShieldCheck, Zap, Crown, Star, Sparkles,
   Home, Building2, Layers, ArrowRight, Trophy, Share2,
   BedDouble, Bath, Maximize2, Phone, MessageCircle, User,
-  Sofa, Users, Clock,
+  Sofa, Users, Clock, MapPin,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
@@ -14,20 +14,77 @@ import { Show } from "@/contexts/AuthContext";
 import { createClient } from "@supabase/supabase-js";
 const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY);
 
-/* ─── Mapbox city coords ─── */
-const CITY_COORDS: Record<string, [number, number]> = {
-  "Lahore": [74.3587, 31.5204], "Islamabad": [73.0479, 33.6844],
-  "Karachi": [67.0099, 24.8607], "Rawalpindi": [73.0479, 33.6006],
-  "Peshawar": [71.5249, 34.0150], "Faisalabad": [73.0946, 31.4504],
+/* ─── Country → City data ─────────────────────────────────────────────── */
+const COUNTRY_CITIES: Record<string, string[]> = {
+  Pakistan: ["Lahore", "Islamabad", "Karachi", "Rawalpindi", "Peshawar", "Faisalabad", "Multan", "Quetta"],
+  UAE: ["Dubai", "Abu Dhabi", "Sharjah", "Ajman", "Ras Al Khaimah"],
+  UK: ["London", "Manchester", "Birmingham", "Leeds", "Glasgow", "Edinburgh"],
+  USA: ["New York", "Los Angeles", "Houston", "Chicago", "Dallas"],
+  Canada: ["Toronto", "Vancouver", "Calgary", "Ottawa", "Montreal"],
+  Australia: ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide"],
+  Saudi Arabia: ["Riyadh", "Jeddah", "Mecca", "Medina", "Dammam"],
 };
 
-function MapPreview({ city, area }: { city: string; area: string }) {
+const COUNTRIES = Object.keys(COUNTRY_CITIES);
+
+/* ─── Mapbox city coords ─── */
+const CITY_COORDS: Record<string, [number, number]> = {
+  // Pakistan
+  "Lahore": [74.3587, 31.5204],
+  "Islamabad": [73.0479, 33.6844],
+  "Karachi": [67.0099, 24.8607],
+  "Rawalpindi": [73.0479, 33.6006],
+  "Peshawar": [71.5249, 34.0150],
+  "Faisalabad": [73.0946, 31.4504],
+  "Multan": [71.4743, 30.1978],
+  "Quetta": [66.9750, 30.1798],
+  // UAE
+  "Dubai": [55.2708, 25.2048],
+  "Abu Dhabi": [54.3773, 24.4539],
+  "Sharjah": [55.3819, 25.3463],
+  "Ajman": [55.4354, 25.4052],
+  "Ras Al Khaimah": [55.9432, 25.7895],
+  // UK
+  "London": [-0.1276, 51.5074],
+  "Manchester": [-2.2426, 53.4808],
+  "Birmingham": [-1.8904, 52.4862],
+  "Leeds": [-1.5491, 53.8008],
+  "Glasgow": [-4.2518, 55.8642],
+  "Edinburgh": [-3.1883, 55.9533],
+  // USA
+  "New York": [-74.0060, 40.7128],
+  "Los Angeles": [-118.2437, 34.0522],
+  "Houston": [-95.3698, 29.7604],
+  "Chicago": [-87.6298, 41.8781],
+  "Dallas": [-96.7969, 32.7767],
+  // Canada
+  "Toronto": [-79.3832, 43.6532],
+  "Vancouver": [-123.1216, 49.2827],
+  "Calgary": [-114.0719, 51.0447],
+  "Ottawa": [-75.6972, 45.4215],
+  "Montreal": [-73.5673, 45.5017],
+  // Australia
+  "Sydney": [151.2093, -33.8688],
+  "Melbourne": [144.9631, -37.8136],
+  "Brisbane": [153.0251, -27.4698],
+  "Perth": [115.8605, -31.9505],
+  "Adelaide": [138.6007, -34.9285],
+  // Saudi Arabia
+  "Riyadh": [46.6753, 24.7136],
+  "Jeddah": [39.1925, 21.4858],
+  "Mecca": [39.8579, 21.3891],
+  "Medina": [39.6142, 24.5247],
+  "Dammam": [50.1033, 26.3927],
+};
+
+/* ─── Mapbox Preview (memoized to prevent blink on re-render) ─────────── */
+const MapPreview = memo(function MapPreview({ city, area }: { city: string; area: string }) {
   if (!city) return null;
   const [lng, lat] = CITY_COORDS[city] ?? [74.3587, 31.5204];
   const token = import.meta.env.VITE_MAPBOX_PUBLIC_KEY;
   if (!token) return (
     <div className="rounded-xl border border-[#C9A84C]/20 bg-[#0a1628] p-4 text-center text-[#4a6080] text-xs">
-      Add <code className="text-[#C9A84C]/70">VITE_MAPBOX_PUBLIC_KEY</code> to Vercel to enable map preview.
+      Add <code className="text-[#C9A84C]/70">VITE_MAPBOX_PUBLIC_KEY</code> to enable map preview.
     </div>
   );
   const label = area ? `${area}, ${city}` : city;
@@ -41,13 +98,13 @@ function MapPreview({ city, area }: { city: string; area: string }) {
       </div>
     </div>
   );
-}
+});
+
 import { Link } from "wouter";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 /* ── constants ──────────────────────────────────────────────────────────── */
-const CITIES = ["Lahore", "Islamabad", "Karachi", "Rawalpindi", "Peshawar"];
 const CATEGORIES = [
   { value: "buy",  label: "Buy",  desc: "Property for sale",   color: "border-emerald-500/40 bg-emerald-500/8 text-emerald-300", active: "border-emerald-400 bg-emerald-500/20 shadow-emerald-500/20" },
   { value: "sell", label: "Sell", desc: "Selling my property", color: "border-blue-500/40 bg-blue-500/8 text-blue-300",           active: "border-blue-400 bg-blue-500/20 shadow-blue-500/20" },
@@ -113,11 +170,9 @@ function ProgressBar({ step }: { step: number }) {
   return (
     <div className="mb-8">
       <div className="flex items-center justify-between mb-3 relative">
-        {/* connector line */}
         <div className="absolute left-0 right-0 top-4 h-px bg-[#1e3a5f] z-0" />
         <div className="absolute left-0 top-4 h-px bg-gradient-to-r from-[#C9A84C] to-[#C9A84C]/50 z-0 transition-all duration-500"
           style={{ width: `${((step - 1) / (STEPS.length - 1)) * 100}%` }} />
-
         {STEPS.map(s => (
           <div key={s.num} className="relative z-10 flex flex-col items-center gap-2">
             <motion.div
@@ -141,24 +196,60 @@ function ProgressBar({ step }: { step: number }) {
   );
 }
 
-/* ── Drag & Drop Image Zone ─────────────────────────────────────────────── */
+/* ── Cloudinary Image Uploader ──────────────────────────────────────────── */
 function ImageUploader({ images, onChange }: { images: string[]; onChange: (imgs: string[]) => void }) {
   const [dragging, setDragging] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [urlInput, setUrlInput] = useState("");
+  const { toast } = useToast();
+
+  const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+  const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET ?? "ml_default";
+
+  const uploadToCloudinary = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", UPLOAD_PRESET);
+    formData.append("api_key", import.meta.env.VITE_CLOUDINARY_API_KEY ?? "612796494885864");
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+      { method: "POST", body: formData }
+    );
+    if (!res.ok) throw new Error("Cloudinary upload failed");
+    const data = await res.json();
+    return data.secure_url as string;
+  };
+
+  const handleFiles = useCallback(async (files: File[]) => {
+    if (!CLOUD_NAME) {
+      toast({ title: "Cloudinary not configured", description: "Add VITE_CLOUDINARY_CLOUD_NAME to your environment.", variant: "destructive" });
+      return;
+    }
+    const imageFiles = files.filter(f => f.type.startsWith("image/")).slice(0, 8 - images.length);
+    if (imageFiles.length === 0) return;
+    setUploading(true);
+    try {
+      const urls = await Promise.all(imageFiles.map(uploadToCloudinary));
+      onChange([...images, ...urls].slice(0, 8));
+      toast({ title: `${urls.length} image${urls.length > 1 ? "s" : ""} uploaded successfully` });
+    } catch {
+      toast({ title: "Upload failed", description: "Please check your Cloudinary configuration.", variant: "destructive" });
+    } finally {
+      setUploading(false);
+    }
+  }, [images, onChange, CLOUD_NAME, UPLOAD_PRESET]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setDragging(false);
-    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith("image/"));
-    if (files.length > 0) {
-      const readers = files.map(file => new Promise<string>(resolve => {
-        const r = new FileReader();
-        r.onload = () => resolve(r.result as string);
-        r.readAsDataURL(file);
-      }));
-      Promise.all(readers).then(urls => onChange([...images, ...urls].slice(0, 8)));
-    }
-  }, [images, onChange]);
+    const files = Array.from(e.dataTransfer.files);
+    handleFiles(files);
+  }, [handleFiles]);
+
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) handleFiles(Array.from(e.target.files));
+    e.target.value = "";
+  };
 
   const addUrl = () => {
     const trimmed = urlInput.trim();
@@ -173,33 +264,46 @@ function ImageUploader({ images, onChange }: { images: string[]; onChange: (imgs
   return (
     <div className="space-y-4">
       {/* drop zone */}
-      <div
+      <label
         onDragOver={e => { e.preventDefault(); setDragging(true); }}
         onDragLeave={() => setDragging(false)}
         onDrop={handleDrop}
-        className={`relative rounded-2xl border-2 border-dashed transition-all duration-300 cursor-pointer overflow-hidden ${
+        className={`relative rounded-2xl border-2 border-dashed transition-all duration-300 cursor-pointer overflow-hidden block ${
           dragging ? "border-[#C9A84C] bg-[#C9A84C]/5 shadow-xl shadow-[#C9A84C]/10" : "border-[#C9A84C]/25 bg-[#070e1a] hover:border-[#C9A84C]/50 hover:bg-[#C9A84C]/3"
         }`}
         style={{ minHeight: 160 }}
       >
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          className="sr-only"
+          onChange={handleFileInput}
+          disabled={uploading}
+        />
         {/* animated grid background */}
         <div className="absolute inset-0 opacity-5"
           style={{ backgroundImage: "linear-gradient(rgba(201,168,76,1) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,1) 1px,transparent 1px)", backgroundSize: "30px 30px" }} />
         <div className="relative flex flex-col items-center justify-center py-10 px-6 text-center">
-          <motion.div animate={dragging ? { scale: 1.1, rotate: 5 } : { scale: 1, rotate: 0 }}
+          <motion.div animate={dragging || uploading ? { scale: 1.1, rotate: 5 } : { scale: 1, rotate: 0 }}
             className="h-14 w-14 rounded-2xl bg-[#C9A84C]/10 border border-[#C9A84C]/25 flex items-center justify-center mb-3">
-            <Upload className={`h-6 w-6 ${dragging ? "text-[#C9A84C]" : "text-[#C9A84C]/70"}`} />
+            {uploading ? (
+              <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                className="h-6 w-6 border-2 border-[#C9A84C]/30 border-t-[#C9A84C] rounded-full" />
+            ) : (
+              <Upload className={`h-6 w-6 ${dragging ? "text-[#C9A84C]" : "text-[#C9A84C]/70"}`} />
+            )}
           </motion.div>
           <p className="text-[#f1f5f9] font-semibold text-sm mb-1">
-            {dragging ? "Drop images here" : "Drag & drop property images"}
+            {uploading ? "Uploading to Cloudinary..." : dragging ? "Drop images here" : "Click to upload or drag & drop"}
           </p>
-          <p className="text-[#3a5070] text-xs">PNG, JPG, WEBP · Max 8 images</p>
+          <p className="text-[#3a5070] text-xs">PNG, JPG, WEBP · Max 8 images · Uploads to Cloudinary</p>
           {dragging && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
               className="absolute inset-0 border-2 border-[#C9A84C] rounded-2xl pointer-events-none" />
           )}
         </div>
-      </div>
+      </label>
 
       {/* URL input row */}
       <div className="flex gap-2">
@@ -222,13 +326,7 @@ function ImageUploader({ images, onChange }: { images: string[]; onChange: (imgs
           {images.map((img, i) => (
             <motion.div key={i} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
               className="relative group rounded-xl overflow-hidden border border-[#C9A84C]/15 aspect-video bg-[#0d1929]">
-              {img.startsWith("data:") || img.startsWith("http") ? (
-                <img src={img} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <ImageIcon className="h-6 w-6 text-[#C9A84C]/30" />
-                </div>
-              )}
+              <img src={img} alt="" className="w-full h-full object-cover" />
               <button type="button" onClick={() => remove(i)}
                 className="absolute top-1 right-1 h-6 w-6 rounded-full bg-red-500/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500">
                 <X className="h-3.5 w-3.5" />
@@ -263,9 +361,7 @@ function BoostPopup({ onClose, onSkip }: { onClose: () => void; onSkip: () => vo
         transition={{ type: "spring", stiffness: 280, damping: 26 }}
         className="w-full max-w-xl bg-gradient-to-b from-[#0d1929] to-[#070e1a] border border-[#C9A84C]/25 rounded-3xl overflow-hidden shadow-2xl shadow-black/60"
       >
-        {/* gold header bar */}
         <div className="h-1 bg-gradient-to-r from-transparent via-[#C9A84C] to-transparent" />
-
         <div className="p-6 md:p-8">
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2">
@@ -345,7 +441,6 @@ function SuccessScreen({ propertyId }: { propertyId: number }) {
       animate={{ opacity: 1 }}
       className="min-h-screen bg-[#070e1a] flex items-center justify-center px-4"
     >
-      {/* celebration particles */}
       {[...Array(20)].map((_, i) => (
         <motion.div key={i}
           initial={{ opacity: 1, y: 0, x: 0, scale: 1 }}
@@ -363,7 +458,6 @@ function SuccessScreen({ propertyId }: { propertyId: number }) {
       ))}
 
       <div className="text-center max-w-sm">
-        {/* 3D trophy animation */}
         <motion.div
           initial={{ scale: 0, rotate: -20 }}
           animate={{ scale: 1, rotate: 0 }}
@@ -373,29 +467,16 @@ function SuccessScreen({ propertyId }: { propertyId: number }) {
           <div className="h-28 w-28 rounded-3xl bg-gradient-to-br from-[#C9A84C]/20 to-[#C9A84C]/5 border-2 border-[#C9A84C]/40 flex items-center justify-center mx-auto shadow-2xl shadow-[#C9A84C]/20">
             <Trophy className="h-14 w-14 text-[#C9A84C]" />
           </div>
-          {/* orbiting rings */}
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
-            className="absolute inset-0 rounded-3xl border-2 border-dashed border-[#C9A84C]/20"
-            style={{ margin: -8 }}
-          />
-          <motion.div
-            animate={{ rotate: -360 }}
-            transition={{ repeat: Infinity, duration: 6, ease: "linear" }}
-            className="absolute inset-0 rounded-3xl border border-[#C9A84C]/10"
-            style={{ margin: -16 }}
-          />
-          {/* sparkles */}
+          <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+            className="absolute inset-0 rounded-3xl border-2 border-dashed border-[#C9A84C]/20" style={{ margin: -8 }} />
+          <motion.div animate={{ rotate: -360 }} transition={{ repeat: Infinity, duration: 6, ease: "linear" }}
+            className="absolute inset-0 rounded-3xl border border-[#C9A84C]/10" style={{ margin: -16 }} />
           {[0, 60, 120, 180, 240, 300].map((deg, i) => (
             <motion.div key={i}
               animate={{ scale: [0, 1, 0], opacity: [0, 1, 0] }}
               transition={{ repeat: Infinity, duration: 1.5, delay: i * 0.25 }}
               className="absolute h-2 w-2 rounded-full bg-[#C9A84C]"
-              style={{
-                top: "50%", left: "50%",
-                transform: `rotate(${deg}deg) translateX(60px) translateY(-50%)`,
-              }}
+              style={{ top: "50%", left: "50%", transform: `rotate(${deg}deg) translateX(60px) translateY(-50%)` }}
             />
           ))}
         </motion.div>
@@ -404,9 +485,8 @@ function SuccessScreen({ propertyId }: { propertyId: number }) {
           <div className="text-[#C9A84C] text-xs font-black uppercase tracking-widest mb-2">Property Listed Successfully</div>
           <h1 className="font-serif text-3xl font-bold text-white mb-3">Your Property is Live!</h1>
           <p className="text-[#4a6080] text-sm leading-relaxed mb-8">
-            Congratulations! Your listing is now visible to thousands of buyers, investors, and renters across Pakistan.
+            Congratulations! Your listing is now visible to thousands of buyers, investors, and renters globally.
           </p>
-
           <div className="flex flex-col gap-3">
             <Link href={`${basePath}/property/${propertyId}`}>
               <button className="w-full h-12 rounded-xl bg-gradient-to-r from-[#C9A84C] to-[#e8c060] text-[#080f1a] font-black shadow-lg shadow-[#C9A84C]/25 hover:shadow-[#C9A84C]/40 transition-all flex items-center justify-center gap-2 text-sm">
@@ -444,15 +524,11 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 function UpgradeGate({ onClose }: { onClose: () => void }) {
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm px-4"
     >
       <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
+        initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
         className="relative bg-gradient-to-b from-[#0a1628] to-[#060d16] border-2 border-[#C9A84C] rounded-2xl p-8 max-w-sm w-full shadow-[0_0_80px_rgba(201,168,76,0.25)]"
       >
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_30%_at_50%_0%,rgba(201,168,76,0.07),transparent)] rounded-2xl pointer-events-none" />
@@ -461,12 +537,12 @@ function UpgradeGate({ onClose }: { onClose: () => void }) {
             <Crown className="h-8 w-8 text-[#C9A84C]" />
           </div>
           <h3 className="text-white font-black text-xl mb-2">Listing Limit Reached</h3>
-          <p className="text-[#4a6080] text-sm leading-relaxed mb-6">
-            Free agents can post <span className="text-white font-bold">2 listings</span>. Upgrade to <span className="text-[#C9A84C] font-bold">Premium</span> for 20 or <span className="text-[#C9A84C] font-bold">Sovereign</span> for unlimited listings.
+          <p className="text-[#4a6080] text-sm mb-6 leading-relaxed">
+            You've used all your free listing slots. Upgrade your plan to post unlimited properties.
           </p>
           <div className="space-y-3">
             <Link href={`${basePath}/pricing`}>
-              <button className="w-full h-11 rounded-xl bg-gradient-to-r from-[#C9A84C] to-[#e8c060] text-[#080f1a] font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-[#C9A84C]/25 hover:shadow-[#C9A84C]/40 transition-all">
+              <button className="w-full h-12 rounded-xl bg-gradient-to-r from-[#C9A84C] to-[#e8c060] text-[#080f1a] font-black text-sm flex items-center justify-center gap-2">
                 <Crown className="h-4 w-4" /> View Plans & Upgrade
               </button>
             </Link>
@@ -496,6 +572,7 @@ export default function PostProperty() {
   const [propType,     setPropType]     = useState("");
   const [price,        setPrice]        = useState("");
   const [images,       setImages]       = useState<string[]>([]);
+  const [country,      setCountry]      = useState("");
   const [city,         setCity]         = useState("");
   const [area,         setArea]         = useState("");
   const [description,  setDescription]  = useState("");
@@ -506,10 +583,18 @@ export default function PostProperty() {
   const [ownerPhone,   setOwnerPhone]   = useState("");
   const [whatsapp,     setWhatsapp]     = useState("");
   const [reqVerify,    setReqVerify]    = useState(false);
-  // Rental-specific
   const [furnished,    setFurnished]    = useState("");
   const [occupancy,    setOccupancy]    = useState("");
   const [rentalDur,    setRentalDur]    = useState("");
+
+  /* cities for selected country */
+  const availableCities = country ? (COUNTRY_CITIES[country] ?? []) : [];
+
+  /* when country changes, reset city */
+  const handleCountryChange = (c: string) => {
+    setCountry(c);
+    setCity("");
+  };
 
   /* validate step before advancing */
   const validateStep = (s: number) => {
@@ -521,6 +606,7 @@ export default function PostProperty() {
       if (!price || isNaN(Number(price)) || Number(price) < 1) e.price = "Enter a valid price";
     }
     if (s === 3) {
+      if (!country) e.country = "Select a country";
       if (!city) e.city = "Select a city";
       if (!description.trim() || description.length < 20) e.description = "Description must be at least 20 characters";
     }
@@ -543,7 +629,8 @@ export default function PostProperty() {
       const { data, error } = await supabase.from("properties").insert({
         title, category, type: propType, description,
         price: priceNum, price_label: priceLabel,
-        city, location: area ? `${area}, ${city}` : city,
+        city, country,
+        location: area ? `${area}, ${city}, ${country}` : `${city}, ${country}`,
         area_sqft: areaSqft ? Number(areaSqft) : null,
         images, tag: null, tag_color: null,
         owner_name: ownerName || null,
@@ -569,18 +656,14 @@ export default function PostProperty() {
     }
   };
 
-  const finishFlow = () => {
-    setShowBoost(false);
-  };
+  const finishFlow = () => { setShowBoost(false); };
 
-  /* ── Success screen after boost dismissed ── */
   if (successId !== null && !showBoost) {
     return <SuccessScreen propertyId={successId} />;
   }
 
   return (
     <div className="min-h-screen bg-[#070e1a] text-foreground">
-      {/* ambient */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-0 right-1/4 w-96 h-96 rounded-full bg-[#C9A84C]/3 blur-[130px]" />
         <div className="absolute bottom-1/3 left-0 w-64 h-64 rounded-full bg-[#1e3a8a]/6 blur-[100px]" />
@@ -589,7 +672,6 @@ export default function PostProperty() {
       <Navbar />
 
       <div className="relative z-10 pt-14 pb-20 px-4 max-w-2xl mx-auto">
-        {/* sign-out gate */}
         <Show when="signed-out">
           <div className="mt-20 text-center">
             <div className="h-20 w-20 rounded-3xl bg-[#C9A84C]/10 border border-[#C9A84C]/30 flex items-center justify-center mx-auto mb-6 shadow-xl shadow-[#C9A84C]/10">
@@ -608,19 +690,15 @@ export default function PostProperty() {
         <Show when="signed-in">
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mt-6">
 
-            {/* page header */}
             <div className="mb-6">
               <div className="text-[#C9A84C] text-[10px] font-black tracking-widest uppercase mb-1">List Your Property</div>
               <h1 className="font-serif text-3xl font-bold text-white">Post a Property</h1>
             </div>
 
-            {/* progress bar */}
             <ProgressBar step={step} />
 
-            {/* card */}
             <div className="rounded-3xl border border-[#C9A84C]/15 overflow-hidden"
               style={{ background: "linear-gradient(145deg, #0d1929 0%, #080f1a 100%)" }}>
-              {/* gold top accent */}
               <div className="h-[1.5px] bg-gradient-to-r from-transparent via-[#C9A84C] to-transparent" />
 
               <AnimatePresence mode="wait">
@@ -643,7 +721,6 @@ export default function PostProperty() {
                       {errors.title && <p className="text-red-400 text-xs mt-1.5">{errors.title}</p>}
                     </div>
 
-                    {/* Category tiles */}
                     <div>
                       <SectionLabel>Listing Category</SectionLabel>
                       <div className="grid grid-cols-3 gap-3">
@@ -661,7 +738,6 @@ export default function PostProperty() {
                       {errors.category && <p className="text-red-400 text-xs mt-1.5">{errors.category}</p>}
                     </div>
 
-                    {/* Type tiles */}
                     <div>
                       <SectionLabel>Property Type</SectionLabel>
                       <div className="grid grid-cols-3 gap-3">
@@ -678,7 +754,6 @@ export default function PostProperty() {
                       {errors.type && <p className="text-red-400 text-xs mt-1.5">{errors.type}</p>}
                     </div>
 
-                    {/* Price */}
                     <div>
                       <SectionLabel>Price (PKR)</SectionLabel>
                       <div className="relative">
@@ -731,23 +806,53 @@ export default function PostProperty() {
                     initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }}
                     transition={{ duration: 0.25 }} className="p-6 md:p-8 space-y-6"
                   >
-                    {/* city + area */}
-                    <div className="grid grid-cols-2 gap-3">
+                    {/* ── Country → City flow ── */}
+                    <div className="space-y-3">
+                      {/* Country */}
                       <div>
-                        <SectionLabel>City</SectionLabel>
-                        <select value={city} onChange={e => setCity(e.target.value)} className={goldSelect} data-testid="select-city">
-                          <option value="">Select city</option>
-                          {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                        <SectionLabel>Country</SectionLabel>
+                        <select
+                          value={country}
+                          onChange={e => handleCountryChange(e.target.value)}
+                          className={goldSelect}
+                          data-testid="select-country"
+                        >
+                          <option value="">Select Country</option>
+                          {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
-                        {errors.city && <p className="text-red-400 text-xs mt-1.5">{errors.city}</p>}
+                        {errors.country && <p className="text-red-400 text-xs mt-1.5">{errors.country}</p>}
                       </div>
-                      <div>
-                        <SectionLabel>Area / Sector <span className="text-[#1e3a5f] normal-case">(optional)</span></SectionLabel>
-                        <input value={area} onChange={e => setArea(e.target.value)} placeholder="e.g. DHA Phase 6" className={goldInput} data-testid="input-area" />
+
+                      {/* City + Area — only shown after country selected */}
+                      <div className={`grid grid-cols-2 gap-3 transition-all duration-300 ${country ? "opacity-100" : "opacity-40 pointer-events-none"}`}>
+                        <div>
+                          <SectionLabel>City</SectionLabel>
+                          <select
+                            value={city}
+                            onChange={e => setCity(e.target.value)}
+                            className={goldSelect}
+                            disabled={!country}
+                            data-testid="select-city"
+                          >
+                            <option value="">{country ? "Select City" : "Select country first"}</option>
+                            {availableCities.map(c => <option key={c} value={c}>{c}</option>)}
+                          </select>
+                          {errors.city && <p className="text-red-400 text-xs mt-1.5">{errors.city}</p>}
+                        </div>
+                        <div>
+                          <SectionLabel>Area / Sector <span className="text-[#1e3a5f] normal-case">(optional)</span></SectionLabel>
+                          <input
+                            value={area}
+                            onChange={e => setArea(e.target.value)}
+                            placeholder="e.g. DHA Phase 6"
+                            className={goldInput}
+                            data-testid="input-area"
+                          />
+                        </div>
                       </div>
                     </div>
 
-                    {/* Mapbox live preview */}
+                    {/* Mapbox live preview — memoized, no blink */}
                     {city && <MapPreview city={city} area={area} />}
 
                     {/* specs */}
@@ -824,7 +929,6 @@ export default function PostProperty() {
                               <div className="h-1 flex-1 bg-violet-500/20 rounded" />
                             </div>
 
-                            {/* Furnished Status */}
                             <div>
                               <SectionLabel><span className="flex items-center gap-1.5"><Sofa className="h-3 w-3 text-violet-400" /> Furnished Status <span className="text-[#1e3a5f] normal-case">(optional)</span></span></SectionLabel>
                               <div className="flex flex-wrap gap-2">
@@ -841,7 +945,6 @@ export default function PostProperty() {
                               </div>
                             </div>
 
-                            {/* Occupancy Type */}
                             <div>
                               <SectionLabel><span className="flex items-center gap-1.5"><Users className="h-3 w-3 text-violet-400" /> Occupancy Type <span className="text-[#1e3a5f] normal-case">(optional)</span></span></SectionLabel>
                               <div className="flex flex-wrap gap-2">
@@ -858,7 +961,6 @@ export default function PostProperty() {
                               </div>
                             </div>
 
-                            {/* Rental Duration */}
                             <div>
                               <SectionLabel><span className="flex items-center gap-1.5"><Clock className="h-3 w-3 text-violet-400" /> Duration Preference <span className="text-[#1e3a5f] normal-case">(optional)</span></span></SectionLabel>
                               <div className="flex gap-2">
@@ -894,7 +996,6 @@ export default function PostProperty() {
                             </p>
                           </div>
                         </div>
-                        {/* toggle switch */}
                         <button type="button" onClick={() => setReqVerify(v => !v)} data-testid="toggle-verify"
                           className={`flex-shrink-0 h-6 w-11 rounded-full border-2 transition-all relative ${reqVerify ? "bg-[#C9A84C] border-[#C9A84C]" : "bg-[#0d1929] border-[#1e3a5f]"}`}>
                           <motion.div
@@ -952,13 +1053,9 @@ export default function PostProperty() {
         </Show>
       </div>
 
-      {/* ── Boost Popup ── */}
       <AnimatePresence>
         {showBoost && (
-          <BoostPopup
-            onClose={finishFlow}
-            onSkip={finishFlow}
-          />
+          <BoostPopup onClose={finishFlow} onSkip={finishFlow} />
         )}
       </AnimatePresence>
     </div>
