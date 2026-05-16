@@ -22,7 +22,7 @@ const COUNTRY_CITIES: Record<string, string[]> = {
   USA: ["New York", "Los Angeles", "Houston", "Chicago", "Dallas"],
   Canada: ["Toronto", "Vancouver", "Calgary", "Ottawa", "Montreal"],
   Australia: ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide"],
-  Saudi Arabia: ["Riyadh", "Jeddah", "Mecca", "Medina", "Dammam"],
+  "Saudi Arabia": ["Riyadh", "Jeddah", "Mecca", "Medina", "Dammam"],
 };
 
 const COUNTRIES = Object.keys(COUNTRY_CITIES);
