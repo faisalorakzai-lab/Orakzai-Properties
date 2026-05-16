@@ -27,6 +27,7 @@ import Projects from "@/pages/Projects";
 import KYC from "@/pages/KYC";
 import AdminConfig from "@/pages/AdminConfig";
 import AdminKYC from "@/pages/AdminKYC";
+import AdminPanel, { ADMIN_EMAIL } from "@/pages/AdminPanel";
 import TradingPortfolio from "@/pages/TradingPortfolio";
 import BottomNav from "@/components/BottomNav";
 import AuthPage from "@/pages/AuthPage";
@@ -38,16 +39,27 @@ const queryClient = new QueryClient({
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { isLoaded, isSignedIn } = useUser();
+  const { isLoaded, isSignedIn, user } = useUser();
   const [location, setLocation] = useLocation();
   const publicPaths = ["/sign-in", "/sign-up"];
   const isPublic = publicPaths.some((p) => location.startsWith(p));
 
   useEffect(() => {
-    if (isLoaded && !isSignedIn && !isPublic) {
+    if (!isLoaded) return;
+
+    /* ── Admin auto-redirect: when admin email logs in → go to /admin ── */
+    if (isSignedIn && user?.primaryEmailAddress?.emailAddress === ADMIN_EMAIL) {
+      if (!location.startsWith("/admin")) {
+        setLocation("/admin");
+      }
+      return;
+    }
+
+    /* ── Normal auth guard ── */
+    if (!isSignedIn && !isPublic) {
       setLocation("/sign-in");
     }
-  }, [isLoaded, isSignedIn, isPublic, location, setLocation]);
+  }, [isLoaded, isSignedIn, isPublic, location, setLocation, user]);
 
   if (!isLoaded) {
     return (
@@ -65,7 +77,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 function HideBottomNavOnAuthPages() {
   const [location] = useLocation();
   const { isSignedIn } = useUser();
-  const hidden = ["/sign-in", "/sign-up"].some((p) => location.startsWith(p));
+  const hidden = ["/sign-in", "/sign-up", "/admin"].some((p) => location.startsWith(p));
   if (hidden || !isSignedIn) return null;
   return <BottomNav />;
 }
@@ -116,6 +128,7 @@ function AppContent() {
             <Route path="/trades" component={Trades} />
             <Route path="/projects" component={Projects} />
             <Route path="/kyc" component={KYC} />
+            <Route path="/admin" component={AdminPanel} />
             <Route path="/admin/config" component={AdminConfig} />
             <Route path="/admin/kyc" component={AdminKYC} />
             <Route path="/trading-portfolio" component={TradingPortfolio} />
