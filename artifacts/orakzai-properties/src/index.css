@@ -128,6 +128,11 @@
   --destructive-foreground: 210 40% 98%;
 }
 
+/* Force dark bg immediately — prevents white flash on navigation/load */
+html, body, #root {
+  background-color: #040b14 !important;
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -135,6 +140,7 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
+    background-color: #040b14;
     background-image: 
       radial-gradient(circle at top right, rgba(201, 168, 76, 0.1) 0%, transparent 40%),
       radial-gradient(circle at bottom left, rgba(201, 168, 76, 0.05) 0%, transparent 40%);

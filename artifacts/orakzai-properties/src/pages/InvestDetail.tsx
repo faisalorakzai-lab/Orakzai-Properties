@@ -80,15 +80,12 @@ export default function InvestDetail() {
   const { id } = useParams<{ id: string }>();
   const numId = Number(id);
   const [dbProject, setDbProject] = useState<typeof DEMO_PROJECT | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!numId || isNaN(numId)) { setIsLoading(false); return; }
-    setIsLoading(true);
+    if (!numId || isNaN(numId)) return;
     supabase.from("investment_projects").select("*").eq("id", numId).single()
       .then(({ data, error }) => {
         if (!error && data) setDbProject(data as typeof DEMO_PROJECT);
-        setIsLoading(false);
       });
   }, [numId]);
 
@@ -116,18 +113,6 @@ export default function InvestDetail() {
 
   const status = STATUS_CONFIG[project.status] ?? STATUS_CONFIG.funding;
 
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "#050d1a" }}>
-        <Navbar />
-        <div className="text-center mt-14">
-          <div className="w-10 h-10 border-2 border-[#C9A84C] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-[#6a7f99] text-sm">Loading investment details…</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen" style={{ background: "linear-gradient(160deg, #050d1a 0%, #07111e 40%, #060e1a 100%)" }}>

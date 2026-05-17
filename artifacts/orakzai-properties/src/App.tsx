@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
+import { motion } from "framer-motion";
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -33,10 +34,28 @@ import BottomNav from "@/components/BottomNav";
 import AuthPage from "@/pages/AuthPage";
 
 const queryClient = new QueryClient({
-  defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
+  defaultOptions: { queries: { retry: 1, staleTime: 60_000, gcTime: 5 * 60_000 } },
 });
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+/* ── Page fade-in on every route change ── */
+function PageTransition({ children }: { children: React.ReactNode }) {
+  const [location] = useLocation();
+  /* Use only the first path segment so nested param changes (/:id) use same key */
+  const pageKey = "/" + (location.split("/")[1] ?? "");
+  return (
+    <motion.div
+      key={pageKey}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.18, ease: "easeOut" }}
+      style={{ minHeight: "100dvh", background: "#040b14" }}
+    >
+      {children}
+    </motion.div>
+  );
+}
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { isLoaded, isSignedIn, user } = useUser();
@@ -47,7 +66,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isLoaded) return;
 
-    /* ── Admin auto-redirect: when admin email logs in → go to /admin ── */
+    /* Admin auto-redirect */
     if (isSignedIn && user?.primaryEmailAddress?.emailAddress === ADMIN_EMAIL) {
       if (!location.startsWith("/admin")) {
         setLocation("/admin");
@@ -55,7 +74,6 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    /* ── Normal auth guard ── */
     if (!isSignedIn && !isPublic) {
       setLocation("/sign-in");
     }
@@ -63,8 +81,16 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 
   if (!isLoaded) {
     return (
-      <div style={{ minHeight: "100dvh", background: "#050505", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ width: 44, height: 44, borderRadius: "50%", border: "3px solid rgba(212,175,55,0.2)", borderTop: "3px solid #D4AF37", animation: "spin 0.9s linear infinite" }} />
+      <div style={{
+        minHeight: "100dvh", background: "#040b14",
+        display: "flex", alignItems: "center", justifyContent: "center"
+      }}>
+        <div style={{
+          width: 44, height: 44, borderRadius: "50%",
+          border: "3px solid rgba(212,175,55,0.2)",
+          borderTop: "3px solid #D4AF37",
+          animation: "spin 0.9s linear infinite"
+        }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
@@ -107,35 +133,37 @@ function AppContent() {
       <FirebaseQueryCacheInvalidator />
       <TooltipProvider>
         <AuthGuard>
-          <Switch>
-            <Route path="/" component={Home} />
-            <Route path="/browse" component={Browse} />
-            <Route path="/property/:id" component={PropertyDetail} />
-            <Route path="/post-property" component={PostProperty} />
-            <Route path="/my-properties" component={MyProperties} />
-            <Route path="/invest" component={InvestPortal} />
-            <Route path="/invest/:id" component={InvestDetail} />
-            <Route path="/portfolio" component={Portfolio} />
-            <Route path="/trade/:id" component={TradingFloor} />
-            <Route path="/wallet" component={Wallet} />
-            <Route path="/project/azan-smart-city" component={AzanSmartCity} />
-            <Route path="/notifications" component={Notifications} />
-            <Route path="/notification-settings" component={NotificationSettings} />
-            <Route path="/agent/dashboard" component={AgentDashboard} />
-            <Route path="/pricing" component={Pricing} />
-            <Route path="/subscribe/:planId" component={Subscribe} />
-            <Route path="/profile" component={Profile} />
-            <Route path="/trades" component={Trades} />
-            <Route path="/projects" component={Projects} />
-            <Route path="/kyc" component={KYC} />
-            <Route path="/admin" component={AdminPanel} />
-            <Route path="/admin/config" component={AdminConfig} />
-            <Route path="/admin/kyc" component={AdminKYC} />
-            <Route path="/trading-portfolio" component={TradingPortfolio} />
-            <Route path="/sign-in/*?">{() => <AuthPage defaultMode="signin" />}</Route>
-            <Route path="/sign-up/*?">{() => <AuthPage defaultMode="signup" />}</Route>
-            <Route component={NotFound} />
-          </Switch>
+          <PageTransition>
+            <Switch>
+              <Route path="/" component={Home} />
+              <Route path="/browse" component={Browse} />
+              <Route path="/property/:id" component={PropertyDetail} />
+              <Route path="/post-property" component={PostProperty} />
+              <Route path="/my-properties" component={MyProperties} />
+              <Route path="/invest" component={InvestPortal} />
+              <Route path="/invest/:id" component={InvestDetail} />
+              <Route path="/portfolio" component={Portfolio} />
+              <Route path="/trade/:id" component={TradingFloor} />
+              <Route path="/wallet" component={Wallet} />
+              <Route path="/project/azan-smart-city" component={AzanSmartCity} />
+              <Route path="/notifications" component={Notifications} />
+              <Route path="/notification-settings" component={NotificationSettings} />
+              <Route path="/agent/dashboard" component={AgentDashboard} />
+              <Route path="/pricing" component={Pricing} />
+              <Route path="/subscribe/:planId" component={Subscribe} />
+              <Route path="/profile" component={Profile} />
+              <Route path="/trades" component={Trades} />
+              <Route path="/projects" component={Projects} />
+              <Route path="/kyc" component={KYC} />
+              <Route path="/admin" component={AdminPanel} />
+              <Route path="/admin/config" component={AdminConfig} />
+              <Route path="/admin/kyc" component={AdminKYC} />
+              <Route path="/trading-portfolio" component={TradingPortfolio} />
+              <Route path="/sign-in/*?">{() => <AuthPage defaultMode="signin" />}</Route>
+              <Route path="/sign-up/*?">{() => <AuthPage defaultMode="signup" />}</Route>
+              <Route component={NotFound} />
+            </Switch>
+          </PageTransition>
           <HideBottomNavOnAuthPages />
         </AuthGuard>
         <Toaster />
