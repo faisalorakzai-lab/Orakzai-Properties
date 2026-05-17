@@ -1,6 +1,5 @@
 import { useEffect, useRef } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
-import { motion } from "framer-motion";
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -39,21 +38,12 @@ const queryClient = new QueryClient({
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-/* ── Page fade-in on every route change ── */
+/* ── Stable dark wrapper — no key so it never unmounts/remounts on route change ── */
 function PageTransition({ children }: { children: React.ReactNode }) {
-  const [location] = useLocation();
-  /* Use only the first path segment so nested param changes (/:id) use same key */
-  const pageKey = "/" + (location.split("/")[1] ?? "");
   return (
-    <motion.div
-      key={pageKey}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.18, ease: "easeOut" }}
-      style={{ minHeight: "100dvh", background: "#040b14" }}
-    >
+    <div style={{ minHeight: "100dvh", background: "#040b14" }}>
       {children}
-    </motion.div>
+    </div>
   );
 }
 
