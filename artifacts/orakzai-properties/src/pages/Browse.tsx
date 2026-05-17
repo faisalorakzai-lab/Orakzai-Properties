@@ -12,7 +12,11 @@ import PropertyCard from "@/components/PropertyCard";
 import { useListProperties } from "@workspace/api-client-react";
 import { Link } from "wouter";
 
-const CITIES    = ["Lahore", "Islamabad", "Karachi", "Rawalpindi", "Peshawar"];
+const CITY_GROUPS: Record<string, string[]> = {
+  Pakistan: ["Lahore", "Islamabad", "Karachi", "Rawalpindi", "Peshawar", "Faisalabad", "Multan", "Quetta", "Gujranwala", "Sialkot", "Bahawalpur", "Sargodha", "Hyderabad", "Sukkur", "Mardan", "Abbottabad", "Sahiwal", "Sheikhupura", "Mirpur AJK", "Muzaffarabad"],
+  India: ["Mumbai", "Delhi", "Bangalore", "Chennai", "Hyderabad", "Pune", "Kolkata", "Ahmedabad", "Jaipur", "Surat", "Lucknow", "Kanpur", "Nagpur", "Coimbatore", "Indore", "Bhopal", "Chandigarh", "Ludhiana", "Amritsar", "Gurgaon", "Noida", "Kochi", "Srinagar"],
+  UAE: ["Dubai", "Abu Dhabi", "Sharjah", "Ajman", "Ras Al Khaimah", "Fujairah", "Al Ain"],
+};
 const TYPES     = [
   { value: "house",      label: "Residential", icon: HomeIcon  },
   { value: "commercial", label: "Commercial",  icon: Building2 },
@@ -234,19 +238,31 @@ export default function Browse() {
                 <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
                   <div className="pt-4 pb-2 space-y-4">
 
-                    {/* City */}
+                    {/* City — grouped by country */}
                     <div>
                       <div className="text-[#4a6080] text-[10px] font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5">
                         <MapPin className="h-3 w-3" /> City
                       </div>
-                      <div className="flex flex-wrap gap-2">
-                        {CITIES.map(c => (
-                          <button key={c} onClick={() => setCity(city === c ? "" : c)} data-testid={`filter-city-${c}`}
-                            className={`text-xs px-3 py-1.5 rounded-full border transition-all font-medium ${city === c ? "bg-[#C9A84C] border-[#C9A84C] text-[#080f1a] font-bold" : "border-white/10 text-[#6a7f99] hover:border-[#C9A84C]/40 hover:text-[#C9A84C]"}`}>
-                            {c}
-                          </button>
+                      <select
+                        value={city}
+                        onChange={e => setCity(e.target.value)}
+                        className="w-full bg-[#070e1a] border border-[#1e3a5f] text-[#f1f5f9] rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#C9A84C]/60 appearance-none cursor-pointer"
+                        data-testid="filter-city-select"
+                      >
+                        <option value="">All Cities</option>
+                        {Object.entries(CITY_GROUPS).map(([country, cities]) => (
+                          <optgroup key={country} label={`── ${country} ──`}>
+                            {cities.map(c => (
+                              <option key={c} value={c}>{c}</option>
+                            ))}
+                          </optgroup>
                         ))}
-                      </div>
+                      </select>
+                      {city && (
+                        <button onClick={() => setCity("")} className="mt-1.5 text-[10px] text-[#C9A84C]/60 hover:text-[#C9A84C] transition-colors">
+                          ✕ Clear city filter
+                        </button>
+                      )}
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

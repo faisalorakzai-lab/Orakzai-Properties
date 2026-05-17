@@ -1,5 +1,7 @@
 import { Link } from "wouter";
+import { useState, useRef } from "react";
 import { motion } from "framer-motion";
+import { updateProfile } from "firebase/auth";
 import {
   Shield,
   Home,
@@ -12,16 +14,42 @@ import {
   CheckCircle2,
   Clock,
   XCircle,
+  Camera,
 } from "lucide-react";
 import { useUser, Show } from "@/contexts/AuthContext";
 import { useKYCStatus } from "@/lib/useKYCStatus";
 
 const GOLD = "#D4AF37";
 const BG = "#050505";
+const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME ?? "dvsjiufdv";
+const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET ?? "ml_default";
 
 export default function Profile() {
   const { user } = useUser();
   const { kycStatus, loading: kycLoading } = useKYCStatus();
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(user?.imageUrl ?? null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handlePhotoUpload = async (file: File) => {
+    if (!file || !user?._raw) return;
+    setPhotoUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("upload_preset", UPLOAD_PRESET);
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: "POST", body: fd });
+      if (!res.ok) throw new Error("Upload failed");
+      const data = await res.json();
+      const url: string = data.secure_url;
+      await updateProfile(user._raw, { photoURL: url });
+      setPhotoUrl(url);
+    } catch {
+      /* silent — show existing photo */
+    } finally {
+      setPhotoUploading(false);
+    }
+  };
 
   const displayName = user?.fullName ?? user?.firstName ?? "Faisal Orakzai";
   const email = user?.primaryEmailAddress?.emailAddress ?? "faisal@orakzaiproperties.com";
@@ -128,52 +156,92 @@ export default function Profile() {
             textAlign: "center",
           }}
         >
-          {/* Avatar with gold border if verified */}
-          <motion.div
-            initial={{ scale: 0.85, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.4 }}
-            style={{
-              width: 88,
-              height: 88,
-              borderRadius: "50%",
-              background: `linear-gradient(135deg, rgba(212,175,55,0.25) 0%, rgba(212,175,55,0.08) 100%)`,
-              border: kycStatus === "approved" ? `3px solid ${GOLD}` : `2px solid ${GOLD}`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              margin: "0 auto 16px",
-              boxShadow: kycStatus === "approved"
-                ? `0 0 32px rgba(212,175,55,0.45), 0 0 64px rgba(212,175,55,0.15)`
-                : `0 0 32px rgba(212,175,55,0.25)`,
-              fontSize: 28,
-              fontWeight: 700,
-              color: GOLD,
-              fontFamily: "'Playfair Display', serif",
-              position: "relative",
-            }}
-          >
-            {initials}
-            {/* Gold tick overlay for verified users */}
-            {kycStatus === "approved" && (
-              <div style={{
-                position: "absolute",
-                bottom: -4,
-                right: -4,
-                width: 26,
-                height: 26,
+          {/* Avatar with photo upload */}
+          <div style={{ position: "relative", display: "inline-block", marginBottom: 16 }}>
+            <motion.div
+              initial={{ scale: 0.85, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.4 }}
+              style={{
+                width: 88,
+                height: 88,
                 borderRadius: "50%",
-                background: `linear-gradient(135deg, ${GOLD} 0%, #c49b28 100%)`,
-                border: "2px solid #050505",
+                background: photoUrl ? "transparent" : `linear-gradient(135deg, rgba(212,175,55,0.25) 0%, rgba(212,175,55,0.08) 100%)`,
+                border: kycStatus === "approved" ? `3px solid ${GOLD}` : `2px solid ${GOLD}`,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                boxShadow: `0 0 10px rgba(212,175,55,0.6)`,
-              }}>
-                <CheckCircle2 size={14} color="#050505" strokeWidth={3} />
+                boxShadow: kycStatus === "approved"
+                  ? `0 0 32px rgba(212,175,55,0.45), 0 0 64px rgba(212,175,55,0.15)`
+                  : `0 0 32px rgba(212,175,55,0.25)`,
+                fontSize: 28,
+                fontWeight: 700,
+                color: GOLD,
+                fontFamily: "'Playfair Display', serif",
+                position: "relative",
+                overflow: "hidden",
+                cursor: "pointer",
+              }}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {photoUrl ? (
+                <img src={photoUrl} alt={initials} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
+              ) : (
+                initials
+              )}
+              {/* Hover overlay */}
+              <div style={{
+                position: "absolute", inset: 0, borderRadius: "50%",
+                background: "rgba(0,0,0,0.45)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                opacity: 0, transition: "opacity 0.2s",
+              }}
+                onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
+                onMouseLeave={e => (e.currentTarget.style.opacity = "0")}
+              >
+                <Camera size={22} color={GOLD} />
               </div>
-            )}
-          </motion.div>
+              {/* KYC verified tick */}
+              {kycStatus === "approved" && (
+                <div style={{
+                  position: "absolute", bottom: -4, right: -4,
+                  width: 26, height: 26, borderRadius: "50%",
+                  background: `linear-gradient(135deg, ${GOLD} 0%, #c49b28 100%)`,
+                  border: "2px solid #050505",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  boxShadow: `0 0 10px rgba(212,175,55,0.6)`,
+                }}>
+                  <CheckCircle2 size={14} color="#050505" strokeWidth={3} />
+                </div>
+              )}
+            </motion.div>
+
+            {/* Upload button below avatar */}
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={photoUploading}
+              style={{
+                marginTop: 8,
+                display: "flex", alignItems: "center", gap: 4, justifyContent: "center",
+                background: "transparent", border: `1px solid ${GOLD}40`,
+                borderRadius: 999, padding: "4px 12px",
+                color: GOLD, fontSize: 11, fontWeight: 600,
+                cursor: photoUploading ? "not-allowed" : "pointer",
+                opacity: photoUploading ? 0.6 : 1,
+                transition: "all 0.2s",
+              }}
+            >
+              <Camera size={11} />
+              {photoUploading ? "Uploading…" : "Change Photo"}
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={e => { const f = e.target.files?.[0]; if (f) handlePhotoUpload(f); }}
+            />
+          </div>
 
           {/* Name */}
           <motion.h1

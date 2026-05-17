@@ -1,4 +1,4 @@
-import { useState, useCallback, memo } from "react";
+import { useState, useCallback, memo, useEffect } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -16,13 +16,28 @@ const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env
 
 /* ─── Country → City data ─────────────────────────────────────────────── */
 const COUNTRY_CITIES: Record<string, string[]> = {
-  Pakistan: ["Lahore", "Islamabad", "Karachi", "Rawalpindi", "Peshawar", "Faisalabad", "Multan", "Quetta"],
-  UAE: ["Dubai", "Abu Dhabi", "Sharjah", "Ajman", "Ras Al Khaimah"],
-  UK: ["London", "Manchester", "Birmingham", "Leeds", "Glasgow", "Edinburgh"],
-  USA: ["New York", "Los Angeles", "Houston", "Chicago", "Dallas"],
-  Canada: ["Toronto", "Vancouver", "Calgary", "Ottawa", "Montreal"],
-  Australia: ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide"],
-  "Saudi Arabia": ["Riyadh", "Jeddah", "Mecca", "Medina", "Dammam"],
+  Pakistan: [
+    "Lahore", "Islamabad", "Karachi", "Rawalpindi", "Peshawar", "Faisalabad", "Multan", "Quetta",
+    "Gujranwala", "Sialkot", "Bahawalpur", "Sargodha", "Hyderabad", "Sukkur", "Larkana",
+    "Mardan", "Abbottabad", "Sahiwal", "Sheikhupura", "Gujrat", "Mirpur AJK", "Muzaffarabad",
+    "Dera Ghazi Khan", "Rahim Yar Khan", "Kasur", "Okara", "Mingora", "Nawabshah",
+    "Chiniot", "Kamoke", "Mandi Bahauddin", "Jhelum", "Khanewal", "Hafizabad",
+    "Kohat", "Attock", "Khushab", "Chakwal", "Mianwali", "Bhakkar",
+  ],
+  India: [
+    "Mumbai", "Delhi", "Bangalore", "Chennai", "Hyderabad", "Pune", "Kolkata", "Ahmedabad",
+    "Jaipur", "Surat", "Lucknow", "Kanpur", "Nagpur", "Coimbatore", "Indore", "Bhopal",
+    "Chandigarh", "Ludhiana", "Amritsar", "Gurgaon", "Noida", "Visakhapatnam", "Kochi",
+    "Mysore", "Jodhpur", "Vadodara", "Agra", "Meerut", "Nashik", "Faridabad",
+    "Ghaziabad", "Patna", "Ranchi", "Raipur", "Bhubaneswar", "Dehradun",
+    "Thiruvananthapuram", "Madurai", "Varanasi", "Allahabad", "Srinagar",
+  ],
+  UAE: ["Dubai", "Abu Dhabi", "Sharjah", "Ajman", "Ras Al Khaimah", "Fujairah", "Umm Al Quwain", "Al Ain"],
+  UK: ["London", "Manchester", "Birmingham", "Leeds", "Glasgow", "Edinburgh", "Liverpool", "Bristol"],
+  USA: ["New York", "Los Angeles", "Houston", "Chicago", "Dallas", "Phoenix", "San Antonio", "San Diego"],
+  Canada: ["Toronto", "Vancouver", "Calgary", "Ottawa", "Montreal", "Edmonton", "Mississauga"],
+  Australia: ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide", "Canberra", "Gold Coast"],
+  "Saudi Arabia": ["Riyadh", "Jeddah", "Mecca", "Medina", "Dammam", "Khobar", "Tabuk"],
 };
 
 const COUNTRIES = Object.keys(COUNTRY_CITIES);
@@ -30,72 +45,174 @@ const COUNTRIES = Object.keys(COUNTRY_CITIES);
 /* ─── Mapbox city coords ─── */
 const CITY_COORDS: Record<string, [number, number]> = {
   // Pakistan
-  "Lahore": [74.3587, 31.5204],
-  "Islamabad": [73.0479, 33.6844],
-  "Karachi": [67.0099, 24.8607],
-  "Rawalpindi": [73.0479, 33.6006],
-  "Peshawar": [71.5249, 34.0150],
-  "Faisalabad": [73.0946, 31.4504],
-  "Multan": [71.4743, 30.1978],
-  "Quetta": [66.9750, 30.1798],
+  "Lahore": [74.3587, 31.5204], "Islamabad": [73.0479, 33.6844], "Karachi": [67.0099, 24.8607],
+  "Rawalpindi": [73.0479, 33.6006], "Peshawar": [71.5249, 34.0150], "Faisalabad": [73.0946, 31.4504],
+  "Multan": [71.4743, 30.1978], "Quetta": [66.9750, 30.1798], "Gujranwala": [74.1833, 32.1609],
+  "Sialkot": [74.5333, 32.4927], "Bahawalpur": [71.6752, 29.3956], "Sargodha": [72.6748, 32.0836],
+  "Hyderabad": [68.3578, 25.3792], "Sukkur": [68.8573, 27.7052], "Larkana": [68.2120, 27.5585],
+  "Mardan": [72.0500, 34.2000], "Abbottabad": [73.2215, 34.1463], "Sahiwal": [73.1067, 30.6682],
+  "Sheikhupura": [73.9851, 31.7167], "Gujrat": [74.0783, 32.5741], "Mirpur AJK": [73.7500, 33.1450],
+  "Muzaffarabad": [73.4715, 34.3700], "Dera Ghazi Khan": [70.6338, 30.0570], "Rahim Yar Khan": [70.2953, 28.4200],
+  "Kasur": [74.4500, 31.1200], "Okara": [73.4500, 30.8100], "Mingora": [72.3600, 34.7700],
+  "Nawabshah": [68.4100, 26.2400], "Chiniot": [72.9800, 31.7200], "Jhelum": [73.7300, 32.9400],
+  // India
+  "Mumbai": [72.8777, 19.0760], "Delhi": [77.1025, 28.7041], "Bangalore": [77.5946, 12.9716],
+  "Chennai": [80.2707, 13.0827], "Hyderabad": [78.4867, 17.3850], "Pune": [73.8567, 18.5204],
+  "Kolkata": [88.3639, 22.5726], "Ahmedabad": [72.5714, 23.0225], "Jaipur": [75.7873, 26.9124],
+  "Surat": [72.8311, 21.1702], "Lucknow": [80.9462, 26.8467], "Kanpur": [80.3319, 26.4499],
+  "Nagpur": [79.0882, 21.1458], "Coimbatore": [76.9558, 11.0168], "Indore": [75.8577, 22.7196],
+  "Bhopal": [77.4126, 23.2599], "Chandigarh": [76.7794, 30.7333], "Ludhiana": [75.8573, 30.9010],
+  "Amritsar": [74.8723, 31.6340], "Gurgaon": [77.0266, 28.4595], "Noida": [77.3910, 28.5355],
+  "Visakhapatnam": [83.2185, 17.6868], "Kochi": [76.2673, 9.9312], "Mysore": [76.6394, 12.2958],
+  "Jodhpur": [73.0243, 26.2389], "Vadodara": [73.1812, 22.3072], "Agra": [78.0081, 27.1767],
+  "Meerut": [77.7064, 28.9845], "Nashik": [73.7898, 19.9975], "Faridabad": [77.3178, 28.4089],
+  "Ghaziabad": [77.4538, 28.6692], "Patna": [85.1376, 25.5941], "Ranchi": [85.3096, 23.3441],
+  "Dehradun": [78.0322, 30.3165], "Srinagar": [74.7973, 34.0837],
   // UAE
-  "Dubai": [55.2708, 25.2048],
-  "Abu Dhabi": [54.3773, 24.4539],
-  "Sharjah": [55.3819, 25.3463],
-  "Ajman": [55.4354, 25.4052],
-  "Ras Al Khaimah": [55.9432, 25.7895],
+  "Dubai": [55.2708, 25.2048], "Abu Dhabi": [54.3773, 24.4539], "Sharjah": [55.3819, 25.3463],
+  "Ajman": [55.4354, 25.4052], "Ras Al Khaimah": [55.9432, 25.7895], "Fujairah": [56.3277, 25.1288],
+  "Umm Al Quwain": [55.5550, 25.5650], "Al Ain": [55.7550, 24.2075],
   // UK
-  "London": [-0.1276, 51.5074],
-  "Manchester": [-2.2426, 53.4808],
-  "Birmingham": [-1.8904, 52.4862],
-  "Leeds": [-1.5491, 53.8008],
-  "Glasgow": [-4.2518, 55.8642],
-  "Edinburgh": [-3.1883, 55.9533],
+  "London": [-0.1276, 51.5074], "Manchester": [-2.2426, 53.4808], "Birmingham": [-1.8904, 52.4862],
+  "Leeds": [-1.5491, 53.8008], "Glasgow": [-4.2518, 55.8642], "Edinburgh": [-3.1883, 55.9533],
   // USA
-  "New York": [-74.0060, 40.7128],
-  "Los Angeles": [-118.2437, 34.0522],
-  "Houston": [-95.3698, 29.7604],
-  "Chicago": [-87.6298, 41.8781],
-  "Dallas": [-96.7969, 32.7767],
+  "New York": [-74.0060, 40.7128], "Los Angeles": [-118.2437, 34.0522], "Houston": [-95.3698, 29.7604],
+  "Chicago": [-87.6298, 41.8781], "Dallas": [-96.7969, 32.7767],
   // Canada
-  "Toronto": [-79.3832, 43.6532],
-  "Vancouver": [-123.1216, 49.2827],
-  "Calgary": [-114.0719, 51.0447],
-  "Ottawa": [-75.6972, 45.4215],
-  "Montreal": [-73.5673, 45.5017],
+  "Toronto": [-79.3832, 43.6532], "Vancouver": [-123.1216, 49.2827], "Calgary": [-114.0719, 51.0447],
+  "Ottawa": [-75.6972, 45.4215], "Montreal": [-73.5673, 45.5017],
   // Australia
-  "Sydney": [151.2093, -33.8688],
-  "Melbourne": [144.9631, -37.8136],
-  "Brisbane": [153.0251, -27.4698],
-  "Perth": [115.8605, -31.9505],
-  "Adelaide": [138.6007, -34.9285],
+  "Sydney": [151.2093, -33.8688], "Melbourne": [144.9631, -37.8136], "Brisbane": [153.0251, -27.4698],
+  "Perth": [115.8605, -31.9505], "Adelaide": [138.6007, -34.9285],
   // Saudi Arabia
-  "Riyadh": [46.6753, 24.7136],
-  "Jeddah": [39.1925, 21.4858],
-  "Mecca": [39.8579, 21.3891],
-  "Medina": [39.6142, 24.5247],
-  "Dammam": [50.1033, 26.3927],
+  "Riyadh": [46.6753, 24.7136], "Jeddah": [39.1925, 21.4858], "Mecca": [39.8579, 21.3891],
+  "Medina": [39.6142, 24.5247], "Dammam": [50.1033, 26.3927],
 };
 
-/* ─── Mapbox Preview (memoized to prevent blink on re-render) ─────────── */
-const MapPreview = memo(function MapPreview({ city, area }: { city: string; area: string }) {
-  if (!city) return null;
-  const [lng, lat] = CITY_COORDS[city] ?? [74.3587, 31.5204];
+/* ─── Mapbox Preview with geocoding ────────────────────────────────────── */
+const MapPreview = memo(function MapPreview({
+  city, area, onCoordsFound,
+}: { city: string; area: string; onCoordsFound?: (lng: number, lat: number) => void }) {
+  const [lng, setLng] = useState<number | null>(null);
+  const [lat, setLat] = useState<number | null>(null);
+  const [geocoding, setGeocoding] = useState(false);
+  const [geocoded, setGeocoded] = useState(false);
+  const [manualLng, setManualLng] = useState("");
+  const [manualLat, setManualLat] = useState("");
+  const [showManual, setShowManual] = useState(false);
   const token = import.meta.env.VITE_MAPBOX_PUBLIC_KEY;
-  if (!token) return (
-    <div className="rounded-xl border border-[#C9A84C]/20 bg-[#0a1628] p-4 text-center text-[#4a6080] text-xs">
-      Add <code className="text-[#C9A84C]/70">VITE_MAPBOX_PUBLIC_KEY</code> to enable map preview.
-    </div>
-  );
+
+  /* When area or city changes, geocode the address */
+  useEffect(() => {
+    if (!city) return;
+    const cityCoords = CITY_COORDS[city] ?? [74.3587, 31.5204];
+    if (!token || !area.trim()) {
+      setLng(cityCoords[0]);
+      setLat(cityCoords[1]);
+      setGeocoded(false);
+      onCoordsFound?.(cityCoords[0], cityCoords[1]);
+      return;
+    }
+    setGeocoding(true);
+    const query = encodeURIComponent(`${area}, ${city}`);
+    const proximity = `${cityCoords[0]},${cityCoords[1]}`;
+    fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${query}.json?proximity=${proximity}&limit=1&access_token=${token}`)
+      .then(r => r.json())
+      .then(d => {
+        const feat = d.features?.[0];
+        if (feat) {
+          const [fLng, fLat] = feat.center;
+          setLng(fLng); setLat(fLat); setGeocoded(true);
+          onCoordsFound?.(fLng, fLat);
+        } else {
+          setLng(cityCoords[0]); setLat(cityCoords[1]); setGeocoded(false);
+          onCoordsFound?.(cityCoords[0], cityCoords[1]);
+        }
+      })
+      .catch(() => {
+        const [cLng, cLat] = cityCoords;
+        setLng(cLng); setLat(cLat); setGeocoded(false);
+        onCoordsFound?.(cLng, cLat);
+      })
+      .finally(() => setGeocoding(false));
+  }, [city, area, token]);
+
+  const applyManual = () => {
+    const mLng = parseFloat(manualLng);
+    const mLat = parseFloat(manualLat);
+    if (!isNaN(mLng) && !isNaN(mLat)) {
+      setLng(mLng); setLat(mLat); setGeocoded(true);
+      onCoordsFound?.(mLng, mLat);
+    }
+  };
+
+  if (!city) return null;
+  const displayLng = lng ?? (CITY_COORDS[city] ?? [74.3587, 31.5204])[0];
+  const displayLat = lat ?? (CITY_COORDS[city] ?? [74.3587, 31.5204])[1];
   const label = area ? `${area}, ${city}` : city;
-  const mapUrl = `https://api.mapbox.com/styles/v1/faisalorakzai/cmp6m332s001a01s93rqk58ew/static/pin-s+F3BA2F(${lng},${lat})/${lng},${lat},13,0/600x220@2x?access_token=${token}`;
+  const mapUrl = token
+    ? `https://api.mapbox.com/styles/v1/faisalorakzai/cmp6m332s001a01s93rqk58ew/static/pin-s+F3BA2F(${displayLng},${displayLat})/${displayLng},${displayLat},14,0/600x220@2x?access_token=${token}`
+    : null;
+
   return (
-    <div className="rounded-2xl overflow-hidden border border-[#C9A84C]/25 relative" style={{ height: 180 }}>
-      <img src={mapUrl} alt={label} className="w-full h-full object-cover" />
-      <div className="absolute bottom-0 left-0 right-0 px-3 py-2 bg-gradient-to-t from-[#040b14]/90 to-transparent flex items-center gap-2">
-        <MapPin className="h-3 w-3 text-[#C9A84C] flex-shrink-0" />
-        <span className="text-white/80 text-xs font-medium">{label}</span>
-      </div>
+    <div className="space-y-2">
+      {mapUrl ? (
+        <div className="rounded-2xl overflow-hidden border border-[#C9A84C]/25 relative" style={{ height: 180 }}>
+          {geocoding && (
+            <div className="absolute inset-0 z-10 bg-[#040b14]/80 flex items-center justify-center gap-2">
+              <div className="w-4 h-4 border-2 border-[#C9A84C] border-t-transparent rounded-full animate-spin" />
+              <span className="text-[#C9A84C] text-xs">Finding location…</span>
+            </div>
+          )}
+          <img src={mapUrl} alt={label} className="w-full h-full object-cover" />
+          <div className="absolute top-2 right-2">
+            {geocoded ? (
+              <span className="text-[9px] bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 px-2 py-0.5 rounded-full font-bold">
+                📍 Exact location found
+              </span>
+            ) : (
+              <span className="text-[9px] bg-[#C9A84C]/15 border border-[#C9A84C]/30 text-[#C9A84C] px-2 py-0.5 rounded-full font-bold">
+                City centre (approx)
+              </span>
+            )}
+          </div>
+          <div className="absolute bottom-0 left-0 right-0 px-3 py-2 bg-gradient-to-t from-[#040b14]/90 to-transparent flex items-center gap-2">
+            <MapPin className="h-3 w-3 text-[#C9A84C] flex-shrink-0" />
+            <span className="text-white/80 text-xs font-medium">{label}</span>
+          </div>
+        </div>
+      ) : (
+        <div className="rounded-xl border border-[#C9A84C]/20 bg-[#0a1628] p-4 text-center text-[#4a6080] text-xs">
+          Map preview requires <code className="text-[#C9A84C]/70">VITE_MAPBOX_PUBLIC_KEY</code>
+        </div>
+      )}
+      {/* Manual pin override if geocoding didn't find exact location */}
+      {!geocoded && !geocoding && city && (
+        <div>
+          <button type="button" onClick={() => setShowManual(v => !v)}
+            className="text-[10px] text-[#C9A84C]/70 hover:text-[#C9A84C] underline transition-colors">
+            {showManual ? "Hide" : "📌 Set exact coordinates manually"}
+          </button>
+          {showManual && (
+            <div className="mt-2 flex gap-2 items-end">
+              <div className="flex-1">
+                <div className="text-[9px] text-[#4a6080] mb-1">Longitude</div>
+                <input value={manualLng} onChange={e => setManualLng(e.target.value)}
+                  placeholder="e.g. 74.3587" className="bg-[#070e1a] border border-[#1e3a5f] text-white rounded-lg px-3 py-2 text-xs w-full outline-none focus:border-[#C9A84C]/50" />
+              </div>
+              <div className="flex-1">
+                <div className="text-[9px] text-[#4a6080] mb-1">Latitude</div>
+                <input value={manualLat} onChange={e => setManualLat(e.target.value)}
+                  placeholder="e.g. 31.5204" className="bg-[#070e1a] border border-[#1e3a5f] text-white rounded-lg px-3 py-2 text-xs w-full outline-none focus:border-[#C9A84C]/50" />
+              </div>
+              <button type="button" onClick={applyManual}
+                className="px-3 py-2 bg-[#C9A84C] text-[#040b14] text-xs font-bold rounded-lg hover:bg-[#e8c060] transition-colors">
+                Apply
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 });
@@ -203,7 +320,7 @@ function ImageUploader({ images, onChange }: { images: string[]; onChange: (imgs
   const [urlInput, setUrlInput] = useState("");
   const { toast } = useToast();
 
-  const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+  const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME ?? "dvsjiufdv";
   const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET ?? "ml_default";
 
   const uploadToCloudinary = async (file: File): Promise<string> => {
@@ -586,6 +703,9 @@ export default function PostProperty() {
   const [furnished,    setFurnished]    = useState("");
   const [occupancy,    setOccupancy]    = useState("");
   const [rentalDur,    setRentalDur]    = useState("");
+  /* geocoded map coordinates from MapPreview */
+  const [mapLng,       setMapLng]       = useState<number | null>(null);
+  const [mapLat,       setMapLat]       = useState<number | null>(null);
 
   /* cities for selected country */
   const availableCities = country ? (COUNTRY_CITIES[country] ?? []) : [];
@@ -625,7 +745,9 @@ export default function PostProperty() {
       const priceLabel = priceNum >= 10000000
         ? `₨ ${(priceNum / 10000000).toFixed(2)} Cr`
         : `₨ ${(priceNum / 100000).toFixed(0)}L`;
-      const coords = CITY_COORDS[city] ?? [74.3587, 31.5204];
+      const cityCoords = CITY_COORDS[city] ?? [74.3587, 31.5204];
+      const finalLng = mapLng ?? cityCoords[0];
+      const finalLat = mapLat ?? cityCoords[1];
       const { data, error } = await supabase.from("properties").insert({
         title, category, type: propType, description,
         price: priceNum, price_label: priceLabel,
@@ -643,7 +765,7 @@ export default function PostProperty() {
         baths: baths ? Number(baths) : null,
         is_verified: reqVerify,
         is_available: true,
-        longitude: coords[0], latitude: coords[1],
+        longitude: finalLng, latitude: finalLat,
         status: "Available",
       }).select("id").single();
       if (error) throw error;
@@ -852,8 +974,8 @@ export default function PostProperty() {
                       </div>
                     </div>
 
-                    {/* Mapbox live preview — memoized, no blink */}
-                    {city && <MapPreview city={city} area={area} />}
+                    {/* Mapbox live preview with geocoding */}
+                    {city && <MapPreview city={city} area={area} onCoordsFound={(lng, lat) => { setMapLng(lng); setMapLat(lat); }} />}
 
                     {/* specs */}
                     <div>

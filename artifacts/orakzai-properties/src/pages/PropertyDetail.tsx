@@ -394,16 +394,17 @@ export default function PropertyDetail() {
       });
   }, [id]);
 
-  const isRental   = property?.category === "rent";
-  const isAvailable = (property as any)?.isAvailable !== false;
-  const waNum   = property?.whatsappNumber || property?.ownerPhone;
+  const isRental    = property?.category === "rent";
+  const isAvailable = (property as any)?.is_available !== false && (property as any)?.isAvailable !== false;
+  const waNum   = property?.whatsapp_number || property?.whatsappNumber
+               || property?.owner_phone    || property?.ownerPhone;
   const waText  = isRental
     ? `Hello, I am interested in renting your property *${property?.title ?? ""}* listed for ${formatPrice(Number(property?.price ?? 0), "rent")}/month on Orakzai Properties. Is it still available?`
     : `Hi, I saw your property *${property?.title ?? ""}* on Orakzai Properties and I am interested. Could you please share more details?`;
   const waLink  = waNum ? `https://wa.me/${waNum.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(waText)}` : null;
   const catStyle = CAT_STYLE[property?.category ?? ""] ?? CAT_STYLE.buy;
   const TypeIcon = TYPE_ICON[property?.type ?? ""] ?? Home;
-  const ownerRating = property?.ownerRating ? Number(property.ownerRating) : 4.8;
+  const ownerRating = (property?.owner_rating ?? property?.ownerRating) ? Number(property.owner_rating ?? property.ownerRating) : 4.8;
 
   const handleSave = () => {
     toggleSave();
@@ -472,7 +473,7 @@ export default function PropertyDetail() {
   const specItems = [
     ...(property.beds     ? [{ icon: Bed,       label: "Bedrooms",   value: property.beds }]   : []),
     ...(property.baths    ? [{ icon: Bath,       label: "Bathrooms",  value: property.baths }]  : []),
-    ...(property.areaSqft ? [{ icon: Maximize2,  label: "Sq. Ft.",    value: property.areaSqft.toLocaleString() }] : []),
+    ...((property.area_sqft ?? property.areaSqft) ? [{ icon: Maximize2, label: "Sq. Ft.", value: (property.area_sqft ?? property.areaSqft).toLocaleString() }] : []),
     { icon: TypeIcon,       label: "Type",       value: property.type.charAt(0).toUpperCase() + property.type.slice(1) },
     { icon: MapPin,         label: "City",       value: property.city },
     ...((isRental && (property as any).furnishedStatus) ? [{ icon: Sofa,  label: "Furnished",  value: FURNISHED_LABEL[(property as any).furnishedStatus] ?? (property as any).furnishedStatus }] : []),
@@ -548,7 +549,7 @@ export default function PropertyDetail() {
                 <span className="flex items-center gap-1.5 text-[11px] bg-white/5 border border-white/10 text-[#6a7f99] px-2.5 py-1 rounded-full capitalize">
                   <TypeIcon className="h-3 w-3" /> {property.type}
                 </span>
-                {property.isVerified && (
+                {(property.is_verified ?? property.isVerified) && (
                   <span className="flex items-center gap-1.5 text-[11px] bg-[#C9A84C]/10 border border-[#C9A84C]/35 text-[#C9A84C] px-2.5 py-1 rounded-full font-bold">
                     <ShieldCheck className="h-3.5 w-3.5" /> Sovereign Verified
                   </span>
@@ -736,20 +737,20 @@ export default function PropertyDetail() {
 
                   {/* Avatar + Trust Ring */}
                   <div className="flex items-center gap-3 mb-4">
-                    {property.ownerAvatar ? (
+                    {(property.owner_avatar ?? property.ownerAvatar) ? (
                       <div className="relative flex-shrink-0">
-                        <img src={property.ownerAvatar} alt={property.ownerName ?? "Agent"}
+                        <img src={property.owner_avatar ?? property.ownerAvatar} alt={(property.owner_name ?? property.ownerName) ?? "Agent"}
                           className="h-14 w-14 rounded-2xl object-cover border-2 border-[#C9A84C]/30" />
                       </div>
                     ) : (
                       <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#C9A84C]/20 to-[#C9A84C]/5 border border-[#C9A84C]/30 flex items-center justify-center flex-shrink-0">
                         <span className="text-[#C9A84C] font-serif text-xl font-bold">
-                          {(property.ownerName ?? "O")[0].toUpperCase()}
+                          {((property.owner_name ?? property.ownerName) ?? "O")[0].toUpperCase()}
                         </span>
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <div className="text-white font-semibold text-sm truncate">{property.ownerName ?? "Orakzai Agent"}</div>
+                      <div className="text-white font-semibold text-sm truncate">{property.owner_name ?? property.ownerName ?? "Orakzai Agent"}</div>
                       <div className="text-[#3a5070] text-xs mt-0.5">Verified Consultant</div>
                     </div>
                     <TrustRing rating={ownerRating} />
@@ -810,11 +811,11 @@ export default function PropertyDetail() {
                         </button>
                       </a>
                     )}
-                    {property.ownerPhone && (
-                      <a href={`tel:${property.ownerPhone}`}>
+                    {(property.owner_phone ?? property.ownerPhone) && (
+                      <a href={`tel:${property.owner_phone ?? property.ownerPhone}`}>
                         <button className="w-full flex items-center justify-center gap-2.5 h-11 rounded-xl border border-white/10 bg-white/5 text-[#e8edf5] hover:border-[#C9A84C]/40 hover:bg-[#C9A84C]/5 font-semibold text-sm transition-all">
                           <Phone className="h-4 w-4 text-[#C9A84C]" />
-                          {property.ownerPhone}
+                          {property.owner_phone ?? property.ownerPhone}
                         </button>
                       </a>
                     )}
@@ -847,9 +848,9 @@ export default function PropertyDetail() {
                 </h4>
                 {[
                   { label: "Property ID",  value: `#${String(property.id).padStart(5, "0")}` },
-                  { label: "Listed On",    value: new Date(property.createdAt).toLocaleDateString("en-PK", { month: "short", day: "numeric", year: "numeric" }) },
+                  { label: "Listed On",    value: new Date(property.created_at ?? property.createdAt).toLocaleDateString("en-PK", { month: "short", day: "numeric", year: "numeric" }) },
                   { label: "Status",       value: catStyle.name, badge: true, color: catStyle.pill },
-                  ...(property.isVerified ? [{ label: "Verification", value: "Sovereign Verified", verified: true }] : []),
+                  ...((property.is_verified ?? property.isVerified) ? [{ label: "Verification", value: "Sovereign Verified", verified: true }] : []),
                 ].map(row => (
                   <div key={row.label} className="flex justify-between items-center py-1.5 border-b border-white/[0.04] last:border-0">
                     <span className="text-[#3a5070] text-[10px] uppercase tracking-wider">{row.label}</span>
@@ -907,8 +908,8 @@ export default function PropertyDetail() {
             <div className="flex items-center gap-2 px-3 py-3">
 
               {/* CALL — icon button */}
-              {property.ownerPhone ? (
-                <a href={`tel:${property.ownerPhone}`} className="flex-shrink-0">
+              {(property.owner_phone ?? property.ownerPhone) ? (
+                <a href={`tel:${property.owner_phone ?? property.ownerPhone}`} className="flex-shrink-0">
                   <motion.div whileTap={{ scale: 0.9 }}
                     className="flex flex-col items-center gap-1 w-14 py-1.5 rounded-xl hover:bg-white/5 transition-colors group cursor-pointer">
                     <div className="h-9 w-9 rounded-xl bg-[#C9A84C]/10 border border-[#C9A84C]/25 flex items-center justify-center group-hover:bg-[#C9A84C]/20 transition-colors">
