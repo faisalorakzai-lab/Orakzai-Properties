@@ -1,5 +1,17 @@
 {
+  "version": 2,
+  "buildCommand": "pnpm --filter @workspace/orakzai-properties run build",
+  "outputDirectory": "artifacts/orakzai-properties/dist/public",
+  "installCommand": "pnpm install --no-frozen-lockfile",
+  "framework": null,
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "env": {
+    "BASE_PATH": "/",
+    "VERCEL": "1"
+  }
 }

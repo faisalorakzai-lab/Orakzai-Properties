@@ -29,6 +29,7 @@ import AdminConfig from "@/pages/AdminConfig";
 import AdminKYC from "@/pages/AdminKYC";
 import AdminPanel, { ADMIN_EMAIL } from "@/pages/AdminPanel";
 import TradingPortfolio from "@/pages/TradingPortfolio";
+import PriceAlerts from "@/pages/PriceAlerts";
 import BottomNav from "@/components/BottomNav";
 import AuthPage from "@/pages/AuthPage";
 
@@ -149,6 +150,7 @@ function AppContent() {
               <Route path="/admin/config" component={AdminConfig} />
               <Route path="/admin/kyc" component={AdminKYC} />
               <Route path="/trading-portfolio" component={TradingPortfolio} />
+              <Route path="/price-alerts" component={PriceAlerts} />
               <Route path="/sign-in/*?">{() => <AuthPage defaultMode="signin" />}</Route>
               <Route path="/sign-up/*?">{() => <AuthPage defaultMode="signup" />}</Route>
               <Route component={NotFound} />

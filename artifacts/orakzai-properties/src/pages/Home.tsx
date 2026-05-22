@@ -13,11 +13,11 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
   import KYCGateModal from "@/components/KYCGateModal";
   import { supabase } from "@/lib/supabase";
 
-  const GOLD = "#F3BA2F";
-  const BG = "#070B14";
-  const CARD_BG = "#0D1421";
+  const GOLD = "#C9A84C";
+  const BG = "#040b14";
+  const CARD_BG = "#04080F";
   const BORDER = "rgba(255,255,255,0.07)";
-  const BORDER_GOLD = "rgba(243,186,47,0.25)";
+  const BORDER_GOLD = "rgba(201,168,76,0.25)";
   const basePath = (import.meta.env.BASE_URL as string).replace(/\/$/, "");
 
   const MARKET_MODES = [
@@ -34,13 +34,13 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
   ];
 
   const QUICK_ACTIONS: { icon: React.ElementType; label: string; color: string; bg: string; type?: string; kycRequired: boolean; href?: string }[] = [
-    { icon: HomeIcon, label: "Buy Property", color: GOLD, bg: "rgba(243,186,47,0.12)", type: "Buy", kycRequired: true },
+    { icon: HomeIcon, label: "Buy Property", color: GOLD, bg: "rgba(201,168,76,0.12)", type: "Buy", kycRequired: true },
     { icon: ArrowRight, label: "Sell Asset", color: "#10b981", bg: "rgba(16,185,129,0.12)", type: "Sell", kycRequired: true },
     { icon: KeyRound, label: "Rent Market", color: "#8b5cf6", bg: "rgba(139,92,246,0.12)", type: "Rent", kycRequired: false },
     { icon: BarChart3, label: "Invest Hub", color: "#06b6d4", bg: "rgba(6,182,212,0.12)", type: "Investment", kycRequired: false },
     { icon: Layers, label: "Fractional", color: "#ec4899", bg: "rgba(236,72,153,0.12)", kycRequired: false, href: "/invest" },
     { icon: HardHat, label: "Construction", color: "#a78bfa", bg: "rgba(167,139,250,0.12)", type: "Construction", kycRequired: true },
-    { icon: Star, label: "Luxury Est.", color: GOLD, bg: "rgba(243,186,47,0.10)", type: "Luxury", kycRequired: false },
+    { icon: Star, label: "Luxury Est.", color: GOLD, bg: "rgba(201,168,76,0.10)", type: "Luxury", kycRequired: false },
     { icon: Globe, label: "International", color: "#f97316", bg: "rgba(249,115,22,0.12)", type: "International", kycRequired: false },
   ];
 
@@ -120,7 +120,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
             onError={e => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&q=80"; }} />
           <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(7,11,20,0.05) 0%,rgba(7,11,20,0.95) 100%)" }} />
           <div style={{ position: "absolute", top: 12, left: 12, display: "flex", gap: 6 }}>
-            <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 20, background: p.tagColor, color: "#070B14" }}>{p.tag}</span>
+            <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 20, background: p.tagColor, color: "#040b14" }}>{p.tag}</span>
             {p.tokenized && <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 20, background: "rgba(6,182,212,0.9)", color: "#fff" }}>⬡ Token</span>}
           </div>
           <motion.button whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}
@@ -159,7 +159,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
                 <div style={{ fontSize: 11, color: "#10b981", fontWeight: 700 }}>{p.monthlyIncome}</div>
               </div>
               {p.completion && (
-                <div style={{ flex: 1, background: "rgba(243,186,47,0.08)", border: "1px solid rgba(243,186,47,0.2)", borderRadius: 8, padding: "5px 8px" }}>
+                <div style={{ flex: 1, background: "rgba(201,168,76,0.08)", border: "1px solid rgba(201,168,76,0.2)", borderRadius: 8, padding: "5px 8px" }}>
                   <div style={{ fontSize: 9, color: "#8B93A7", marginBottom: 1 }}>Completion</div>
                   <div style={{ fontSize: 11, color: GOLD, fontWeight: 700 }}>{p.completion}</div>
                 </div>
@@ -174,7 +174,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
             {hovered && (
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }}
                 style={{ display: "flex", gap: 6, marginTop: 10 }}>
-                <button style={{ flex: 1, padding: "8px 0", borderRadius: 10, background: `linear-gradient(135deg,${GOLD},#e8a820)`, border: "none", color: "#070B14", fontSize: 11, fontWeight: 800, cursor: "pointer" }}>
+                <button style={{ flex: 1, padding: "8px 0", borderRadius: 10, background: `linear-gradient(135deg,${GOLD},#e8a820)`, border: "none", color: "#040b14", fontSize: 11, fontWeight: 800, cursor: "pointer" }}>
                   {isInvest ? "Invest Now" : "View Details"}
                 </button>
                 {p.tokenized && (
@@ -209,11 +209,11 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
             if (!mounted) return;
             setMapLoaded(true);
             try { // @ts-ignore
-              map.setFog({ color: "rgba(7,11,20,0.8)", "high-color": "#070B14", "horizon-blend": 0.02, "space-color": "#070B14", "star-intensity": 0.2 }); } catch {}
+              map.setFog({ color: "rgba(7,11,20,0.8)", "high-color": "#040b14", "horizon-blend": 0.02, "space-color": "#040b14", "star-intensity": 0.2 }); } catch {}
             properties.forEach(prop => {
               const el = document.createElement("div");
               const c = prop.roi ? "#10b981" : GOLD;
-              el.style.cssText = `width:30px;height:30px;border-radius:50%;background:${c};border:2px solid rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 0 18px ${c}99;font-size:10px;font-weight:800;color:#070B14;transition:transform 0.2s`;
+              el.style.cssText = `width:30px;height:30px;border-radius:50%;background:${c};border:2px solid rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 0 18px ${c}99;font-size:10px;font-weight:800;color:#040b14;transition:transform 0.2s`;
               el.textContent = prop.roi ? "%" : "₨";
               el.addEventListener("mouseenter", () => { el.style.transform = "scale(1.35)"; });
               el.addEventListener("mouseleave", () => { el.style.transform = "scale(1)"; });
@@ -233,7 +233,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
       <div style={{ position: "relative", borderRadius: 20, overflow: "hidden", border: `1px solid ${BORDER}`, height: 420 }}>
         <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
         {!mapLoaded && (
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg,#070B14 0%,#0D1421 60%,#070B14 100%)", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 16 }}>
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg,#040b14 0%,#04080F 60%,#040b14 100%)", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 16 }}>
             <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.06 }}>
               {Array.from({ length: 10 }, (_, i) => (<line key={`h${i}`} x1="0" y1={`${i * 11}%`} x2="100%" y2={`${i * 11}%`} stroke={GOLD} strokeWidth="0.5" />))}
               {Array.from({ length: 14 }, (_, i) => (<line key={`v${i}`} x1={`${i * 8}%`} y1="0" x2={`${i * 8}%`} y2="100%" stroke={GOLD} strokeWidth="0.5" />))}
@@ -242,7 +242,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
               <motion.div key={prop.id} initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.15 * i }}
                 onClick={() => setSelectedProp(prop)} style={{ position: "absolute", left: `${10 + i * 14}%`, top: `${25 + (i % 3) * 22}%`, cursor: "pointer", zIndex: 5 }}>
                 <motion.div animate={{ scale: [1, 1.25, 1] }} transition={{ repeat: Infinity, duration: 2.5, delay: i * 0.4 }}
-                  style={{ width: 34, height: 34, borderRadius: "50%", background: prop.roi ? "rgba(16,185,129,0.92)" : "rgba(243,186,47,0.92)", border: "2px solid rgba(255,255,255,0.25)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 0 22px ${prop.roi ? "#10b981" : GOLD}99`, fontSize: 11, fontWeight: 800, color: "#070B14" }}>
+                  style={{ width: 34, height: 34, borderRadius: "50%", background: prop.roi ? "rgba(16,185,129,0.92)" : "rgba(201,168,76,0.92)", border: "2px solid rgba(255,255,255,0.25)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 0 22px ${prop.roi ? "#10b981" : GOLD}99`, fontSize: 11, fontWeight: 800, color: "#040b14" }}>
                   {prop.roi ? "%" : "₨"}
                 </motion.div>
                 <div style={{ marginTop: 5, background: "rgba(13,20,33,0.9)", border: `1px solid ${BORDER_GOLD}`, borderRadius: 6, padding: "2px 7px", whiteSpace: "nowrap", fontSize: 9, color: "#F5F5F5", textAlign: "center" as const }}>{prop.city}</div>
@@ -314,7 +314,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
           </motion.div>
         ))}
         <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }} onClick={() => nav("/invest")}
-          style={{ width: "100%", padding: "14px", borderRadius: 16, background: "rgba(243,186,47,0.08)", border: `1px solid ${BORDER_GOLD}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+          style={{ width: "100%", padding: "14px", borderRadius: 16, background: "rgba(201,168,76,0.08)", border: `1px solid ${BORDER_GOLD}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
           <Award size={15} color={GOLD} /><span style={{ color: GOLD, fontWeight: 700, fontSize: 13 }}>Explore All Investment Opportunities</span>
         </motion.button>
       </div>
@@ -391,7 +391,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
       <div style={{ minHeight: "100dvh", background: BG, color: "#F5F5F5", fontFamily: "'Plus Jakarta Sans',sans-serif", paddingBottom: 100 }}>
         <KYCGateModal open={kycModalOpen} onClose={() => setKycModalOpen(false)} featureName={kycModalFeature} />
         <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0, overflow: "hidden" }}>
-          <div style={{ position: "absolute", top: -120, right: "5%", width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle,rgba(243,186,47,0.05) 0%,transparent 70%)", filter: "blur(90px)" }} />
+          <div style={{ position: "absolute", top: -120, right: "5%", width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle,rgba(201,168,76,0.05) 0%,transparent 70%)", filter: "blur(90px)" }} />
           <div style={{ position: "absolute", top: "35%", left: -80, width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle,rgba(59,130,246,0.04) 0%,transparent 70%)", filter: "blur(80px)" }} />
         </div>
 
@@ -403,7 +403,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
               <img src={`${basePath}/logo-orakzai-full.png`} alt="Orakzai Properties" style={{ height: 44, width: "auto", objectFit: "contain" }}
                 onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; const fb = (e.currentTarget as HTMLImageElement).nextElementSibling as HTMLElement; if (fb) fb.style.display = "flex"; }} />
               <div style={{ display: "none", alignItems: "center", gap: 8 }}>
-                <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(243,186,47,0.15)", border: "1px solid rgba(243,186,47,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}><Building2 size={18} color={GOLD} /></div>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(201,168,76,0.15)", border: "1px solid rgba(201,168,76,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}><Building2 size={18} color={GOLD} /></div>
                 <div><div style={{ fontWeight: 900, fontSize: 14, color: GOLD }}>ORAKZAI</div><div style={{ fontSize: 8, color: "#8B93A7", letterSpacing: 3, textTransform: "uppercase" as const }}>Properties</div></div>
               </div>
             </motion.div>
@@ -414,19 +414,19 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
               </div>
               <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                 onClick={() => isVerified ? setLocation("/wallet") : (setKycModalFeature("Wallet"), setKycModalOpen(true))}
-                style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 10, background: "rgba(243,186,47,0.1)", border: `1px solid ${BORDER_GOLD}`, cursor: "pointer" }}>
+                style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 10, background: "rgba(201,168,76,0.1)", border: `1px solid ${BORDER_GOLD}`, cursor: "pointer" }}>
                 <Wallet size={13} color={GOLD} /><span style={{ fontSize: 11, color: GOLD, fontWeight: 700 }}>₨ 0</span>
               </motion.button>
               <div style={{ position: "relative" }}>
                 <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => { setNotifOpen(v => !v); setMenuOpen(false); }}
                   style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,255,255,0.05)", border: `1px solid ${BORDER}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", position: "relative" }}>
                   <Bell size={15} color="#8B93A7" />
-                  <span style={{ position: "absolute", top: 7, right: 7, width: 7, height: 7, borderRadius: "50%", background: GOLD, border: "1.5px solid #070B14" }} />
+                  <span style={{ position: "absolute", top: 7, right: 7, width: 7, height: 7, borderRadius: "50%", background: GOLD, border: "1.5px solid #040b14" }} />
                 </motion.button>
                 <AnimatePresence>
                   {notifOpen && (
                     <motion.div initial={{ opacity: 0, y: 8, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                      style={{ position: "absolute", right: 0, top: 44, width: 285, background: "#0D1421", border: `1px solid ${BORDER_GOLD}`, borderRadius: 16, zIndex: 100, boxShadow: "0 24px 60px rgba(0,0,0,0.75)", overflow: "hidden" }}>
+                      style={{ position: "absolute", right: 0, top: 44, width: 285, background: "#04080F", border: `1px solid ${BORDER_GOLD}`, borderRadius: 16, zIndex: 100, boxShadow: "0 24px 60px rgba(0,0,0,0.75)", overflow: "hidden" }}>
                       <div style={{ padding: "12px 16px", borderBottom: `1px solid ${BORDER}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                         <span style={{ fontWeight: 700, fontSize: 13 }}>Notifications</span>
                         <button onClick={() => setNotifOpen(false)} style={{ background: "none", border: "none", cursor: "pointer" }}><X size={14} color="#8B93A7" /></button>
@@ -446,14 +446,14 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
               <div style={{ position: "relative" }}>
                 <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => { setMenuOpen(v => !v); setNotifOpen(false); }}
                   style={{ display: "flex", alignItems: "center", gap: 6, height: 36, padding: "0 10px", borderRadius: 10, background: "rgba(255,255,255,0.05)", border: `1px solid ${BORDER}`, cursor: "pointer" }}>
-                  <div style={{ width: 22, height: 22, borderRadius: "50%", background: `linear-gradient(135deg,${GOLD},#e8a820)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><User size={12} color="#070B14" /></div>
+                  <div style={{ width: 22, height: 22, borderRadius: "50%", background: `linear-gradient(135deg,${GOLD},#e8a820)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><User size={12} color="#040b14" /></div>
                   <span style={{ color: "#A0AABA", fontSize: 12 }}>{user?.firstName ?? "Account"}</span>
                   <ChevronDown size={11} color="#8B93A7" />
                 </motion.button>
                 <AnimatePresence>
                   {menuOpen && (
                     <motion.div initial={{ opacity: 0, y: 8, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                      style={{ position: "absolute", right: 0, top: 44, width: 215, background: "#0D1421", border: `1px solid ${BORDER_GOLD}`, borderRadius: 16, zIndex: 100, boxShadow: "0 24px 60px rgba(0,0,0,0.75)", overflow: "hidden" }}>
+                      style={{ position: "absolute", right: 0, top: 44, width: 215, background: "#04080F", border: `1px solid ${BORDER_GOLD}`, borderRadius: 16, zIndex: 100, boxShadow: "0 24px 60px rgba(0,0,0,0.75)", overflow: "hidden" }}>
                       {[{ label: "Post Property", href: "/post-property", icon: Plus, kycRequired: false }, { label: "My Listings", href: "/my-properties", icon: Building2, kycRequired: false }, { label: "Portfolio", href: "/portfolio", icon: BarChart3, kycRequired: false }, { label: "Wallet", href: "/wallet", icon: Wallet, kycRequired: true }, { label: "Profile", href: "/profile", icon: User, kycRequired: false }, { label: "KYC Verify", href: "/kyc", icon: ShieldCheck, kycRequired: false }].map(item => (
                         <motion.div key={item.label} whileHover={{ background: "rgba(255,255,255,0.05)" }}
                           onClick={() => { if (item.kycRequired && !isVerified) { setMenuOpen(false); setKycModalFeature(item.label); setKycModalOpen(true); return; } setLocation(item.href); setMenuOpen(false); }}
@@ -484,7 +484,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
                 placeholder="Search global properties, investment opportunities, rental yields…"
                 style={{ flex: 1, background: "none", border: "none", outline: "none", color: "#F5F5F5", fontSize: 14, fontFamily: "'Plus Jakarta Sans',sans-serif" }} />
               {search && <motion.button initial={{ scale: 0 }} animate={{ scale: 1 }} onClick={() => setSearch("")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}><X size={13} color="#8B93A7" /></motion.button>}
-              <motion.button whileHover={{ scale: 1.1 }} style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(243,186,47,0.1)", border: `1px solid ${BORDER_GOLD}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><Mic size={13} color={GOLD} /></motion.button>
+              <motion.button whileHover={{ scale: 1.1 }} style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(201,168,76,0.1)", border: `1px solid ${BORDER_GOLD}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><Mic size={13} color={GOLD} /></motion.button>
             </motion.div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" as const, justifyContent: "center", marginTop: 12 }}>
               <span style={{ fontSize: 11, color: "#8B93A7" }}>Trending:</span>
@@ -502,7 +502,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
                 const active = mode === activeMode;
                 return (
                   <motion.button key={mode} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} onClick={() => setActiveMode(mode)}
-                    style={{ flexShrink: 0, height: 34, padding: "0 16px", borderRadius: 20, fontSize: 12, fontWeight: active ? 800 : 500, cursor: "pointer", background: active ? "rgba(243,186,47,0.15)" : "rgba(255,255,255,0.04)", border: active ? "1px solid rgba(243,186,47,0.55)" : `1px solid ${BORDER}`, color: active ? GOLD : "#8B93A7", boxShadow: active ? "0 0 20px rgba(243,186,47,0.2)" : "none", transition: "all 0.2s ease" }}>
+                    style={{ flexShrink: 0, height: 34, padding: "0 16px", borderRadius: 20, fontSize: 12, fontWeight: active ? 800 : 500, cursor: "pointer", background: active ? "rgba(201,168,76,0.15)" : "rgba(255,255,255,0.04)", border: active ? "1px solid rgba(201,168,76,0.55)" : `1px solid ${BORDER}`, color: active ? GOLD : "#8B93A7", boxShadow: active ? "0 0 20px rgba(201,168,76,0.2)" : "none", transition: "all 0.2s ease" }}>
                     {mode}
                   </motion.button>
                 );
@@ -579,7 +579,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
                     <span style={{ fontSize: 10, color: "#8B93A7" }}>YTD</span>
                   </div>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-                    <div style={{ background: "rgba(243,186,47,0.08)", borderRadius: 8, padding: "6px 8px" }}>
+                    <div style={{ background: "rgba(201,168,76,0.08)", borderRadius: 8, padding: "6px 8px" }}>
                       <div style={{ fontSize: 9, color: "#8B93A7", textTransform: "uppercase" as const }}>ROI</div>
                       <div style={{ fontSize: 13, fontWeight: 800, color: GOLD }}>{m.roi}</div>
                     </div>
@@ -609,7 +609,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
                   <LayoutList size={14} color="#8B93A7" />
                 </motion.button>
                 <motion.button whileHover={{ scale: 1.05 }} onClick={() => setLocation("/browse")}
-                  style={{ display: "flex", alignItems: "center", gap: 5, padding: "0 12px", height: 32, borderRadius: 8, background: "rgba(243,186,47,0.1)", border: `1px solid ${BORDER_GOLD}`, cursor: "pointer" }}>
+                  style={{ display: "flex", alignItems: "center", gap: 5, padding: "0 12px", height: 32, borderRadius: 8, background: "rgba(201,168,76,0.1)", border: `1px solid ${BORDER_GOLD}`, cursor: "pointer" }}>
                   <span style={{ fontSize: 11, color: GOLD, fontWeight: 700 }}>View All</span>
                   <ChevronRight size={12} color={GOLD} />
                 </motion.button>
@@ -643,9 +643,9 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.46 }} style={{ padding: "28px 0 0" }}>
             <SectionHeader title="AI Property Advisor" subtitle="Orakzai Intelligence Engine" icon={<Brain size={14} color={GOLD} />} />
             <div style={{ background: CARD_BG, border: `1px solid ${BORDER_GOLD}`, borderRadius: 20, overflow: "hidden" }}>
-              <div style={{ background: "linear-gradient(135deg,rgba(243,186,47,0.08) 0%,rgba(0,0,0,0) 100%)", borderBottom: `1px solid ${BORDER}`, padding: "16px 20px", display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ background: "linear-gradient(135deg,rgba(201,168,76,0.08) 0%,rgba(0,0,0,0) 100%)", borderBottom: `1px solid ${BORDER}`, padding: "16px 20px", display: "flex", alignItems: "center", gap: 12 }}>
                 <motion.div animate={{ rotate: [0, 10, -10, 0] }} transition={{ repeat: Infinity, duration: 5 }}
-                  style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(243,186,47,0.12)", border: `1px solid ${BORDER_GOLD}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(201,168,76,0.12)", border: `1px solid ${BORDER_GOLD}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <Brain size={18} color={GOLD} />
                 </motion.div>
                 <div>
@@ -674,7 +674,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
               ))}
               <div style={{ padding: "14px 20px" }}>
                 <motion.button whileHover={{ scale: 1.01 }} onClick={() => setLocation("/invest")}
-                  style={{ width: "100%", padding: "12px", borderRadius: 12, background: "rgba(243,186,47,0.08)", border: `1px solid ${BORDER_GOLD}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                  style={{ width: "100%", padding: "12px", borderRadius: 12, background: "rgba(201,168,76,0.08)", border: `1px solid ${BORDER_GOLD}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
                   <Sparkles size={14} color={GOLD} />
                   <span style={{ color: GOLD, fontWeight: 700, fontSize: 13 }}>Get Personalized Investment Analysis</span>
                 </motion.button>
@@ -684,10 +684,10 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 
           {/* POST PROPERTY CTA */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} style={{ padding: "28px 0 0" }}>
-            <motion.button whileHover={{ scale: 1.01, boxShadow: "0 20px 50px rgba(243,186,47,0.15)" }} whileTap={{ scale: 0.99 }}
+            <motion.button whileHover={{ scale: 1.01, boxShadow: "0 20px 50px rgba(201,168,76,0.15)" }} whileTap={{ scale: 0.99 }}
               onClick={() => setLocation("/post-property")}
-              style={{ width: "100%", padding: "20px", borderRadius: 20, background: "linear-gradient(135deg,rgba(243,186,47,0.12) 0%,rgba(243,186,47,0.05) 100%)", border: `1px solid ${BORDER_GOLD}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}>
-              <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(243,186,47,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}><Plus size={20} color={GOLD} /></div>
+              style={{ width: "100%", padding: "20px", borderRadius: 20, background: "linear-gradient(135deg,rgba(201,168,76,0.12) 0%,rgba(201,168,76,0.05) 100%)", border: `1px solid ${BORDER_GOLD}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}>
+              <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(201,168,76,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}><Plus size={20} color={GOLD} /></div>
               <div style={{ textAlign: "left" as const }}>
                 <div style={{ color: GOLD, fontWeight: 800, fontSize: 15 }}>List Your Property</div>
                 <div style={{ color: "#8B93A7", fontSize: 11, marginTop: 1 }}>Reach 48,000+ global investors and buyers</div>
