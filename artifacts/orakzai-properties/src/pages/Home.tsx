@@ -202,7 +202,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
           const mapboxgl = (await import("mapbox-gl")).default;
           if (!mounted || !mapRef.current) return;
           // @ts-ignore
-          mapboxgl.accessToken = "(import.meta.env.VITE_MAPBOX_TOKEN as string) ?? """;
+          mapboxgl.accessToken = (import.meta.env.VITE_MAPBOX_TOKEN as string) ?? "";
           // @ts-ignore
           const map = new mapboxgl.Map({ container: mapRef.current, style: "mapbox://styles/faisalorakzai/cmp6m332s001a01s93rqk58ew", center: [60, 28], zoom: 2 });
           map.on("load", () => {
