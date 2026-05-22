@@ -389,7 +389,21 @@ export default function PropertyDetail() {
     setIsLoading(true);
     supabase.from("properties").select("*").eq("id", id).single()
       .then(({ data, error }) => {
-        if (!error && data) setProperty(data);
+        if (!error && data) {
+          // Map snake_case from DB to camelCase expected by frontend
+          const mapped = {
+            ...data,
+            areaSqFt: data.area_sqft || data.areaSqFt || 0,
+            isVerified: data.is_verified || data.isVerified || false,
+            isAvailable: data.is_available || data.isAvailable || true,
+            whatsappNumber: data.whatsapp_number || data.whatsappNumber || data.owner_phone || data.ownerPhone,
+            ownerRating: data.owner_rating || data.ownerRating || 4.8,
+            furnishedStatus: data.furnished_status || data.furnishedStatus,
+            occupancyType: data.occupancy_type || data.occupancyType,
+            rentalDuration: data.rental_duration || data.rentalDuration,
+          };
+          setProperty(mapped);
+        }
         setIsLoading(false);
       });
   }, [id]);
@@ -473,7 +487,7 @@ export default function PropertyDetail() {
   const specItems = [
     ...(property.beds     ? [{ icon: Bed,       label: "Bedrooms",   value: property.beds }]   : []),
     ...(property.baths    ? [{ icon: Bath,       label: "Bathrooms",  value: property.baths }]  : []),
-    ...((property.area_sqft ?? property.areaSqft) ? [{ icon: Maximize2, label: "Sq. Ft.", value: (property.area_sqft ?? property.areaSqft).toLocaleString() }] : []),
+    ...((property.area_sqft ?? property.areaSqFt ?? property.areaSqft) ? [{ icon: Maximize2, label: "Sq. Ft.", value: (property.area_sqft ?? property.areaSqFt ?? property.areaSqft).toLocaleString() }] : []),
     { icon: TypeIcon,       label: "Type",       value: property.type.charAt(0).toUpperCase() + property.type.slice(1) },
     { icon: MapPin,         label: "City",       value: property.city },
     ...((isRental && (property as any).furnishedStatus) ? [{ icon: Sofa,  label: "Furnished",  value: FURNISHED_LABEL[(property as any).furnishedStatus] ?? (property as any).furnishedStatus }] : []),
@@ -595,9 +609,9 @@ export default function PropertyDetail() {
                       {isRental && (
                         <span className="text-[#3a5070] text-xs">per calendar month</span>
                       )}
-                      {!isRental && property.areaSqft && (
+                      {!isRental && (property.areaSqFt || property.area_sqft) && (
                         <span className="text-[#3a5070] text-xs">
-                          ≈ PKR {Math.round(Number(property.price) / property.areaSqft).toLocaleString()} / sq. ft.
+                          ≈ PKR {Math.round(Number(property.price) / (property.areaSqFt || property.area_sqft)).toLocaleString()} / sq. ft.
                         </span>
                       )}
                     </div>

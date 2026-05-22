@@ -90,7 +90,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
       const t = setInterval(() => { current += inc; if (current >= value) { setDisplay(value); clearInterval(t); } else setDisplay(current); }, step);
       return () => clearInterval(t);
     }, [value]);
-    return <span>{prefix}{decimals > 0 ? display.toFixed(decimals) : Math.floor(display).toLocaleString()}{suffix}</span>;
+    return <span>{prefix}{decimals > 0 ? (display || 0).toFixed(decimals) : Math.floor(display || 0).toLocaleString()}{suffix}</span>;
   }
 
   function SectionHeader({ title, subtitle, icon }: { title: string; subtitle: string; icon?: React.ReactNode }) {

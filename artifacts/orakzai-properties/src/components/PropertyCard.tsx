@@ -18,7 +18,8 @@ interface PropertyCardProps {
   ownerPhone?: string | null;
 }
 
-export function formatPrice(price: number, category?: string): string {
+export function formatPrice(price: number | undefined | null, category?: string): string {
+  if (price === undefined || price === null || isNaN(price)) return "PKR 0";
   const base =
     price >= 10000000 ? `PKR ${(price / 10000000).toFixed(2)} Crore` :
     price >= 100000   ? `PKR ${(price / 100000).toFixed(0)} Lakh` :

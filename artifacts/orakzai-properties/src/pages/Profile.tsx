@@ -51,7 +51,10 @@ function Counter({ target, prefix = "", suffix = "", decimals = 0, duration = 14
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [target, duration]);
-  const fmt = (n: number) => n.toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+  const fmt = (n: number | undefined | null) => {
+    if (n === undefined || n === null || isNaN(n)) return (0).toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+    return n.toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+  };
   return <>{prefix}{fmt(val)}{suffix}</>;
 }
 

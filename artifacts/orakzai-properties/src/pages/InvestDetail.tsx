@@ -25,7 +25,8 @@ const PHASE_STATUS_ICONS = {
   pending:     { icon: Circle,       color: "text-[#2a4060]",    ring: "border-[#1e3a5f]",      bg: "bg-[#0a1628]" },
 };
 
-function formatPKR(n: number) {
+function formatPKR(n: number | undefined | null) {
+  if (n === undefined || n === null) return "PKR 0";
   if (n >= 1_000_000_000) return `PKR ${(n / 1_000_000_000).toFixed(2)}B`;
   if (n >= 10_000_000)    return `PKR ${(n / 10_000_000).toFixed(2)} Cr`;
   if (n >= 100_000)       return `PKR ${(n / 100_000).toFixed(1)}L`;
@@ -85,7 +86,18 @@ export default function InvestDetail() {
     if (!numId || isNaN(numId)) return;
     supabase.from("investment_projects").select("*").eq("id", numId).single()
       .then(({ data, error }) => {
-        if (!error && data) setDbProject(data as typeof DEMO_PROJECT);
+        if (!error && data) {
+          // Map snake_case from DB to camelCase expected by frontend
+          const mapped = {
+            ...data,
+            bannerImage: data.banner_image || data.bannerImage,
+            totalValue: data.total_value || data.totalValue,
+            minInvestment: data.min_investment || data.minInvestment,
+            totalShares: data.total_shares || data.totalShares,
+            fundedShares: data.funded_shares || data.fundedShares,
+          };
+          setDbProject(mapped as any);
+        }
       });
   }, [numId]);
 

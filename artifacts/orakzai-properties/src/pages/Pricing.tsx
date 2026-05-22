@@ -97,7 +97,8 @@ const FEATURES = [
   { icon: Users,      label: "Search Rank",       free: "Standard",  premium: "Priority", sovereign: "Top" },
 ];
 
-function fmtPkr(n: number) {
+function fmtPkr(n: number | undefined | null) {
+  if (n === undefined || n === null || isNaN(n)) return "Free";
   return n === 0 ? "Free" : `PKR ${n.toLocaleString("en-PK")}`;
 }
 

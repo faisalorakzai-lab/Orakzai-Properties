@@ -172,9 +172,9 @@ function OrderBook({book,mid}:{book:{asks:OBRow[];bids:OBRow[]};mid:number}) {
             <div key={i} style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",padding:"1.5px 6px",position:"relative"}}>
               <div style={{position:"absolute",left:0,top:0,bottom:0,background:"rgba(14,203,129,0.1)",width:`${(bid?.total||0)/maxT*50}%`}}/>
               <div style={{position:"absolute",right:0,top:0,bottom:0,background:"rgba(246,70,93,0.1)",width:`${(ask?.total||0)/maxT*50}%`}}/>
-              <span style={{color:GREEN,position:"relative",fontVariantNumeric:"tabular-nums"}}>{bid?.amt?.toLocaleString()??""}</span>
-              <span style={{color:FG,textAlign:"center",position:"relative",fontWeight:600,fontSize:9}}>{ask?.price?.toFixed(4)??""}</span>
-              <span style={{color:RED,textAlign:"right",position:"relative",fontVariantNumeric:"tabular-nums"}}>{ask?.amt?.toLocaleString()??""}</span>
+              <span style={{color:GREEN,position:"relative",fontVariantNumeric:"tabular-nums"}}>{(bid?.amt || 0).toLocaleString()}</span>
+              <span style={{color:FG,textAlign:"center",position:"relative",fontWeight:600,fontSize:9}}>{(ask?.price || 0).toFixed(4)}</span>
+              <span style={{color:RED,textAlign:"right",position:"relative",fontVariantNumeric:"tabular-nums"}}>{(ask?.amt || 0).toLocaleString()}</span>
             </div>
           );
         })}
@@ -197,7 +197,7 @@ function TradeHistory({trades}:{trades:Trade[]}) {
       {trades.map((t,i)=>(
         <div key={i} style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",padding:"1.5px 6px",fontSize:10}}>
           <span style={{color:t.side==="buy"?GREEN:RED,fontVariantNumeric:"tabular-nums"}}>{t.price.toFixed(4)}</span>
-          <span style={{color:FG,textAlign:"center",fontVariantNumeric:"tabular-nums"}}>{Number(t.amt).toLocaleString()}</span>
+          <span style={{color:FG,textAlign:"center",fontVariantNumeric:"tabular-nums"}}>{Number(t.amt || 0).toLocaleString()}</span>
           <span style={{color:DIM,textAlign:"right",fontSize:8}}>{t.time}</span>
         </div>
       ))}
@@ -453,7 +453,7 @@ function MoneyFlow({asset}:{asset:Asset}) {
             <Pie data={data} cx="50%" cy="50%" innerRadius={38} outerRadius={65} paddingAngle={2} dataKey="v">
               {data.map((_,i)=><Cell key={i} fill={DC[i]}/>)}
             </Pie>
-            <Tooltip formatter={(v:any)=>[`${v.toLocaleString()}M`,""]} contentStyle={{background:CARD,border:`1px solid ${BORD}`,fontSize:10}}/>
+            <Tooltip formatter={(v:any)=>[`${(v || 0).toLocaleString()}M`,""]} contentStyle={{background:CARD,border:`1px solid ${BORD}`,fontSize:10}}/>
           </PieChart>
         </ResponsiveContainer>
       </div>
@@ -464,9 +464,9 @@ function MoneyFlow({asset}:{asset:Asset}) {
         {rows.map((r,i,a)=>(
           <div key={r.l} style={{display:"grid",gridTemplateColumns:"55px 1fr 1fr 1fr",padding:"4px 8px",fontSize:10,borderTop:`1px solid ${BORD}`,background:i===a.length-1?ACT:"transparent",fontWeight:i===a.length-1?700:400}}>
             <span style={{color:DIM}}>{r.l}</span>
-            <span style={{textAlign:"center",color:GREEN}}>●{r.b.toLocaleString()}M</span>
-            <span style={{textAlign:"center",color:RED}}>●{r.s.toLocaleString()}M</span>
-            <span style={{textAlign:"right",color:r.i>=0?GREEN:RED}}>{r.i>=0?"+":""}{r.i.toLocaleString()}M</span>
+            <span style={{textAlign:"center",color:GREEN}}>●{(r.b || 0).toLocaleString()}M</span>
+            <span style={{textAlign:"center",color:RED}}>●{(r.s || 0).toLocaleString()}M</span>
+            <span style={{textAlign:"right",color:r.i>=0?GREEN:RED}}>{r.i>=0?"+":""}{(r.i || 0).toLocaleString()}M</span>
           </div>
         ))}
       </div>

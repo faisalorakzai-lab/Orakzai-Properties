@@ -372,7 +372,19 @@ export default function Projects() {
   useEffect(() => {
     supabase.from("investment_projects").select("*").order("featured", { ascending: false })
       .then(({ data, error }) => {
-        if (!error && data?.length) setProjects(data as Project[]);
+        if (!error && data?.length) {
+          const mapped = data.map(p => ({
+            ...p,
+            min_investment: p.min_investment || p.minInvestment || 0,
+            investors: p.investors || 0,
+            funded_percent: p.funded_percent || p.fundedPercent || 0,
+            image: p.image || p.banner_image || p.bannerImage || "",
+            min_label: p.min_label || (p.min_investment ? `₨ ${(p.min_investment / 100000).toFixed(0)}L` : "₨ 0"),
+            tags: Array.isArray(p.tags) ? p.tags : [],
+            roi: p.roi || "0% p.a.",
+          }));
+          setProjects(mapped as Project[]);
+        }
         setLoading(false);
       });
   }, []);
@@ -408,7 +420,7 @@ export default function Projects() {
     return list;
   }, [projects, section, subCat, search, city, type, country, sortBy]);
 
-  const totalInvestors = filtered.reduce((s, p) => s + p.investors, 0);
+  const totalInvestors = filtered.reduce((s, p) => s + (p.investors || 0), 0);
   const avgRoi = filtered.length ? (filtered.reduce((s, p) => s + parseFloat(p.roi), 0) / filtered.length).toFixed(1) : "0";
   const hasFilters = city !== "All Cities" || type !== "All Types" || country !== "All Countries";
   const clearFilters = () => { setCity("All Cities"); setType("All Types"); setCountry("All Countries"); setSearch(""); };
@@ -442,7 +454,7 @@ export default function Projects() {
           <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
             {[
               { label:"Active Projects",  value:`${projects.length}`,                                         icon:Building2,  color:T.gold  },
-              { label:"Total Investors",  value:`${projects.reduce((s,p)=>s+p.investors,0).toLocaleString()}+`, icon:Users,      color:T.green },
+              { label:"Total Investors",  value:`${projects.reduce((s,p)=>s+(p.investors || 0),0).toLocaleString()}+`, icon:Users,      color:T.green },
               { label:"Verified",         value:`${projects.length} Projects`,                                  icon:BadgeCheck, color:T.cyan  },
               { label:"Countries",        value:"Pakistan · UAE",                                               icon:Globe,      color:T.purple},
             ].map(({ label, value, icon:Icon, color }) => (

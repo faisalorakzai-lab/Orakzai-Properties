@@ -25,8 +25,14 @@ const DEFAULT_PRICES: Record<string,number> = {
   ASC:1.2400, DHA9:8.7500, BTI:5.1000, GBR:3.6200, CSC:2.1800, OBK:0.8800,
 };
 
-const fmt = (n:number,d=4) => n.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
-const fmtU = (n:number) => n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmt = (n:number | undefined | null,d=4) => {
+  if (n === undefined || n === null || isNaN(n)) return (0).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+  return n.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+};
+const fmtU = (n:number | undefined | null) => {
+  if (n === undefined || n === null || isNaN(n)) return (0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+  return n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+};
 
 /* ── Sparkline data ── */
 function genSparkline(avgBuy:number, current:number, n=12): {v:number}[] {

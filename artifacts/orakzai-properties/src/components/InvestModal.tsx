@@ -11,7 +11,8 @@ import { useUser } from "@/contexts/AuthContext";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-function formatPKR(n: number) {
+function formatPKR(n: number | undefined | null) {
+  if (n === undefined || n === null || isNaN(n)) return "PKR 0";
   if (n >= 1_000_000_000) return `PKR ${(n / 1_000_000_000).toFixed(2)}B`;
   if (n >= 10_000_000)    return `PKR ${(n / 10_000_000).toFixed(2)} Cr`;
   if (n >= 100_000)       return `PKR ${(n / 100_000).toFixed(1)}L`;

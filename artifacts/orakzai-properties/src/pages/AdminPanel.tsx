@@ -22,8 +22,8 @@ const CARD = "#0B1626";
 const BORDER = "rgba(255,255,255,0.07)";
 
 /* ── helpers ── */
-function fmtPrice(n: number): string {
-  if (!n || isNaN(n)) return "₨ 0";
+function fmtPrice(n: number | undefined | null): string {
+  if (n === undefined || n === null || isNaN(n)) return "₨ 0";
   if (n >= 1_00_00_00_000) return `₨ ${(n / 1_00_00_00_000).toFixed(1)} Arab`;
   if (n >= 1_00_00_000)   return `₨ ${(n / 1_00_00_000).toFixed(1)} Cr`;
   if (n >= 1_00_000)      return `₨ ${(n / 1_00_000).toFixed(0)}L`;

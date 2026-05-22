@@ -13,7 +13,8 @@ import { createChart, ColorType, LineStyle, AreaSeries } from "lightweight-chart
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 const API = basePath;
 
-function formatPKR(n: number, compact = false) {
+function formatPKR(n: number | undefined | null, compact = false) {
+  if (n === undefined || n === null || isNaN(n)) return "PKR 0";
   if (compact) {
     if (n >= 10_000_000) return `${(n / 10_000_000).toFixed(2)}Cr`;
     if (n >= 100_000)    return `${(n / 100_000).toFixed(1)}L`;

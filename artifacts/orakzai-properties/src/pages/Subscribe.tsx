@@ -39,7 +39,8 @@ const PRICES: Record<string, { monthly: number; annual: number }> = {
   sovereign: { monthly: 24_900, annual: 253_980 },
 };
 
-function fmtPkr(n: number) {
+function fmtPkr(n: number | undefined | null) {
+  if (n === undefined || n === null || isNaN(n)) return "PKR 0";
   return `PKR ${n.toLocaleString("en-PK")}`;
 }
 

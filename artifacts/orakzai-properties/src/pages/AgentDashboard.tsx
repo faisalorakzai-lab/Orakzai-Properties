@@ -24,7 +24,8 @@ import { useToast } from "@/hooks/use-toast";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-function fmtPKR(n: number): string {
+function fmtPKR(n: number | undefined | null): string {
+  if (n === undefined || n === null || isNaN(n)) return "PKR 0";
   if (n >= 10_000_000) return `PKR ${(n / 10_000_000).toFixed(1)} Cr`;
   if (n >= 100_000)    return `PKR ${(n / 100_000).toFixed(1)}L`;
   return `PKR ${n.toLocaleString()}`;

@@ -18,7 +18,8 @@ import { Show } from "@/contexts/AuthContext";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-function formatPrice(price: number, category?: string): string {
+function formatPrice(price: number | undefined | null, category?: string): string {
+  if (price === undefined || price === null || isNaN(price)) return "PKR 0";
   const base =
     price >= 10000000 ? `PKR ${(price / 10000000).toFixed(1)} Crore` :
     price >= 100000   ? `PKR ${(price / 100000).toFixed(0)} Lakh` :

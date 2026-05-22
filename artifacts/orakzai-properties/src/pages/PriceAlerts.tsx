@@ -39,7 +39,8 @@ import { useState, useEffect } from "react";
     { value: "market_pulse", label: "Market Pulse",   icon: Zap,         color: "#06b6d4", desc: "Weekly city market summary" },
   ] as const;
 
-  function formatPrice(v: number) {
+  function formatPrice(v: number | undefined | null) {
+    if (v === undefined || v === null || isNaN(v)) return "₨ 0";
     if (v >= 10000000) return `₨ ${(v/10000000).toFixed(1)} Cr`;
     if (v >= 100000) return `₨ ${(v/100000).toFixed(0)} L`;
     return `₨ ${v.toLocaleString()}`;

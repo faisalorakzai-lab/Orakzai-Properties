@@ -5,7 +5,8 @@ import { MapPin, ShieldCheck, ChevronLeft, ChevronRight, Home, ArrowRight } from
 import { Button } from "@/components/ui/button";
 import { useListProperties } from "@workspace/api-client-react";
 
-function formatPrice(price: number): string {
+function formatPrice(price: number | undefined | null): string {
+  if (price === undefined || price === null || isNaN(price)) return "PKR 0";
   if (price >= 10000000) return `PKR ${(price / 10000000).toFixed(1)} Crore`;
   if (price >= 100000) return `PKR ${(price / 100000).toFixed(0)} Lakh`;
   return `PKR ${price.toLocaleString()}`;

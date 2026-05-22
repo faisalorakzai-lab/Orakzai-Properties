@@ -129,12 +129,14 @@ const basePath = () => (import.meta.env.BASE_URL || "/").replace(/\/$/, "");
 const bp = basePath;
 
 /* ─── Formatters ─────────────────────────────────────────────────────────────── */
-function fmtPKR(n: number) {
+function fmtPKR(n: number | undefined | null) {
+  if (n === undefined || n === null || isNaN(n)) return "PKR 0";
   if (n >= 10_000_000) return `PKR ${(n / 10_000_000).toFixed(2)} Cr`;
   if (n >= 100_000)    return `PKR ${(n / 100_000).toFixed(2)}L`;
   return `PKR ${n.toLocaleString("en-PK", { maximumFractionDigits: 0 })}`;
 }
-function fmtNum(n: number, d = 2) {
+function fmtNum(n: number | undefined | null, d = 2) {
+  if (n === undefined || n === null || isNaN(n)) return (0).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
   return n.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
 }
 
