@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Orakzai Properties"
+version = "1.0.0"
+id = "artifacts/orakzai-properties"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25139
+
+[services.development]
+run = "pnpm --filter @workspace/orakzai-properties run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/orakzai-properties", "run", "build" ]
+publicDir = "artifacts/orakzai-properties/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25139"
+BASE_PATH = "/"

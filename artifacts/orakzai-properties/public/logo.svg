@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" width="200" height="60">
+  <path d="M30 10 L50 40 L10 40 Z" fill="#C9A84C" />
+  <path d="M40 20 L60 50 L20 50 Z" fill="#C9A84C" opacity="0.7" />
+  <text x="75" y="38" font-family="'Playfair Display', serif" font-size="24" font-weight="700" fill="#FFFFFF">Orakzai</text>
+  <text x="76" y="52" font-family="'Plus Jakarta Sans', sans-serif" font-size="10" font-weight="400" fill="#C9A84C" letter-spacing="3">PROPERTIES</text>
+</svg>
