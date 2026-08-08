@@ -42,6 +42,7 @@ import ChatRoom from "@/pages/ChatRoom";
 import BottomNav from "@/components/BottomNav";
 import AuthPage from "@/pages/AuthPage";
 import P2P from "@/pages/P2P";
+import CryptoWithdrawFlow from "@/pages/CryptoWithdrawFlow";
 import { ModeProvider } from "@/contexts/ModeContext";
 import { AppStoreProvider } from "@/store/AppStoreContext";
 
@@ -197,6 +198,7 @@ function AppContent() {
               <Route path="/portfolio" component={Portfolio} />
               <Route path="/trade/:id" component={TradingFloor} />
               <Route path="/wallet" component={Wallet} />
+              <Route path="/withdraw/on-chain" component={CryptoWithdrawFlow} />
               <Route path="/wallet/okzbyte-pay" component={OkzBytePayReceive} />
               <Route path="/wallet/okzbyte-pay-send" component={OkzBytePaySend} />
               <Route path="/wallet/transaction/:id" component={DepositDetail} />

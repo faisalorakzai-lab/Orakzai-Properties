@@ -30,7 +30,7 @@ const D = {
 };
 
 /* ─── Coin list ──────────────────────────────────────────────────────────────── */
-interface Coin {
+export interface Coin {
   symbol: string;
   name: string;
   icon: string;
@@ -208,7 +208,7 @@ function buildCoins(): Coin[] {
 }
 
 /* COINS is computed once (module-level) so memos downstream stay stable */
-const COINS: Coin[] = buildCoins();
+export const COINS: Coin[] = buildCoins();
 
 /* ─── Network definitions ────────────────────────────────────────────────────── */
 interface Network {
