@@ -8,8 +8,7 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import InvestModal from "@/components/InvestModal";
-import { createClient } from "@supabase/supabase-js";
-const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY);
+import { supabase } from "@/lib/supabase";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 

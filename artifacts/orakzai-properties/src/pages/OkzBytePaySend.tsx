@@ -12,7 +12,8 @@ import {
 import { useLocation } from "wouter";
 import { useUser } from "@/contexts/AuthContext";
 import { getUserCryptoProfile } from "@/lib/userCrypto";
-import { ASSET_DEFS } from "@/store/AppStoreContext";
+import { ASSET_DEFS, useAppStore } from "@/store/AppStoreContext";
+import { useProfilePhoto } from "@/hooks/useProfilePhoto";
 
 /* ─── Design tokens ──────────────────────────────────────────────────────────── */
 const D = {
@@ -42,7 +43,7 @@ const ALL_TOKENS: { symbol: string; name: string; logoUrl?: string; isProperty?:
   ...Object.entries(ASSET_DEFS).map(([, def]) => ({
     symbol:     def.ticker,
     name:       def.name,
-    logoUrl:    def.logo ? `/${def.logo}` : undefined,
+    logoUrl:    def.logo ? `${import.meta.env.BASE_URL}${def.logo}` : undefined,
     isProperty: true,
   })),
   { symbol: "USDT",  name: "Tether USD",      logoUrl: CDN("usdt")  },
@@ -63,8 +64,16 @@ const ALL_TOKENS: { symbol: string; name: string; logoUrl?: string; isProperty?:
   { symbol: "UNI",   name: "Uniswap",          logoUrl: CDN("uni")   },
   { symbol: "ATOM",  name: "Cosmos",           logoUrl: CDN("atom")  },
   { symbol: "XLM",   name: "Stellar",          logoUrl: CDN("xlm")   },
-  { symbol: "PKR",   name: "Pakistani Rupee",  logoUrl: undefined    },
-];
+  { symbol: "PKR",   name: "Pakistani Rupee" },
+].filter((token, index, tokens) =>
+  tokens.findIndex(candidate => candidate.symbol === token.symbol) === index
+);
+
+function formatTokenBalance(value: number): string {
+  if (value === 0) return "0.00";
+  if (Math.abs(value) >= 1) return value.toLocaleString("en-US", { maximumFractionDigits: 4 });
+  return value.toLocaleString("en-US", { maximumFractionDigits: 8 });
+}
 
 /* ─── Token Picker Modal ─────────────────────────────────────────────────────── */
 function TokenPickerModal({
@@ -331,6 +340,8 @@ function SuccessOverlay({ show, amount, coin, uid, onDone }: {
 export default function OkzBytePaySend() {
   const [, setLocation] = useLocation();
   const { user } = useUser();
+  const profilePhoto = useProfilePhoto();
+  const { wallet, positions } = useAppStore();
   const uid = user?.uid ?? "demo-uid";
   const profile = getUserCryptoProfile(uid);
 
@@ -342,6 +353,21 @@ export default function OkzBytePaySend() {
   const [showSuccess,    setShowSuccess]    = useState(false);
   const [uidError,       setUidError]       = useState("");
   const [showTokenPicker, setShowTokenPicker] = useState(false);
+  const [avatarFailed, setAvatarFailed] = useState(false);
+
+  const selectedBalance = (() => {
+    if (coin === "PKR") return wallet?.balances.PKR ?? 0;
+    if (coin === "USDT") return wallet?.balances.USDT ?? 0;
+    if (coin === "USDC") return wallet?.balances.USDC ?? 0;
+    if (coin === "OKBOND") return wallet?.balances.OKBOND ?? 0;
+    return positions.find(position => position.ticker === coin)?.netTokens ?? 0;
+  })();
+  const initials = (user?.fullName ?? user?.username ?? user?.primaryEmailAddress?.emailAddress ?? "U")
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(part => part[0]?.toUpperCase())
+    .join("") || "U";
 
   /* Validation */
   const isValidUid = recipientUid.trim().length >= 6;
@@ -429,7 +455,7 @@ export default function OkzBytePaySend() {
       {/* ── Scrollable content ── */}
       <div style={{
         flex: 1, overflowY: "auto",
-        padding: "20px 16px calc(110px + env(safe-area-inset-bottom))",
+        padding: "20px 16px calc(128px + env(safe-area-inset-bottom))",
         display: "flex", flexDirection: "column", gap: 14,
       }}>
 
@@ -439,30 +465,22 @@ export default function OkzBytePaySend() {
           borderRadius: 14, padding: "12px 16px",
           display: "flex", alignItems: "center", gap: 10,
         }}>
-          {/* Dynamic profile avatar: real photo → initials → icon fallback */}
-          {user?.imageUrl ? (
+          {/* Dynamic profile avatar: uploaded/auth photo → initials */}
+          {profilePhoto && !avatarFailed ? (
             <img
-              src={user.imageUrl}
+              src={profilePhoto}
               alt="avatar"
               style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: `2px solid ${D.gold}` }}
-              onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+              onError={() => setAvatarFailed(true)}
             />
-          ) : user?.displayName ? (
+          ) : (
             <div style={{
               width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
               background: `linear-gradient(135deg, ${D.gold}, #A07030)`,
               display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: 15, fontWeight: 800, color: "#0B0E11",
             }}>
-              {user.displayName.charAt(0).toUpperCase()}
-            </div>
-          ) : (
-            <div style={{
-              width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
-              background: `linear-gradient(135deg, ${D.gold}, #A07030)`,
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}>
-              <User size={16} color="#0B0E11" />
+              {initials}
             </div>
           )}
           <div>
@@ -624,6 +642,13 @@ export default function OkzBytePaySend() {
               <span style={{ fontSize: 12, fontWeight: 800, color: D.gold }}>{coin}</span>
               <ChevronDown size={10} color={D.gold} />
             </motion.button>
+          </div>
+
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8, padding: "0 2px" }}>
+            <span style={{ fontSize: 11, color: D.dim }}>Available balance</span>
+            <span style={{ fontSize: 11, color: D.mid, fontWeight: 700 }}>
+              {formatTokenBalance(selectedBalance)} {coin}
+            </span>
           </div>
 
           {/* Quick amounts */}

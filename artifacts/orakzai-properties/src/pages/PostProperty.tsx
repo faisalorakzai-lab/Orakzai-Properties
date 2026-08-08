@@ -11,8 +11,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 import { Show } from "@/contexts/AuthContext";
-import { createClient } from "@supabase/supabase-js";
-const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY);
+import { supabase } from "@/lib/supabase";
 
 /* ─── Country → City data ─────────────────────────────────────────────── */
 const COUNTRY_CITIES: Record<string, string[]> = {

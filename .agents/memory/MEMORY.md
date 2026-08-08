@@ -1,0 +1,1 @@
+- [Repository sync and validation](repository-sync-and-validation.md) — public source can be read, but secure authorization is still required for pushing and deployment; unrelated generated-client mismatches block full validation.

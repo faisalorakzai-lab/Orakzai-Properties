@@ -929,6 +929,8 @@ function SelectWithdrawMethodModal({
               border: "1px solid rgba(255,255,255,0.07)",
               borderBottom: "none",
               maxHeight: "90vh",
+              marginBottom: 60,
+              paddingBottom: "90px",
               overflowY: "auto",
             }}
           >
@@ -957,7 +959,6 @@ function SelectWithdrawMethodModal({
             {/* Options */}
             <div style={{
               padding: "0 16px",
-              paddingBottom: "calc(90px + env(safe-area-inset-bottom))",
               display: "flex", flexDirection: "column", gap: 10,
             }}>
               {WITHDRAW_METHODS.map(({ icon: Icon, title, subtitle, action }) => (

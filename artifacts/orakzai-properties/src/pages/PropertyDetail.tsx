@@ -10,8 +10,7 @@ import {
   Grid3X3, Image,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import { createClient } from "@supabase/supabase-js";
-const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY);
+import { supabase } from "@/lib/supabase";
 import { formatPrice } from "@/components/PropertyCard";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
