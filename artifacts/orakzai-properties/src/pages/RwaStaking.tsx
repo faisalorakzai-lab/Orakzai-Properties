@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -212,16 +212,16 @@ export default function RwaStaking() {
   });
 
   return (
-    <div className="min-h-screen bg-[#0b0e11] text-slate-100 font-sans pb-24 selection:bg-amber-500/30">
+    <div className="min-h-screen overflow-x-hidden bg-[#0b0e11] px-4 pt-3 pb-24 font-sans text-slate-100 antialiased selection:bg-amber-500/30">
       {/* ── TOP HEADER & NAVIGATION BAR ──────────────────────────── */}
-      <div className="sticky top-0 z-40 bg-[#0b0e11]/90 backdrop-blur-md border-b border-slate-800 px-4 py-3.5 flex items-center justify-between">
+      <div className="sticky top-0 z-40 -mx-4 mb-4 flex h-12 items-center justify-between border-b border-[#2b313a] bg-[#0b0e11]/95 px-4 backdrop-blur-md">
         <div className="flex items-center gap-3">
           <Link href="/">
             <button className="w-9 h-9 rounded-xl bg-[#161a1e] border border-slate-800 flex items-center justify-center text-slate-300 hover:text-white hover:bg-slate-800 transition">
               <ArrowLeft className="w-5 h-5" />
             </button>
           </Link>
-          <h1 className="text-base font-semibold text-white tracking-wide">RWA Staking & Yield Vaults</h1>
+          <h1 className="truncate text-base font-bold tracking-wide text-white">RWA Staking Vaults</h1>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -251,9 +251,9 @@ export default function RwaStaking() {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 pt-5 space-y-6">
+      <main className="mx-auto w-full max-w-3xl space-y-5">
         {/* ── HERO PORTFOLIO & STATS BANNER ──────────────────────────── */}
-        <div className="bg-gradient-to-r from-[#1e2329] to-[#161a1e] border border-amber-500/20 rounded-2xl p-5 shadow-2xl relative overflow-hidden">
+        <section className="relative overflow-hidden rounded-2xl border border-[#2b313a] bg-[#1e2329] p-4 shadow-md sm:p-5">
           <div className="absolute top-0 right-0 w-48 h-48 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
 
           {/* User Staking Summary */}
@@ -278,24 +278,21 @@ export default function RwaStaking() {
           </div>
 
           {/* Global Staking Metrics Grid */}
-          <div className="grid grid-cols-2 gap-4 pt-4">
-            <div className="bg-[#0b0e11]/60 rounded-xl p-3 border border-slate-800">
-              <div className="text-[11px] text-slate-400 font-medium">Total Value Locked (TVL)</div>
-              <div className="text-lg font-bold text-white mt-0.5">$48,250,000</div>
-              <div className="text-[10px] text-emerald-400 mt-0.5 flex items-center gap-1">
-                <TrendingUp className="w-3 h-3" /> +5.4% this month
-              </div>
+                    <div className="grid grid-cols-2 gap-4 pt-4">
+            <div className="rounded-xl border border-[#2b313a] bg-[#0b0e11]/60 p-3">
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Total Value Locked (TVL)</div>
+              <div className="mt-0.5 text-base font-bold text-white">$48,250,000</div>
+              <div className="mt-0.5 flex items-center gap-1 text-[10px] text-[#0ecb81]"><TrendingUp className="h-3 w-3" /> +5.4% this month</div>
             </div>
-            <div className="bg-[#0b0e11]/60 rounded-xl p-3 border border-slate-800">
-              <div className="text-[11px] text-slate-400 font-medium">Max APY Offered</div>
-              <div className="text-lg font-bold text-emerald-400 mt-0.5">24.5% APY</div>
-              <div className="text-[10px] text-slate-400 mt-0.5">Institutional Grade</div>
+            <div className="rounded-xl border border-[#2b313a] bg-[#0b0e11]/60 p-3">
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Max APY Offered</div>
+              <div className="mt-0.5 text-base font-bold text-[#0ecb81]">24.5% APY</div>
+              <div className="mt-0.5 text-[10px] text-slate-400">Institutional Grade</div>
             </div>
           </div>
-        </div>
-
+        </section>
         {/* ── CATEGORY FILTER TABS ──────────────────────────── */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+        <div className="no-scrollbar -mx-1 flex items-center gap-2 overflow-x-auto px-1 py-1">
           {[
             { id: "all", label: "All Vaults" },
             { id: "real-estate", label: "Real Estate RWAs" },
@@ -306,10 +303,10 @@ export default function RwaStaking() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+              className={`whitespace-nowrap rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all ${
                 activeTab === tab.id
-                  ? "bg-amber-400 text-black shadow-md shadow-amber-400/20"
-                  : "bg-[#161a1e] text-slate-400 hover:text-white border border-slate-800"
+                  ? "border-[#f0b90b]/30 bg-[#2b313a] text-[#f0b90b]"
+                  : "border-[#2b313a] bg-[#181a20] text-slate-400 hover:text-white"
               }`}
             >
               {tab.label}
@@ -401,20 +398,20 @@ export default function RwaStaking() {
             {filteredPools.map((pool) => (
               <div
                 key={pool.id}
-                className="bg-[#161a1e] border border-slate-800 hover:border-amber-500/30 transition-all rounded-2xl p-4 space-y-4 shadow-lg"
+                className="min-w-0 space-y-4 rounded-2xl border border-[#2b313a]/70 bg-[#181a20] p-4 shadow-md transition-all hover:border-[#f0b90b]/40"
               >
                 {/* Header */}
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
+                <div className="mb-1 flex min-w-0 items-start justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-3">
                     <div className={`w-11 h-11 rounded-2xl flex items-center justify-center font-bold text-sm ${pool.iconBg}`}>
                       {pool.symbol.slice(0, 3)}
                     </div>
                     <div>
-                      <div className="text-sm font-bold text-white">{pool.name}</div>
-                      <div className="text-xs text-slate-400 mt-0.5">{pool.description}</div>
+                      <div className="truncate text-sm font-bold text-white">{pool.name}</div>
+                      <div className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-slate-400">{pool.description}</div>
                     </div>
                   </div>
-                  <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${pool.tagColor}`}>
+                  <span className={`shrink-0 whitespace-nowrap rounded-md px-2 py-1 text-[10px] font-bold ${pool.tagColor}`}>
                     {pool.tag}
                   </span>
                 </div>
@@ -445,9 +442,9 @@ export default function RwaStaking() {
                     <span className="text-slate-400">Pool Quota Filled</span>
                     <span className="font-semibold text-white">{pool.progress}%</span>
                   </div>
-                  <div className="w-full h-2 bg-[#0b0e11] rounded-full overflow-hidden border border-slate-800">
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#2b313a]">
                     <div
-                      className="h-full bg-gradient-to-r from-amber-500 to-emerald-400 rounded-full"
+                      className="h-full rounded-full bg-gradient-to-r from-[#f0b90b] to-[#0ecb81]"
                       style={{ width: `${pool.progress}%` }}
                     />
                   </div>
@@ -456,7 +453,7 @@ export default function RwaStaking() {
                 {/* Primary CTA Button */}
                 <button
                   onClick={() => setSelectedPool(pool)}
-                  className="w-full bg-amber-400 hover:bg-amber-300 text-black font-bold py-2.5 rounded-xl transition shadow-lg shadow-amber-400/20 text-sm flex items-center justify-center gap-2"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#f0b90b] py-3 text-sm font-bold text-black shadow-lg shadow-[#f0b90b]/20 transition hover:bg-[#d9a507] active:scale-[0.98]"
                 >
                   <Lock className="w-4 h-4" />
                   Stake Now in {pool.symbol}
@@ -465,7 +462,10 @@ export default function RwaStaking() {
             ))}
           </div>
         )}
-      </div>
+        <div className="rounded-xl border border-[#2b313a] bg-[#151a21] px-3 py-3 text-[11px] leading-5 text-slate-500">
+          RWA vaults are subject to asset, liquidity, counterparty and market risks. Review title-deed, custody, redemption and eligibility information before staking.
+        </div>
+      </main>
 
       {/* ── STAKING DEPOSIT MODAL / SLIDE-OVER ──────────────────────────── */}
       <AnimatePresence>
