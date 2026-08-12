@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { Link, useLocation } from "wouter";
 import {
   ArrowRight,
@@ -21,7 +21,6 @@ import {
   Wallet,
   X,
   Zap,
-  RefreshCw,
 } from "lucide-react";
 import { useUser } from "@/contexts/AuthContext";
 
@@ -88,7 +87,7 @@ function Stat({ label, value, note }: { label: string; value: string; note: stri
   return <div className="border-l border-[#2b3440] pl-4"><div className="mb-2 flex items-center gap-2 text-[11px] uppercase tracking-[.15em] text-[#929aa5]"><span className="h-1.5 w-1.5 bg-[#f0b90b]" />{label}</div><div className="font-mono text-[19px] font-semibold tabular-nums text-[#f5f5f5]">{value}</div><div className="mt-1 text-xs text-[#68727e]">{note}</div></div>;
 }
 
-function ProjectCard({ project, onSubscribe, connected }: { project: Project; onSubscribe: (p: Project) => void; connected: boolean }) {
+function ProjectCard({ project, onSubscribe, onView, connected }: { project: Project; onSubscribe: (p: Project) => void; onView: (p: Project) => void; connected: boolean }) {
   return (
     <article className="border border-[#2b3440] bg-[#151a21] p-4 transition duration-200 hover:-translate-y-0.5 hover:border-[#f0b90b]/50 sm:p-5">
       <div className="flex items-start justify-between gap-3">
@@ -114,10 +113,29 @@ function ProjectCard({ project, onSubscribe, connected }: { project: Project; on
       </div>
       <div className="mt-5 flex gap-2">
         <button onClick={() => project.status === "Active" && onSubscribe(project)} className={`min-h-11 flex-1 border px-3 text-xs font-semibold transition ${project.status === "Active" ? "border-[#f0b90b] bg-[#f0b90b] text-[#0b0e11] hover:bg-[#ffc928]" : "cursor-default border-[#2b3440] text-[#68727e]"}`}>{project.status === "Active" ? "Subscribe" : project.status === "Upcoming" ? "Coming soon" : "Ended"}</button>
-        <button className="min-h-11 border border-[#2b3440] px-3 text-xs text-[#f5f5f5] transition hover:border-[#929aa5]">View project</button>
+        <button onClick={() => onView(project)} className="min-h-11 border border-[#2b3440] px-3 text-xs text-[#f5f5f5] transition hover:border-[#929aa5]">View project</button>
       </div>
       {!connected && project.status === "Active" && <p className="mt-3 text-[11px] text-[#68727e]">Connect wallet to subscribe.</p>}
     </article>
+  );
+}
+
+function ProjectDetailPanel({ project, onClose, onSubscribe }: { project: Project; onClose: () => void; onSubscribe: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#080a0d]/80 p-0 backdrop-blur-sm sm:items-center sm:p-6">
+      <div className="max-h-[92dvh] w-full max-w-2xl overflow-y-auto border border-[#3a424c] bg-[#151a21] p-5 shadow-2xl sm:p-7">
+        <div className="flex items-start justify-between gap-4 border-b border-[#2b3440] pb-5">
+          <div className="flex items-center gap-3"><ProjectMark project={project} /><div><StatusBadge status={project.status} /><h2 className="mt-2 text-2xl font-semibold text-[#f5f5f5]">{project.name}</h2><p className="mt-1 font-mono text-xs text-[#929aa5]">{project.symbol} · {project.network} · {project.product}</p></div></div>
+          <button aria-label="Close project details" onClick={onClose} className="grid h-10 w-10 shrink-0 place-items-center text-[#929aa5] hover:text-[#f5f5f5]"><X size={18} /></button>
+        </div>
+        <p className="mt-5 text-sm leading-6 text-[#a7afb9]">{project.description}</p>
+        <div className="mt-6 grid grid-cols-2 gap-px border border-[#2b3440] bg-[#2b3440] sm:grid-cols-3">
+          {[["Token price", project.price], ["Total allocation", project.allocation], ["Participants", project.participants], ["End date", project.end], ["Progress", `${project.progress}%`], ["Network", project.network]].map(([label, value]) => <div key={label} className="bg-[#101419] p-4"><div className="text-[11px] uppercase tracking-[.12em] text-[#68727e]">{label}</div><div className="mt-2 font-mono text-sm text-[#f5f5f5]">{value}</div></div>)}
+        </div>
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row"><button onClick={onSubscribe} disabled={project.status !== "Active"} className="min-h-12 flex-1 bg-[#f0b90b] px-5 text-sm font-bold text-[#0b0e11] transition hover:bg-[#ffc928] disabled:cursor-not-allowed disabled:bg-[#2b3440] disabled:text-[#68727e]">{project.status === "Active" ? "Subscribe" : project.status === "Upcoming" ? "Coming soon" : "Ended"}</button><button onClick={onClose} className="min-h-12 border border-[#2b3440] px-5 text-sm font-semibold text-[#f5f5f5] hover:border-[#929aa5]">Close</button></div>
+        <p className="mt-4 text-xs leading-5 text-[#68727e]">Project information is presented for discovery. Review the official project documents and applicable eligibility rules before participating.</p>
+      </div>
+    </div>
   );
 }
 
@@ -160,6 +178,7 @@ export default function Launchpad() {
   const [product, setProduct] = useState<"All" | Product>("All");
   const [faq, setFaq] = useState(0);
   const [subscribe, setSubscribe] = useState<Project | null>(null);
+  const [detail, setDetail] = useState<Project | null>(null);
   const [loadError] = useState<string | null>(null);
   const filtered = useMemo(() => projects.filter((p) => (status === "All" || p.status === status) && (product === "All" || p.product === product)), [status, product]);
   const connect = () => { if (connected || connecting) return; setConnecting(true); window.setTimeout(() => { setConnecting(false); setConnected(true); }, 700); };
@@ -226,7 +245,7 @@ export default function Launchpad() {
             </select>
           </div>
           {loadError ? <div className="mt-6 border border-dashed border-[#3a424c] p-10 text-center text-sm text-[#a7afb9]">{loadError}</div> : filtered.length ? <>
-            <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">{filtered.filter((p) => p.status !== "Completed").map((p) => <ProjectCard key={p.name} project={p} onSubscribe={setSubscribe} connected={connected} />)}</div>
+            <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">{filtered.filter((p) => p.status !== "Completed").map((p) => <ProjectCard key={p.name} project={p} onSubscribe={setSubscribe} onView={setDetail} connected={connected} />)}</div>
             <div className="mt-12">
               <div className="mb-5 flex items-center justify-between">
                 <div><div className="text-[10px] uppercase tracking-[.18em] text-[#68727e]">Archive</div><h3 className="mt-2 text-xl font-semibold">Completed projects</h3></div>
@@ -278,7 +297,10 @@ export default function Launchpad() {
           <div className="flex items-center gap-2 text-xs text-[#68727e]"><Copy size={13} />© 2025 OkzByte</div>
         </div>
       </footer>
-      <AnimatePresence>{subscribe && <SubscriptionPanel project={subscribe} onClose={() => setSubscribe(null)} connected={connected} />}</AnimatePresence>
+      <AnimatePresence>
+        {detail && <ProjectDetailPanel project={detail} onClose={() => setDetail(null)} onSubscribe={() => { setDetail(null); setSubscribe(detail); }} />}
+        {subscribe && <SubscriptionPanel project={subscribe} onClose={() => setSubscribe(null)} connected={connected} />}
+      </AnimatePresence>
       {!isSignedIn && <div className="fixed bottom-4 left-1/2 z-40 -translate-x-1/2 rounded-full border border-[#2b3440] bg-[#151a21]/95 px-4 py-2 text-xs text-[#929aa5] shadow-xl backdrop-blur">Sign in to keep launchpad state synced.</div>}
     </div>
   );
