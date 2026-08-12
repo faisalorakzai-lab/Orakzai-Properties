@@ -1,11 +1,24 @@
 import { useMemo, useState } from "react";
-import { Bell, ChevronDown, ChevronRight, CircleHelp, Clock3, ExternalLink, FileText, Gift, Menu, Search, ShieldCheck, Sparkles, Wallet, X, Zap } from "lucide-react";
+import { Bell, ChevronDown, ChevronRight, CircleHelp, Clock3, Menu, Search, ShieldCheck, Sparkles, Wallet, X, Zap } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useUser } from "@/contexts/AuthContext";
+import type { LaunchpadProject, LaunchType, UserSubscription } from "@/types/launchpad";
 
 type Status = "Upcoming" | "Active" | "Completed";
 type Product = "Token Sale" | "Launchpool" | "HODLer Airdrop" | "Lottery";
-type Project = {
+type Project = Omit<LaunchpadProject, "status" | "type"> & {
+  status: Status;
+  type: LaunchType;
+  product: Product;
+  price: string;
+  allocation: string;
+  participants: string;
+  progress: number;
+  end: string;
+  accent: string;
+  mark: string;
+};
+type ProjectSeed = {
   name: string;
   symbol: string;
   status: Status;
@@ -21,12 +34,36 @@ type Project = {
   mark: string;
 };
 
-const projects: Project[] = [
+const launchTypeFor = (product: Product): LaunchType => product === "Launchpool" ? "LAUNCHPOOL" : product === "HODLer Airdrop" ? "AIRDROP" : product === "Lottery" ? "LOTTERY" : "LAUNCHPAD";
+const projectFromSeed = (seed: ProjectSeed): Project => ({
+  ...seed,
+  id: seed.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+  logoUrl: "/logo-ob-shield.png",
+  type: launchTypeFor(seed.product),
+  website: "#",
+  whitepaper: "#",
+  socials: {},
+  tokenPriceUSD: Number(seed.price.match(/[0-9.]+/)?.[0] ?? 0),
+  totalAllocation: Number(seed.allocation.replace(/[^0-9.]/g, "")) || 0,
+  hardCapUSD: 0,
+  subscriptionStart: "2025-03-01T00:00:00Z",
+  subscriptionEnd: seed.end,
+  distributionDate: seed.end,
+  minAllocationToken: 0,
+  maxAllocationToken: 0,
+  totalCommittedTokens: seed.progress,
+  participantCount: Number(seed.participants.replace(/[^0-9]/g, "")) || 0,
+});
+
+const projectSeeds: ProjectSeed[] = [
   { name: "XTER", symbol: "XTER", status: "Active", product: "Token Sale", description: "Infrastructure for a more open, composable internet.", network: "OKZ Chain", price: "0.024 OKZ", allocation: "18,750,000 XTER", participants: "42,816", progress: 76, end: "Mar 28, 2025", accent: "#D4AF37", mark: "X" },
   { name: "GENIUS", symbol: "GENIUS", status: "Upcoming", product: "Launchpool", description: "A community-owned intelligence protocol for Web3.", network: "Ethereum", price: "0.18 USDT", allocation: "4,200,000 GENIUS", participants: "—", progress: 0, end: "Apr 04, 2025", accent: "#8B9CFF", mark: "G" },
   { name: "AIGENSYN", symbol: "AIGENSYN", status: "Upcoming", product: "HODLer Airdrop", description: "Agentic coordination for the next generation of protocols.", network: "Arbitrum", price: "Snapshot", allocation: "9,600,000 AIGENSYN", participants: "—", progress: 0, end: "Apr 12, 2025", accent: "#9CD8C3", mark: "A" },
   { name: "OPG", symbol: "OPG", status: "Completed", product: "Lottery", description: "A high-throughput settlement layer for real-world value.", network: "OKZ Chain", price: "0.042 USDT", allocation: "12,000,000 OPG", participants: "18,492", progress: 100, end: "Feb 18, 2025", accent: "#DB886D", mark: "O" },
 ];
+
+const projects: Project[] = projectSeeds.map(projectFromSeed);
+const subscriptionDraft: UserSubscription = { projectId: "", committedAmount: 0, estimatedTokens: 0, isClaimed: false, hasParticipated: false };
 
 const faqs = [
   ["What is OkzByte Launchpad?", "OkzByte Launchpad is the access point for vetted token launches, Launchpools and HODLer Airdrops across the OkzByte / Orakzai ecosystem."],
@@ -61,9 +98,14 @@ function DetailPanel({ project, onClose, onSubscribe }: { project: Project; onCl
 
 function SubscriptionPanel({ project, connected, onClose }: { project: Project; connected: boolean; onClose: () => void }) {
   const [percent, setPercent] = useState(50);
-  const amount = (7500 * percent / 50).toLocaleString();
-  const allocation = Math.round(1245 * percent / 50).toLocaleString();
-  return <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#02050a]/80 p-0 backdrop-blur-sm sm:items-center sm:p-5"><div className="w-full max-w-lg rounded-t-xl border border-white/10 bg-[#0B111B] p-5 shadow-2xl sm:rounded-xl sm:p-7"><div className="flex items-start justify-between border-b border-white/10 pb-5"><div><p className="text-[10px] font-semibold uppercase tracking-[.16em] text-[#D4AF37]">Subscription</p><h2 className="mt-2 font-serif text-2xl font-bold text-[#EEF2FF]">{project.name} <span className="font-sans text-sm font-normal text-white/40">/ {project.symbol}</span></h2></div><button aria-label="Close subscription" onClick={onClose} className="grid h-10 w-10 place-items-center rounded-md text-white/50 hover:bg-white/[.05] hover:text-white"><X size={18} /></button></div><div className="mt-5 flex justify-between text-sm"><span className="text-white/50">Available balance</span><span className="font-mono text-[#EEF2FF]">{connected ? "15,000 OKZ" : "Connect wallet"}</span></div><div className="mt-4 rounded-md border border-white/10 bg-[#101925] p-4"><div className="flex justify-between text-xs"><span className="text-white/50">Your subscription</span><span className="font-mono text-[#EEF2FF]">{amount} OKZ</span></div><div className="mt-4 grid grid-cols-4 gap-2">{[25, 50, 75, 100].map((v) => <button key={v} onClick={() => setPercent(v)} className={`min-h-10 rounded-sm border text-xs font-semibold ${percent === v ? "border-[#D4AF37] bg-[#D4AF37]/10 text-[#D4AF37]" : "border-white/10 text-white/50 hover:border-white/25"}`}>{v === 100 ? "MAX" : `${v}%`}</button>)}</div></div><div className="mt-3 grid grid-cols-2 overflow-hidden rounded-md border border-white/10"><div className="min-w-0 border-r border-white/10 p-4"><p className="truncate text-xs text-white/45">Estimated allocation</p><p className="mt-2 truncate font-mono text-lg text-[#D4AF37]">{allocation} XTER</p></div><div className="min-w-0 p-4"><p className="truncate text-xs text-white/45">Maximum allocation</p><p className="mt-2 truncate font-mono text-lg text-[#EEF2FF]">1,500 XTER</p></div></div><p className="mt-4 text-xs leading-5 text-white/35">The estimate can change as subscriptions are added. Final allocation is determined after the subscription period closes.</p><button className="mt-5 min-h-12 w-full rounded-md bg-[#D4AF37] text-sm font-semibold text-[#080B10] hover:bg-[#E2C04F]">Confirm subscription</button></div></div>;
+  const [subscription, setSubscription] = useState<UserSubscription>({ ...subscriptionDraft, projectId: project.id, committedAmount: 7500, estimatedTokens: 1245 });
+  const amount = subscription.committedAmount.toLocaleString();
+  const allocation = Math.round(subscription.estimatedTokens).toLocaleString();
+  const selectPercent = (value: number) => {
+    setPercent(value);
+    setSubscription((current) => ({ ...current, committedAmount: 15000 * value / 100, estimatedTokens: 2490 * value / 100 }));
+  };
+  return <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#02050a]/80 p-0 backdrop-blur-sm sm:items-center sm:p-5"><div className="w-full max-w-lg rounded-t-xl border border-white/10 bg-[#0B111B] p-5 shadow-2xl sm:rounded-xl sm:p-7"><div className="flex items-start justify-between border-b border-white/10 pb-5"><div><p className="text-[10px] font-semibold uppercase tracking-[.16em] text-[#D4AF37]">Subscription</p><h2 className="mt-2 font-serif text-2xl font-bold text-[#EEF2FF]">{project.name} <span className="font-sans text-sm font-normal text-white/40">/ {project.symbol}</span></h2></div><button aria-label="Close subscription" onClick={onClose} className="grid h-10 w-10 place-items-center rounded-md text-white/50 hover:bg-white/[.05] hover:text-white"><X size={18} /></button></div><div className="mt-5 flex justify-between text-sm"><span className="text-white/50">Available balance</span><span className="font-mono text-[#EEF2FF]">{connected ? "15,000 OKZ" : "Connect wallet"}</span></div><div className="mt-4 rounded-md border border-white/10 bg-[#101925] p-4"><div className="flex justify-between text-xs"><span className="text-white/50">Your subscription</span><span className="font-mono text-[#EEF2FF]">{amount} OKZ</span></div><div className="mt-4 grid grid-cols-4 gap-2">{[25, 50, 75, 100].map((v) => <button key={v} onClick={() => selectPercent(v)} className={`min-h-10 rounded-sm border text-xs font-semibold ${percent === v ? "border-[#D4AF37] bg-[#D4AF37]/10 text-[#D4AF37]" : "border-white/10 text-white/50 hover:border-white/25"}`}>{v === 100 ? "MAX" : `${v}%`}</button>)}</div></div><div className="mt-3 grid grid-cols-2 overflow-hidden rounded-md border border-white/10"><div className="min-w-0 border-r border-white/10 p-4"><p className="truncate text-xs text-white/45">Estimated allocation</p><p className="mt-2 truncate font-mono text-lg text-[#D4AF37]">{allocation} XTER</p></div><div className="min-w-0 p-4"><p className="truncate text-xs text-white/45">Maximum allocation</p><p className="mt-2 truncate font-mono text-lg text-[#EEF2FF]">1,500 XTER</p></div></div><p className="mt-4 text-xs leading-5 text-white/35">The estimate can change as subscriptions are added. Final allocation is determined after the subscription period closes.</p><button className="mt-5 min-h-12 w-full rounded-md bg-[#D4AF37] text-sm font-semibold text-[#080B10] hover:bg-[#E2C04F]">Confirm subscription</button></div></div>;
 }
 
 export default function Launchpad() {
