@@ -1,0 +1,841 @@
+You are a senior fintech/Web3 product designer and full-stack engineer.
+
+I already have an existing OkzByte Launchpad page. DO NOT rebuild the project from scratch and DO NOT remove existing functionality.
+
+Your task is to completely redesign and polish the existing Launchpad into a premium, production-ready crypto launchpad inspired by the usability, information architecture, spacing, responsiveness, and professional quality of major exchanges such as Binance Launchpad — BUT DO NOT copy Binance's proprietary branding, exact UI, logos, assets, or design. Everything must be branded as OKZBYTE.
+
+==================================================
+BRAND
+==================================================
+
+Brand: OkzByte
+Product: OkzByte Launchpad
+Primary ecosystem: OkzByte / Orakzai ecosystem
+
+Visual identity:
+- Primary Gold: #F0B90B
+- Bright Gold: #FFC928
+- Dark Gold: #C89200
+- Background: #0B0E11
+- Surface: #151A21
+- Card: #1E2630
+- Border: #2B3440
+- Primary text: #F5F5F5
+- Secondary text: #929AA5
+- Success: #0ECB81
+- Danger: #F6465D
+- Blue accent only when necessary
+
+The gold color should be used strategically for CTAs, active states, highlights, statistics and important numbers.
+
+Do NOT make the entire page yellow.
+The overall appearance must feel like a serious global crypto exchange.
+
+==================================================
+CORE DESIGN DIRECTION
+==================================================
+
+Create a premium dark exchange interface.
+
+The design should feel:
+- institutional
+- trustworthy
+- modern
+- clean
+- high-end
+- Web3-native
+- mobile-first
+- data-driven
+- fast
+
+Avoid:
+- excessive gradients
+- excessive glowing effects
+- cartoon graphics
+- unnecessary animations
+- oversized cards
+- excessive rounded corners
+- random colors
+- generic SaaS styling
+- amateur-looking spacing
+
+Use subtle 8–12px border radius.
+Use thin borders.
+Use strong typography hierarchy.
+Use generous but efficient spacing.
+
+==================================================
+PAGE STRUCTURE
+==================================================
+
+Build the Launchpad page with this structure:
+
+1. TOP NAVIGATION
+2. HERO / LAUNCHPAD HEADER
+3. KEY PLATFORM STATISTICS
+4. ACTIVE / UPCOMING PROJECTS
+5. PROJECT FILTERS
+6. PROJECT CARDS / TABLE
+7. COMPLETED PROJECTS
+8. ALLOCATION / SUBSCRIPTION EXPLANATION
+9. HOW IT WORKS
+10. FAQ
+11. FOOTER
+
+==================================================
+1. TOP NAVIGATION
+==================================================
+
+Create a professional exchange-style navbar.
+
+Left:
+- OkzByte logo/icon
+- OkzByte wordmark
+
+Navigation:
+- Markets
+- Trade
+- Launchpad
+- Earn
+- Projects
+
+Launchpad should have active gold indicator.
+
+Right:
+- Search icon
+- Notifications
+- Connect Wallet
+- User/Profile menu
+
+On mobile:
+- compact OkzByte logo
+- search
+- notification
+- wallet/profile
+- hamburger menu if required
+
+Navbar must remain clean and sticky.
+
+==================================================
+2. HERO SECTION
+==================================================
+
+Replace the current oversized/awkward hero with a professional compact exchange-style hero.
+
+Heading:
+
+Launchpad
+
+Subheading:
+
+Discover and participate in new token launches through OkzByte Launchpad.
+
+Add a small gold badge:
+
+OKZBYTE LAUNCHPAD
+
+Hero should NOT consume most of the mobile screen.
+
+Add subtle abstract geometric/Web3 background elements using CSS only.
+
+No heavy background image.
+
+==================================================
+3. PLATFORM STATISTICS
+==================================================
+
+Display professional statistics:
+
+Total Committed
+$4,342,033,765
+
+Average Growth
+645%
+
+Participants
+2,309,207
+
+Projects
+32
+
+IMPORTANT:
+These values must come from the existing backend/data layer if available.
+
+Do NOT hardcode fake statistics if real API/data already exists.
+
+Create reusable statistic components.
+
+Desktop:
+4 columns
+
+Tablet:
+2 columns
+
+Mobile:
+2 columns or horizontal scroll depending on screen width.
+
+==================================================
+4. PROJECT CATEGORIES
+==================================================
+
+Add a clean tab/filter system:
+
+All
+Upcoming
+Active
+Completed
+
+Optional:
+Token Sale
+HODLer Airdrop
+Launchpool
+Lottery
+
+Active tab uses OkzByte gold.
+
+Filters must work.
+
+==================================================
+5. UPCOMING / ACTIVE PROJECTS
+==================================================
+
+Create premium project cards.
+
+Each project card should contain:
+
+- Project logo
+- Project name
+- Symbol
+- Status badge
+- Short project description
+- Network
+- Token price
+- Total allocation
+- Subscription period
+- Participant count
+- Progress bar
+- Individual allocation information
+- Primary CTA
+
+Examples:
+
+Subscribe
+View Project
+Participate
+Coming Soon
+Ended
+
+Do not show fake data unless existing mock/demo data is already intentionally used.
+
+If data is unavailable, create a clean data model that can later be connected to API.
+
+==================================================
+6. PROJECT DETAIL PAGE
+==================================================
+
+Each Launchpad project must have a dedicated detail experience.
+
+Include:
+
+Project logo
+Project name
+Token symbol
+Network
+Project description
+Website
+Whitepaper
+Social links
+
+Sale information:
+
+Token Price
+Total Allocation
+Hard Cap
+Subscription Period
+Registration Period
+Distribution Date
+Maximum Allocation
+Minimum Allocation
+
+User section:
+
+Your Balance
+Your Subscription
+Estimated Allocation
+Final Allocation
+Claimable Tokens
+
+CTA:
+
+Subscribe
+
+After subscription:
+Subscribed
+
+After sale:
+Claim Tokens
+
+All states must be clearly represented.
+
+==================================================
+7. SUBSCRIPTION SYSTEM UI
+==================================================
+
+Build a professional subscription interface.
+
+Show:
+
+Available Balance
+Subscription Amount
+Estimated Allocation
+Maximum Allocation
+
+Use a clean amount input.
+
+Include:
+
+25%
+50%
+75%
+MAX
+
+buttons.
+
+Show a transparent allocation calculation.
+
+Example:
+
+Your subscription
+7,500 OKZ
+
+Estimated allocation
+1,245 XTER
+
+Make the calculation architecture reusable and connect it to backend logic where available.
+
+Never claim an allocation is guaranteed if it is only estimated.
+
+==================================================
+8. LOTTERY SYSTEM
+==================================================
+
+Support lottery-based launches.
+
+UI:
+
+Lottery Pool
+Ticket Price
+Available Tickets
+Your Tickets
+Winning Probability
+Number of Winners
+Reward per Winner
+
+CTA:
+
+Buy Ticket
+
+After result:
+
+Winning Ticket
+Losing Ticket
+
+Use clear success/error states.
+
+==================================================
+9. HODLER AIRDROP / LAUNCHPOOL
+==================================================
+
+Create a unified product system supporting:
+
+Launchpad
+Launchpool
+HODLer Airdrops
+
+Cards should clearly identify the product type.
+
+For HODLer Airdrops show:
+
+Total Airdrop
+Snapshot Time
+Eligible Asset
+Average Airdrop
+Your Estimated Airdrop
+Distribution Date
+
+For Launchpool show:
+
+Total Rewards
+Supported Assets
+APR
+Staking Period
+Your Staked Amount
+Estimated Rewards
+
+==================================================
+10. COMPLETED PROJECTS
+==================================================
+
+Redesign the existing completed-project section.
+
+Use compact professional cards.
+
+Each card:
+
+Logo
+Project
+Token
+Total Allocation
+Token Price
+Participants
+Final Result
+View Details
+
+Example existing projects can be retained:
+
+XTER
+GENIUS
+AIGENSYN
+OPG
+
+But use the existing database/API as the source of truth.
+
+==================================================
+11. PROJECT TABLE VIEW
+==================================================
+
+On desktop, allow projects to be displayed as a professional data table.
+
+Columns:
+
+Project
+Status
+Token
+Price
+Allocation
+Participants
+Progress
+End Date
+Action
+
+On mobile automatically switch to cards.
+
+Do NOT create horizontal overflow on mobile.
+
+==================================================
+12. HOW IT WORKS
+==================================================
+
+Create a clean 4-step section:
+
+01
+Connect Wallet
+
+02
+Meet Eligibility
+
+03
+Subscribe / Participate
+
+04
+Receive Tokens
+
+Use simple icons and short explanations.
+
+==================================================
+13. FAQ
+==================================================
+
+Create a professional accordion FAQ.
+
+Questions:
+
+What is OkzByte Launchpad?
+
+How does OkzByte Launchpad work?
+
+Who is eligible to participate?
+
+Which balances are counted during the snapshot period?
+
+How is my token allocation calculated?
+
+What is a lottery-based token sale?
+
+What are HODLer Airdrops?
+
+When are tokens distributed?
+
+Are there risks associated with token launches?
+
+Can I participate using a mobile device?
+
+Only one FAQ should expand at a time.
+
+==================================================
+14. MOBILE EXPERIENCE
+==================================================
+
+THIS IS VERY IMPORTANT.
+
+The screenshots show that the current mobile design needs significant improvement.
+
+Make the entire application mobile-first.
+
+Target:
+
+360px
+375px
+390px
+412px
+430px
+
+No:
+- horizontal page overflow
+- clipped text
+- overlapping cards
+- oversized hero
+- tiny buttons
+- broken tables
+- desktop navigation squeezed into mobile
+- content hidden behind fixed navigation
+
+Mobile project cards should be redesigned rather than simply shrinking desktop cards.
+
+Use:
+
+16px side padding
+14–16px card padding
+44–48px minimum touch targets
+
+Important information should appear first.
+
+CTA buttons should be easy to reach with one hand.
+
+==================================================
+15. DESKTOP EXPERIENCE
+==================================================
+
+Desktop max content width:
+
+1200–1400px
+
+Use a professional grid.
+
+Do not stretch cards unnecessarily.
+
+Maintain consistent spacing:
+
+8px
+12px
+16px
+24px
+32px
+48px
+
+==================================================
+16. TYPOGRAPHY
+==================================================
+
+Use a professional modern sans-serif.
+
+Preferred:
+
+Inter
+
+Fallback:
+
+system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif
+
+Headings:
+strong but not oversized
+
+Body:
+14–16px
+
+Financial numbers:
+medium/bold
+
+Use tabular numbers for financial statistics.
+
+==================================================
+17. ICONS
+==================================================
+
+Use a consistent icon library already available in the project.
+
+If none exists, use Lucide icons.
+
+Do NOT use random emoji as UI icons.
+
+Project logos should be displayed in consistent containers.
+
+==================================================
+18. ANIMATIONS
+==================================================
+
+Use subtle professional motion only:
+
+- hover transitions
+- button transitions
+- card hover
+- progress animation
+- number count animation where appropriate
+- skeleton loading
+
+Animation duration:
+
+150–250ms
+
+Do NOT use excessive neon/glow animations.
+
+==================================================
+19. LOADING STATES
+==================================================
+
+Every API-driven section needs skeleton loaders.
+
+Examples:
+
+Project card skeleton
+Statistics skeleton
+Project detail skeleton
+Table skeleton
+
+Never show a blank screen while data loads.
+
+==================================================
+20. ERROR / EMPTY STATES
+==================================================
+
+Create professional states:
+
+No Projects Found
+
+No Upcoming Launches
+
+Failed to Load Projects
+
+Wallet Not Connected
+
+Not Eligible
+
+Sale Ended
+
+Coming Soon
+
+Each state must have a clear explanation and action.
+
+==================================================
+21. WALLET UX
+==================================================
+
+Create a professional wallet connection experience.
+
+States:
+
+Connect Wallet
+
+Connecting...
+
+Connected
+
+Wrong Network
+
+Insufficient Balance
+
+Transaction Pending
+
+Transaction Successful
+
+Transaction Failed
+
+Never expose private keys or sensitive wallet information.
+
+==================================================
+22. DATA ARCHITECTURE
+==================================================
+
+IMPORTANT:
+
+Do not destroy the current backend.
+
+First inspect the existing project architecture.
+
+Identify:
+
+- API routes
+- database
+- authentication
+- wallet logic
+- project model
+- token-sale model
+- existing statistics
+- existing referral logic
+- existing allocation logic
+
+Reuse existing APIs whenever possible.
+
+If an API is missing, create a clean service layer.
+
+Keep frontend and backend responsibilities separated.
+
+Create reusable types/interfaces for:
+
+Project
+LaunchpadSale
+Subscription
+Lottery
+Airdrop
+Launchpool
+UserAllocation
+Token
+Network
+
+==================================================
+23. SECURITY
+==================================================
+
+This is a financial/Web3 interface.
+
+Never trust client-side values for:
+
+- balances
+- eligibility
+- allocations
+- subscription limits
+- winning tickets
+- token distribution
+
+All sensitive calculations must be validated server-side.
+
+Never expose API secrets.
+
+Never expose private keys.
+
+Add transaction confirmation states.
+
+Prevent duplicate subscriptions.
+
+Handle transaction failures gracefully.
+
+==================================================
+24. SEO
+==================================================
+
+Add:
+
+Title:
+OkzByte Launchpad | New Token Listings & Web3 Projects
+
+Meta description:
+Discover and participate in upcoming token launches, HODLer airdrops and Web3 projects through OkzByte Launchpad.
+
+Use semantic HTML.
+
+Add proper headings.
+
+Use descriptive metadata.
+
+==================================================
+25. PERFORMANCE
+==================================================
+
+Optimize for mobile.
+
+Target:
+
+LCP < 2.5s
+CLS < 0.1
+INP < 200ms
+
+Optimize images.
+
+Lazy load project logos.
+
+Avoid unnecessary JavaScript.
+
+Avoid huge libraries where unnecessary.
+
+Use skeleton loading.
+
+==================================================
+26. DESIGN CONSISTENCY
+==================================================
+
+Create reusable components:
+
+Navbar
+Footer
+StatCard
+ProjectCard
+ProjectTable
+StatusBadge
+ProgressBar
+TokenLogo
+SubscriptionPanel
+LotteryPanel
+AirdropCard
+LaunchpoolCard
+FAQAccordion
+WalletButton
+EmptyState
+ErrorState
+Skeleton
+
+Create a small design system using CSS variables/design tokens.
+
+==================================================
+27. IMPORTANT BRANDING RULE
+==================================================
+
+The final product must clearly look like:
+
+OKZBYTE
+
+NOT:
+
+Binance clone
+Generic crypto dashboard
+Template website
+
+Use the existing OkzByte logo/icon and gold/white branding.
+
+Keep the visual language unique to OkzByte.
+
+The experience can be inspired by the professionalism and usability of Binance Launchpad, but must have its own layout, typography, components and visual identity.
+
+==================================================
+28. FINAL QA
+==================================================
+
+After implementation:
+
+1. Run the project.
+2. Test desktop.
+3. Test 360px mobile.
+4. Test 375px mobile.
+5. Test 390px mobile.
+6. Test 412px mobile.
+7. Test 430px mobile.
+8. Test all navigation links.
+9. Test project filters.
+10. Test project details.
+11. Test subscription UI.
+12. Test lottery UI.
+13. Test wallet states.
+14. Test loading states.
+15. Test empty states.
+16. Test API errors.
+17. Check for console errors.
+18. Check for horizontal overflow.
+19. Check accessibility.
+20. Check typography and spacing.
+21. Check all buttons.
+22. Check dark theme consistency.
+
+Fix all visual and functional issues you find.
+
+Do not stop after making the homepage visually better.
+
+The final result must feel like a real production-grade global crypto exchange Launchpad operated by OkzByte.

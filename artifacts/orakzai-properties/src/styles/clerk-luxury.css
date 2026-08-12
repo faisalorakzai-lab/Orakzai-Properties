@@ -1,0 +1,494 @@
+/* ═══════════════════════════════════════════════
+   ORAKZAI PROPERTIES — LUXURY CLERK AUTH STYLES
+   Deep black + gold premium aesthetic
+   ═══════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap');
+
+/* ── Auth Page Wrapper ── */
+.orakzai-auth-page {
+  min-height: 100dvh;
+  background: #050505;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px 48px;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Inter', 'Plus Jakarta Sans', sans-serif;
+}
+
+/* Ambient gold glows */
+.orakzai-auth-page::before {
+  content: '';
+  position: fixed;
+  top: -20%;
+  right: -10%;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(212,175,55,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.orakzai-auth-page::after {
+  content: '';
+  position: fixed;
+  bottom: -20%;
+  left: -10%;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(212,175,55,0.05) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ── Orakzai Logo Section (above Clerk card) ── */
+.orakzai-auth-branding {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 32px;
+  position: relative;
+  z-index: 2;
+}
+
+.orakzai-auth-logo {
+  width: 90px;
+  height: 90px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 24px rgba(212,175,55,0.45)) drop-shadow(0 0 8px rgba(212,175,55,0.3));
+  animation: logoGlow 4s ease-in-out infinite alternate;
+}
+
+@keyframes logoGlow {
+  from { filter: drop-shadow(0 0 20px rgba(212,175,55,0.4)) drop-shadow(0 0 6px rgba(212,175,55,0.25)); }
+  to   { filter: drop-shadow(0 0 32px rgba(212,175,55,0.6)) drop-shadow(0 0 12px rgba(212,175,55,0.4)); }
+}
+
+.orakzai-auth-wordmark {
+  margin-top: 14px;
+  text-align: center;
+}
+
+.orakzai-auth-wordmark-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: #D4AF37;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.orakzai-auth-wordmark-sub {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 9px;
+  font-weight: 500;
+  color: rgba(212,175,55,0.55);
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  margin-top: 5px;
+}
+
+/* Gold separator line */
+.orakzai-auth-divider-line {
+  width: 48px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #D4AF37, transparent);
+  margin: 10px auto 0;
+}
+
+/* ── Clerk Component Container ── */
+.orakzai-auth-clerk {
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  z-index: 2;
+}
+
+/* ─────────────────────────────────────
+   CLERK ELEMENT OVERRIDES (cl- classes)
+   ───────────────────────────────────── */
+
+@layer clerk {
+
+  /* Root box — remove any default margin/centering */
+  .cl-rootBox {
+    width: 100% !important;
+    display: block !important;
+  }
+
+  /* Card — glassmorphism dark panel */
+  .cl-card {
+    background: rgba(12, 10, 8, 0.92) !important;
+    backdrop-filter: blur(24px) !important;
+    -webkit-backdrop-filter: blur(24px) !important;
+    border: 1px solid rgba(212,175,55,0.28) !important;
+    border-radius: 24px !important;
+    box-shadow:
+      0 0 0 1px rgba(212,175,55,0.08),
+      0 32px 80px rgba(0,0,0,0.85),
+      0 0 100px rgba(212,175,55,0.06) !important;
+    padding: 36px 32px !important;
+    position: relative !important;
+    overflow: hidden !important;
+  }
+
+  /* Gold shimmer top edge */
+  .cl-card::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 2px !important;
+    background: linear-gradient(90deg, transparent, rgba(212,175,55,0.8), transparent) !important;
+  }
+
+  /* Hide Clerk's own logo since we show ours above */
+  .cl-logoBox,
+  .cl-logoImage {
+    display: none !important;
+  }
+
+  /* Header */
+  .cl-header {
+    text-align: center !important;
+    margin-bottom: 28px !important;
+    padding: 0 !important;
+  }
+
+  .cl-headerTitle {
+    font-family: 'Montserrat', 'Inter', sans-serif !important;
+    font-size: 26px !important;
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    letter-spacing: -0.02em !important;
+    line-height: 1.2 !important;
+    margin-bottom: 8px !important;
+  }
+
+  .cl-headerSubtitle {
+    font-family: 'Inter', sans-serif !important;
+    font-size: 13px !important;
+    color: rgba(255,255,255,0.42) !important;
+    font-weight: 400 !important;
+    line-height: 1.6 !important;
+    letter-spacing: 0.01em !important;
+  }
+
+  /* ── Social Buttons ── */
+  .cl-socialButtonsBlockButton {
+    background: rgba(255,255,255,0.04) !important;
+    border: 1px solid rgba(255,255,255,0.12) !important;
+    border-radius: 14px !important;
+    color: rgba(255,255,255,0.75) !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    padding: 13px 20px !important;
+    transition: all 0.2s !important;
+    height: 48px !important;
+  }
+
+  .cl-socialButtonsBlockButton:hover {
+    background: rgba(255,255,255,0.08) !important;
+    border-color: rgba(212,175,55,0.35) !important;
+    color: rgba(255,255,255,0.9) !important;
+    transform: translateY(-1px) !important;
+  }
+
+  /* Monochrome icons — filter to white */
+  .cl-socialButtonsBlockButton img,
+  .cl-socialButtonsBlockButton svg {
+    filter: grayscale(1) brightness(2) !important;
+    opacity: 0.7 !important;
+  }
+
+  .cl-socialButtonsBlockButton:hover img,
+  .cl-socialButtonsBlockButton:hover svg {
+    filter: grayscale(1) brightness(2.5) !important;
+    opacity: 0.9 !important;
+  }
+
+  .cl-socialButtonsBlockButtonText {
+    font-family: 'Inter', sans-serif !important;
+    color: rgba(255,255,255,0.75) !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+  }
+
+  /* ── Divider "or" ── */
+  .cl-dividerLine {
+    background: rgba(255,255,255,0.1) !important;
+    height: 1px !important;
+  }
+
+  .cl-dividerText {
+    font-family: 'Inter', sans-serif !important;
+    color: rgba(255,255,255,0.28) !important;
+    font-size: 12px !important;
+    font-weight: 400 !important;
+    letter-spacing: 0.05em !important;
+  }
+
+  /* ── Form Field Labels ── */
+  .cl-formFieldLabel {
+    font-family: 'Inter', sans-serif !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    color: rgba(255,255,255,0.45) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.07em !important;
+    margin-bottom: 8px !important;
+  }
+
+  /* ── Input Fields — glassmorphism style ── */
+  .cl-formFieldInput {
+    font-family: 'Inter', sans-serif !important;
+    background: rgba(255,255,255,0.04) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    border-radius: 14px !important;
+    color: #ffffff !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    padding: 14px 16px !important;
+    height: 50px !important;
+    transition: all 0.2s !important;
+    box-shadow: none !important;
+    outline: none !important;
+    backdrop-filter: blur(8px) !important;
+  }
+
+  .cl-formFieldInput:focus,
+  .cl-formFieldInput:focus-within {
+    background: rgba(255,255,255,0.06) !important;
+    border-color: rgba(212,175,55,0.5) !important;
+    box-shadow: 0 0 0 3px rgba(212,175,55,0.08), 0 0 20px rgba(212,175,55,0.06) !important;
+    outline: none !important;
+  }
+
+  .cl-formFieldInput::placeholder {
+    color: rgba(255,255,255,0.22) !important;
+    font-weight: 300 !important;
+  }
+
+  /* Input with icon wrapper */
+  .cl-formFieldInputShowPasswordButton {
+    color: rgba(255,255,255,0.35) !important;
+    transition: color 0.2s !important;
+  }
+  .cl-formFieldInputShowPasswordButton:hover {
+    color: rgba(212,175,55,0.7) !important;
+  }
+
+  /* Field row */
+  .cl-formField {
+    margin-bottom: 16px !important;
+  }
+
+  /* ── Primary Button — gold gradient ── */
+  .cl-formButtonPrimary {
+    font-family: 'Montserrat', 'Inter', sans-serif !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.04em !important;
+    background: linear-gradient(135deg, #D4AF37 0%, #c49b28 45%, #b8891f 100%) !important;
+    color: #050505 !important;
+    border: none !important;
+    border-radius: 14px !important;
+    height: 52px !important;
+    width: 100% !important;
+    cursor: pointer !important;
+    transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s !important;
+    box-shadow: 0 6px 28px rgba(212,175,55,0.35), 0 2px 8px rgba(0,0,0,0.3) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    text-transform: none !important;
+  }
+
+  .cl-formButtonPrimary::before {
+    content: '' !important;
+    position: absolute !important;
+    inset: 0 !important;
+    background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%) !important;
+    background-size: 200% 100% !important;
+    transition: background-position 0.6s !important;
+  }
+
+  .cl-formButtonPrimary:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 10px 36px rgba(212,175,55,0.45), 0 4px 12px rgba(0,0,0,0.4) !important;
+    opacity: 0.95 !important;
+  }
+
+  .cl-formButtonPrimary:hover::before {
+    background-position: 200% 0 !important;
+  }
+
+  .cl-formButtonPrimary:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 4px 16px rgba(212,175,55,0.3) !important;
+  }
+
+  /* ── Footer ── */
+  .cl-footerActionText {
+    font-family: 'Inter', sans-serif !important;
+    color: rgba(255,255,255,0.35) !important;
+    font-size: 13px !important;
+    font-weight: 400 !important;
+  }
+
+  .cl-footerActionLink {
+    font-family: 'Inter', sans-serif !important;
+    color: #D4AF37 !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    transition: color 0.15s !important;
+  }
+
+  .cl-footerActionLink:hover {
+    color: #e8c860 !important;
+    text-decoration: none !important;
+  }
+
+  .cl-footer {
+    padding-top: 8px !important;
+    border-top: 1px solid rgba(255,255,255,0.07) !important;
+    margin-top: 4px !important;
+    text-align: center !important;
+  }
+
+  /* ── "Secured by Clerk" badge — subtle ── */
+  .cl-footer .cl-internal-1fcmjf3,
+  [data-localization-key="footerPageLink__help"],
+  .cl-footerPages {
+    opacity: 0.25 !important;
+    font-size: 10px !important;
+  }
+
+  .cl-internal-b3fm6y {
+    font-family: 'Inter', sans-serif !important;
+    font-size: 11px !important;
+    color: rgba(255,255,255,0.2) !important;
+  }
+
+  /* ── Forgot password link ── */
+  .cl-formFieldAction {
+    color: rgba(212,175,55,0.7) !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    transition: color 0.15s !important;
+  }
+  .cl-formFieldAction:hover {
+    color: #D4AF37 !important;
+  }
+
+  /* ── Error messages ── */
+  .cl-formFieldErrorText {
+    font-family: 'Inter', sans-serif !important;
+    font-size: 11px !important;
+    color: #ef4444 !important;
+  }
+
+  .cl-alert {
+    border-radius: 12px !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 12px !important;
+    background: rgba(239,68,68,0.08) !important;
+    border: 1px solid rgba(239,68,68,0.25) !important;
+    color: #fca5a5 !important;
+  }
+
+  /* ── Phone/OTP input ── */
+  .cl-phoneInputBox {
+    background: rgba(255,255,255,0.04) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    border-radius: 14px !important;
+  }
+
+  /* ── OTP input boxes ── */
+  .cl-otpCodeFieldInput {
+    background: rgba(255,255,255,0.06) !important;
+    border: 1px solid rgba(255,255,255,0.15) !important;
+    border-radius: 12px !important;
+    color: #fff !important;
+    font-family: 'Montserrat', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 20px !important;
+  }
+  .cl-otpCodeFieldInput:focus {
+    border-color: rgba(212,175,55,0.6) !important;
+    box-shadow: 0 0 0 3px rgba(212,175,55,0.1) !important;
+  }
+
+  /* ── Back button ── */
+  .cl-formButtonReset,
+  .cl-backLink {
+    color: rgba(255,255,255,0.4) !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 13px !important;
+    transition: color 0.15s !important;
+  }
+  .cl-formButtonReset:hover,
+  .cl-backLink:hover {
+    color: rgba(255,255,255,0.7) !important;
+  }
+
+  /* ── Avatar / profile image ── */
+  .cl-avatarBox {
+    border: 2px solid rgba(212,175,55,0.4) !important;
+    box-shadow: 0 0 16px rgba(212,175,55,0.2) !important;
+  }
+
+  /* ── Checkbox ── */
+  .cl-checkboxInput {
+    accent-color: #D4AF37 !important;
+  }
+
+  .cl-checkboxLabel {
+    font-family: 'Inter', sans-serif !important;
+    color: rgba(255,255,255,0.4) !important;
+    font-size: 12px !important;
+  }
+
+  /* ── Country code selector ── */
+  .cl-phoneInputCountryCode {
+    color: rgba(255,255,255,0.7) !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 14px !important;
+  }
+
+  /* ── Identity preview (already signed in state) ── */
+  .cl-identityPreviewText {
+    color: rgba(255,255,255,0.7) !important;
+    font-family: 'Inter', sans-serif !important;
+  }
+  .cl-identityPreviewEditButton {
+    color: #D4AF37 !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 600 !important;
+  }
+
+  /* ── Scrollbar within Clerk card ── */
+  .cl-card::-webkit-scrollbar { width: 4px; }
+  .cl-card::-webkit-scrollbar-track { background: transparent; }
+  .cl-card::-webkit-scrollbar-thumb { background: rgba(212,175,55,0.3); border-radius: 2px; }
+
+  /* ── Navbar (user button dropdown) ── */
+  .cl-userButtonPopoverCard {
+    background: #0c0a08 !important;
+    border: 1px solid rgba(212,175,55,0.25) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8) !important;
+  }
+
+  /* ── Bottom "Development Mode" badge ── slight fade ── */
+  .cl-badge[data-variant="shadow"] {
+    opacity: 0.15 !important;
+    font-size: 10px !important;
+  }
+}

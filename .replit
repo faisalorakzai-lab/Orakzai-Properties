@@ -1,0 +1,29 @@
+modules = ["nodejs-24"]
+
+[deployment]
+router = "application"
+deploymentTarget = "autoscale"
+
+[deployment.postBuild]
+args = ["pnpm", "store", "prune"]
+env = { "CI" = "true" }
+
+[workflows]
+runButton = "Project"
+
+[agent]
+stack = "PNPM_WORKSPACE"
+expertMode = true
+
+[postMerge]
+path = "scripts/post-merge.sh"
+timeoutMs = 20000
+
+[userenv]
+
+[userenv.shared]
+GITHUB_REPOSITORY_URL = "https://github.com/faisalorakzai-lab/Orakzai-Properties"
+VERCEL_PROJECT_URL = "https://orakzai-properties-api-server.vercel.app/"
+
+[nix]
+channel = "stable-25_05"
