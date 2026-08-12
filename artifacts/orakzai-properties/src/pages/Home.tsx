@@ -72,7 +72,7 @@ import { useProfilePhoto } from "@/hooks/useProfilePhoto";
     { icon: Users2,           label: "P2P Trade",  color: "#06b6d4", bg: "rgba(6,182,212,0.18)",   kycRequired: true,  href: "/p2p" },
     { icon: Rocket,           label: "Launchpad",  color: "#f97316", bg: "rgba(249,115,22,0.18)",  kycRequired: false, href: "/launchpad" },
     { icon: Coins,            label: "RWA Staking",color: "#F0B90B", bg: "rgba(240,185,11,0.18)", kycRequired: false, href: "/rwa-staking" },
-    { icon: Bot,              label: "Bot Trading",color: "#ec4899", bg: "rgba(236,72,153,0.18)",  kycRequired: true,  href: "/trade" },
+    { icon: Bot,              label: "Bot Trading",color: "#F0B90B", bg: "rgba(240,185,11,0.18)",  kycRequired: false, href: "/bot-trading" },
     { icon: Landmark,         label: "Land Bonds", color: "#3b82f6", bg: "rgba(59,130,246,0.18)",  kycRequired: true,  href: "/invest" },
     { icon: Grid3x3,          label: "More",       color: "#C9A84C", bg: "rgba(201,168,76,0.12)",  kycRequired: false, href: "/services" },
   ];
