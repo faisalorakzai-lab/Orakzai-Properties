@@ -252,6 +252,12 @@ export default function RwaStaking() {
       </div>
 
       <main className="mx-auto w-full max-w-3xl space-y-5">
+        <section className="rounded-2xl border border-[#2b313a] bg-[#151a21] p-4 sm:p-5">
+          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#f0b90b]"><Landmark className="h-3.5 w-3.5" /> RWA marketplace</div>
+          <h2 className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl">Earn from real-world assets.</h2>
+          <p className="mt-2 max-w-xl text-xs leading-5 text-slate-400 sm:text-sm">Access transparent property, land-bond and commercial-income vaults through the same secure Exchange experience.</p>
+          <div className="mt-4 flex flex-wrap gap-2 text-[10px] font-semibold text-slate-300"><span className="rounded-md border border-[#2b313a] bg-[#0b0e11] px-2.5 py-1.5">Title-deed reviewed</span><span className="rounded-md border border-[#2b313a] bg-[#0b0e11] px-2.5 py-1.5">Daily yield estimate</span><span className="rounded-md border border-[#2b313a] bg-[#0b0e11] px-2.5 py-1.5">Escrow tracked</span></div>
+        </section>
         {/* ── HERO PORTFOLIO & STATS BANNER ──────────────────────────── */}
         <section className="relative overflow-hidden rounded-2xl border border-[#2b313a] bg-[#1e2329] p-4 shadow-md sm:p-5">
           <div className="absolute top-0 right-0 w-48 h-48 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
