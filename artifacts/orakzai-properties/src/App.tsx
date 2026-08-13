@@ -54,6 +54,7 @@ import Referral from "@/pages/Referral";
 import SecurityCenter from "@/pages/SecurityCenter";
 import Staking from "@/pages/Staking";
 import Wealth from "@/pages/Wealth";
+import AirdropHub from "@/pages/AirdropHub";
 import { ModeProvider } from "@/contexts/ModeContext";
 import { AppStoreProvider } from "@/store/AppStoreContext";
 
@@ -217,6 +218,7 @@ function AppContent() {
               <Route path="/security" component={SecurityCenter} />
               <Route path="/staking" component={Staking} />
               <Route path="/wealth" component={Wealth} />
+              <Route path="/airdrop-hub" component={AirdropHub} />
               <Route path="/trade/:id" component={TradingFloor} />
               <Route path="/wallet" component={Wallet} />
               <Route path="/withdraw/on-chain" component={CryptoWithdrawFlow} />
