@@ -23,7 +23,7 @@ const DIM       = "#8B93A7";
 /* ── Recommend grid items ─────────────────────────────────────────── */
 const RECOMMEND_ITEMS = [
   { icon: Wallet,         label: "OkzByte\nWallet",    href: "/wallet" },
-  { icon: Gift,           label: "My Gifts",            href: "/services" },
+  { icon: Gift,           label: "My Gifts",            href: "/my-gift" },
   { icon: Send,           label: "Pay / Send\nvia UID", href: "/wallet" },
   { icon: Layers,         label: "Options",             href: "/trade" },
   { icon: Bot,            label: "Demo\nTrading",       href: "/trade" },
