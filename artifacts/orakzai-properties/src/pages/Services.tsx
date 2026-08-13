@@ -25,7 +25,7 @@ interface ServiceItem {
 
 const COMMON_FUNCTION: ServiceItem[] = [
   { icon: Gift,           label: "My Gift",          color: "#f97316", bg: "rgba(249,115,22,0.15)",   href: "/my-gift" },
-  { icon: FileText,       label: "Account\nStatement",color: "#3b82f6", bg: "rgba(59,130,246,0.15)",   href: "/portfolio" },
+  { icon: FileText,       label: "Account\nStatement",color: "#3b82f6", bg: "rgba(59,130,246,0.15)",   href: "/account-statement" },
   { icon: PlusCircle,     label: "Add Funds",        color: "#10b981", bg: "rgba(16,185,129,0.15)",   href: "/wallet" },
   { icon: Rocket,         label: "Launchpool",       color: "#f97316", bg: "rgba(249,115,22,0.15)",   href: "/launchpad" },
   { icon: Users,          label: "Referral",         color: "#06b6d4", bg: "rgba(6,182,212,0.15)",    href: "/profile" },
