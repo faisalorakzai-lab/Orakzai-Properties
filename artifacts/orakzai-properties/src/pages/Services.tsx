@@ -34,7 +34,7 @@ const COMMON_FUNCTION: ServiceItem[] = [
 ];
 
 const EARN_WEALTH: ServiceItem[] = [
-  { icon: Coins,  label: "Staking",         color: "#10b981", bg: "rgba(16,185,129,0.15)",  href: "/portfolio" },
+  { icon: Coins,         label: "Staking",         color: "#10b981", bg: "rgba(16,185,129,0.15)",  href: "/staking" },
   { icon: Star,   label: "OkzByte Wealth",  color: GOLD,      bg: "rgba(201,168,76,0.12)",  href: "/portfolio" },
   { icon: Zap,    label: "Airdrop Hub",     color: "#f97316", bg: "rgba(249,115,22,0.15)",  href: "/launchpad" },
 ];
