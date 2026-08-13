@@ -3,23 +3,23 @@ import { useLocation } from "wouter";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, RefreshCw, Paperclip, MessageSquareQuote,
-  FileText, Check, Star,
+  FileText, Check,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 /* ── Theme ──────────────────────────────────────────────── */
-const GOLD = "#C9A84C";
-const BG = "#040b14";
-const CARD_BG = "#1a1f26";
-const BORDER = "rgba(255,255,255,0.08)";
-const BORDER_GOLD = "rgba(201,168,76,0.28)";
+const GOLD = "#F0B90B";
+const BG = "#0b0e11";
+const CARD_BG = "#181a20";
+const BORDER = "#2b313a";
+const BORDER_GOLD = "rgba(240,185,11,0.30)";
 
 const FOUNDER_AVATAR = `${import.meta.env.BASE_URL}avatar-faisal-round.png`;
 
 const CHAIRMAN_QUOTE =
-  "At OkzByte, we listen, care, and improve to innovate and revolutionize the industry by fusing the best of crypto, tokenized assets, and traditional finance for the benefit of our users. Our vision is to empower global seamless trading, and with this, we welcome and appreciate any feedback you have for us to create a faster, safer, and fairer trading environment and bring the next level of trading to you.";
+  "At OkzByte, we listen, care, and improve to innovate and revolutionize the industry by fusing the best of crypto, tokenized assets, and traditional finance for the benefit of our users. Our vision is to empower global seamless trading, and with this, we welcome and appreciate any feedback you have for us to create a faster, safer, and fairer trading environment.";
 
-const CHAIRMAN_SIGNATURE = "Muhammad Faisal Orakzai, Founder & Chairman of OkzByte";
+const CHAIRMAN_SIGNATURE = "Faisal Orakzai, Founder & Chairman at OkzByte";
 
 /* ── Mock recent updates shown on the page ─────────────── */
 const RECENT_UPDATES = [
@@ -96,7 +96,7 @@ export default function Feedback() {
         minHeight: "100dvh",
         background: BG,
         color: "#F5F5F5",
-        fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
         paddingBottom: 92,
       }}
     >
@@ -239,7 +239,7 @@ export default function Feedback() {
               onClick={() => fileInputRef.current?.click()}
               style={{
                 display: "inline-flex", alignItems: "center", gap: 7,
-                background: "rgba(201,168,76,0.12)", border: `1px solid ${BORDER_GOLD}`,
+                background: "rgba(240,185,11,0.10)", border: `1px solid ${BORDER_GOLD}`,
                 borderRadius: 10, padding: "7px 14px",
                 fontSize: 13, fontWeight: 700, color: GOLD, cursor: "pointer",
                 fontFamily: "inherit",
@@ -300,12 +300,13 @@ export default function Feedback() {
               disabled={submitting}
               style={{
                 width: "100%",
-                background: "#f59e0b",
+                background: GOLD,
                 color: "#000000", fontWeight: 800,
-                fontSize: 16, fontFamily: "inherit",
-                border: "none", borderRadius: 14,
-                padding: "14px 0", cursor: submitting ? "wait" : "pointer",
-                boxShadow: "0 8px 28px rgba(245,158,11,0.28)",
+                fontSize: 14, fontFamily: "inherit",
+                border: "none", borderRadius: 12,
+                padding: "14px 0", marginTop: 16, marginBottom: 32,
+                cursor: submitting ? "wait" : "pointer",
+                boxShadow: "0 8px 24px rgba(240,185,11,0.16)",
                 opacity: submitting ? 0.7 : 1,
               }}
             >
@@ -340,10 +341,7 @@ export default function Feedback() {
               />
             </div>
 
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 4, background: "rgba(201,168,76,0.12)", border: `1px solid ${BORDER_GOLD}`, borderRadius: 20, padding: "4px 14px" }}>
-              <Star size={11} color={GOLD} />
-              <span style={{ fontSize: 10.5, fontWeight: 700, color: GOLD, letterSpacing: 0.3 }}>FOUNDER &amp; CHAIRMAN OF OKZBYTE</span>
-            </div>
+            
 
             <p style={{
               margin: "18px 0 0", fontSize: 14, lineHeight: 1.7, color: "#C8CFD9", textAlign: "left",
@@ -373,7 +371,7 @@ export default function Feedback() {
             <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
               <div style={{
                 width: 44, height: 44, borderRadius: 14, flexShrink: 0,
-                background: "rgba(201,168,76,0.12)", border: `1px solid ${BORDER_GOLD}`,
+                background: "rgba(240,185,11,0.10)", border: `1px solid ${BORDER_GOLD}`,
                 display: "grid", placeItems: "center",
               }}>
                 <FileText size={20} color={GOLD} />
@@ -385,7 +383,7 @@ export default function Feedback() {
                 <ul style={{ margin: "14px 0 0", padding: 0, listStyle: "none", display: "grid", gap: 10 }}>
                   {RECENT_UPDATES.map((u) => (
                     <li key={u.title} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                      <Check size={15} color={GOLD} style={{ flexShrink: 0, marginTop: 3 }} />
+                      <Check size={15} color="#0ECB81" style={{ flexShrink: 0, marginTop: 3 }} />
                       <span style={{ fontSize: 13, color: "#9AA3B5", lineHeight: 1.45 }}>
                         <strong style={{ color: "#EAECEF" }}>{u.title}</strong> — {u.desc}
                       </span>
