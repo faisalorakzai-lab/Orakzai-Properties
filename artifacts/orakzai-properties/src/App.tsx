@@ -50,6 +50,7 @@ import RwaStaking from "@/pages/RwaStaking";
 import BotTrading from "@/pages/BotTrading";
 import GiftRewards from "@/pages/GiftRewards";
 import AccountStatement from "@/pages/AccountStatement";
+import Referral from "@/pages/Referral";
 import { ModeProvider } from "@/contexts/ModeContext";
 import { AppStoreProvider } from "@/store/AppStoreContext";
 
@@ -209,6 +210,7 @@ function AppContent() {
               <Route path="/bot-trading" component={BotTrading} />
               <Route path="/my-gift" component={GiftRewards} />
               <Route path="/account-statement" component={AccountStatement} />
+              <Route path="/referral" component={Referral} />
               <Route path="/trade/:id" component={TradingFloor} />
               <Route path="/wallet" component={Wallet} />
               <Route path="/withdraw/on-chain" component={CryptoWithdrawFlow} />
