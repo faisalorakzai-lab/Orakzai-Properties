@@ -47,6 +47,7 @@ import CryptoWithdrawFlow, { WithdrawalHistoryPage } from "@/pages/CryptoWithdra
 import WithdrawalHelp from "@/pages/WithdrawalHelp";
 import Feedback from "@/pages/Feedback";
 import Support from "@/pages/Support";
+import CustomerService from "@/pages/CustomerService";
 import RwaStaking from "@/pages/RwaStaking";
 import BotTrading from "@/pages/BotTrading";
 import GiftRewards from "@/pages/GiftRewards";
@@ -167,7 +168,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 function HideBottomNavOnAuthPages() {
   const [location] = useLocation();
   const { isSignedIn } = useUser();
-  const hidden = ["/sign-in", "/sign-up", "/admin", "/p2p", "/help/how-to-withdraw"].some((p) => location.startsWith(p));
+  const hidden = ["/sign-in", "/sign-up", "/admin", "/p2p", "/help/how-to-withdraw", "/customer-service"].some((p) => location.startsWith(p));
   // Hide bottom nav inside any open chat room so it doesn't overlap the input dock
   const isChatRoom = /^\/inbox\/.+/.test(location);
   if (hidden || isChatRoom || !isSignedIn) return null;
@@ -226,6 +227,7 @@ function AppContent() {
               <Route path="/help/how-to-withdraw" component={WithdrawalHelp} />
               <Route path="/feedback" component={Feedback} />
               <Route path="/support" component={Support} />
+              <Route path="/customer-service" component={CustomerService} />
               <Route path="/history" component={WithdrawalHistoryPage} />
               <Route path="/wallet/okzbyte-pay" component={OkzBytePayReceive} />
               <Route path="/wallet/okzbyte-pay-send" component={OkzBytePaySend} />

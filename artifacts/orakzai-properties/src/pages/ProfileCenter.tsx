@@ -195,7 +195,7 @@ export default function ProfileCenter() {
           <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
             {[
               { Icon: QrCode,      label: "QR",       action: () => {} },
-              { Icon: Headphones,  label: "Support",  action: () => setLocation("/inbox") },
+              { Icon: Headphones,  label: "Support",  action: () => setLocation("/customer-service") },
               { Icon: Settings,    label: "Settings", action: () => setLocation("/profile") },
             ].map(({ Icon, label, action }) => (
               <motion.button key={label} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
