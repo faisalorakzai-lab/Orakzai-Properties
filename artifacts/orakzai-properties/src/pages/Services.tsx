@@ -6,6 +6,7 @@ import {
   ArrowDownCircle, Shield, Coins, Star, Zap,
   HeadphonesIcon, MessageCircle, Award, ShoppingBag, Heart, X, PenLine,
   Building2, Megaphone, GraduationCap, Globe, Crown, HelpCircle,
+  Gamepad2, RefreshCw, Landmark, Trophy, Handshake, Vault,
 } from "lucide-react";
 
 const GOLD = "#C9A84C";
@@ -31,6 +32,15 @@ const COMMON_FUNCTION: ServiceItem[] = [
   { icon: Users,          label: "Referral",         color: "#06b6d4", bg: "rgba(6,182,212,0.15)",    href: "/referral" },
   { icon: ArrowDownCircle,label: "Withdraw Fiat",    color: "#a78bfa", bg: "rgba(167,139,250,0.15)",  href: "/wallet" },
   { icon: Shield,         label: "Security",         color: GOLD,      bg: "rgba(201,168,76,0.12)",   href: "/security" },
+];
+
+const TRADE_ADVANCED: ServiceItem[] = [
+  { icon: Gamepad2,  label: "Demo Trading",  color: "#22d3ee", bg: "rgba(34,211,238,0.10)", href: "/demo-trade" },
+  { icon: RefreshCw, label: "Convert",       color: "#0ecb81", bg: "rgba(14,203,129,0.10)", href: "/convert" },
+  { icon: Landmark,  label: "Crypto Loans",  color: "#fbbf24", bg: "rgba(251,191,36,0.10)", href: "/loans" },
+  { icon: Trophy,    label: "Leaderboard",   color: "#f0b90b", bg: "rgba(240,185,11,0.10)", href: "/leaderboard" },
+  { icon: Handshake, label: "P2P Express",  color: "#c084fc", bg: "rgba(192,132,252,0.10)", href: "/p2p" },
+  { icon: Vault,     label: "RWA Vaults",    color: "#fb7185", bg: "rgba(251,113,133,0.10)", href: "/rwa-vaults" },
 ];
 
 const EARN_WEALTH: ServiceItem[] = [
@@ -113,6 +123,7 @@ export default function Services() {
   // Flat search filter across all services
   const allItems = [
     ...COMMON_FUNCTION.map(i => ({ ...i, category: "Common Function" })),
+    ...TRADE_ADVANCED.map(i => ({ ...i, category: "Trade & Advanced Finance" })),
     ...EARN_WEALTH.map(i => ({ ...i, category: "Earn & Wealth" })),
     ...SUPPORT_COMMUNITY.map(i => ({ ...i, category: "Support & Community" })),
   ];
@@ -217,6 +228,12 @@ export default function Services() {
             </div>
 
             {/* Category 2 */}
+            <SectionHeader title="Trade & Advanced Finance" />
+            <div style={{ background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 16, padding: "8px 12px 16px" }}>
+              <ServiceGrid items={TRADE_ADVANCED} onNavigate={handleNavigate} />
+            </div>
+
+            {/* Category 3 */}
             <SectionHeader title="Earn & Wealth" />
             <div style={{ background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 16, padding: "8px 12px 16px" }}>
               <ServiceGrid items={EARN_WEALTH} onNavigate={handleNavigate} />

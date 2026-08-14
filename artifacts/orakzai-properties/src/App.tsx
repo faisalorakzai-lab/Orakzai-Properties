@@ -65,6 +65,7 @@ import Learn from "@/pages/Learn";
 import Community from "@/pages/Community";
 import Vip from "@/pages/Vip";
 import SubmitRequest from "@/pages/SubmitRequest";
+import { DemoTrade, Convert, Loans, Leaderboard, P2PExpress, RWAVaults } from "@/pages/TradeAdvancedFinance";
 import { ModeProvider } from "@/contexts/ModeContext";
 import { AppStoreProvider } from "@/store/AppStoreContext";
 
@@ -237,6 +238,12 @@ function AppContent() {
               <Route path="/community" component={Community} />
               <Route path="/vip" component={Vip} />
               <Route path="/submit-request" component={SubmitRequest} />
+              <Route path="/demo-trade" component={DemoTrade} />
+              <Route path="/convert" component={Convert} />
+              <Route path="/loans" component={Loans} />
+              <Route path="/leaderboard" component={Leaderboard} />
+              <Route path="/p2p" component={P2PExpress} />
+              <Route path="/rwa-vaults" component={RWAVaults} />
               <Route path="/trade/:id" component={TradingFloor} />
               <Route path="/wallet" component={Wallet} />
               <Route path="/withdraw/on-chain" component={CryptoWithdrawFlow} />
