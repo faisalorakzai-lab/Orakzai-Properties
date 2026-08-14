@@ -764,8 +764,9 @@ function SelectDepositMethodModal({
               boxShadow: "0 -8px 60px rgba(0,0,0,0.6)",
               border: `1px solid rgba(255,255,255,0.07)`,
               borderBottom: "none",
-              maxHeight: "90vh",
+              maxHeight: "85vh",
               overflowY: "auto",
+              paddingBottom: "calc(16px + env(safe-area-inset-bottom))",
             }}
           >
             {/* Drag handle */}
@@ -787,7 +788,7 @@ function SelectDepositMethodModal({
             </div>
 
             {/* Options */}
-            <div style={{ padding: "0 16px", paddingBottom: "calc(96px + env(safe-area-inset-bottom))", display: "flex", flexDirection: "column", gap: 10 }}>
+            <div style={{ padding: "0 16px", paddingBottom: "calc(112px + env(safe-area-inset-bottom))", display: "flex", flexDirection: "column", gap: 10 }}>
               {DEPOSIT_METHODS.map(({ icon: Icon, title, subtitle, action }) => (
                 <motion.button
                   key={action}
@@ -1184,7 +1185,7 @@ function PropertyRowItem({ p, i, expanded = false }: { p: typeof PROPERTIES[0]; 
 /* ─── Main Dashboard (Binance-style Assets) ──────────────────────────────────── */
 function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => void }) {
   const [showDeposit, setSD]         = useState(false);
-  const [showSelectModal, setSSM]    = useState(false);
+  const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
   const [showWithdrawModal, setSWM]  = useState(false);
   const [showDepositFlow, setSDF]    = useState(false);
   const [sidebarCollapsed, setSB]    = useState(false);
@@ -1311,10 +1312,10 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
           {activeTab === "Overview" && (
             <>
               {/* Balance hero */}
-              <BalanceHeroSection totalNW={totalNW} onDeposit={() => setSSM(true)} />
+              <BalanceHeroSection totalNW={totalNW} onDeposit={() => setIsDepositModalOpen(true)} />
 
               {/* 4-button quick actions */}
-              <QuickActionsRow onAddFunds={() => setSSM(true)} onWithdraw={() => setSWM(true)} />
+              <QuickActionsRow onAddFunds={() => setIsDepositModalOpen(true)} onWithdraw={() => setSWM(true)} />
 
               {/* Horizontal allocation bar */}
               <AllocationBarSection />
@@ -1509,11 +1510,11 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
 
       {/* Select Deposit Method bottom sheet */}
       <SelectDepositMethodModal
-        open={showSelectModal}
-        onClose={() => setSSM(false)}
-        onSelectDepositAsset={() => { setSSM(false); setSDF(true); }}
-        onSelectOkzBytePay={() => { setSSM(false); setLocation("/wallet/okzbyte-pay"); }}
-        onSelectP2P={() => { setSSM(false); setLocation("/p2p"); }}
+        open={isDepositModalOpen}
+        onClose={() => setIsDepositModalOpen(false)}
+        onSelectDepositAsset={() => { setIsDepositModalOpen(false); setSDF(true); }}
+        onSelectOkzBytePay={() => { setIsDepositModalOpen(false); setLocation("/wallet/okzbyte-pay"); }}
+        onSelectP2P={() => { setIsDepositModalOpen(false); setLocation("/p2p"); }}
       />
 
       {/* Select Withdraw Method bottom sheet */}
