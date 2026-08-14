@@ -65,7 +65,8 @@ import Learn from "@/pages/Learn";
 import Community from "@/pages/Community";
 import Vip from "@/pages/Vip";
 import SubmitRequest from "@/pages/SubmitRequest";
-import { DemoTrade, Convert, P2PExpress, RWAVaults } from "@/pages/TradeAdvancedFinance";
+import { DemoTrade, Convert, P2PExpress as P2PExpressLegacy, RWAVaults } from "@/pages/TradeAdvancedFinance";
+import P2PExpress from "@/pages/P2PExpress";
 import Leaderboard from "@/pages/Leaderboard";
 import CryptoLoans from "@/pages/CryptoLoans";
 import { DepositMethod, SelectAsset, SelectNetwork, DepositAddress } from "@/pages/DepositWorkflow";
@@ -250,7 +251,8 @@ function AppContent() {
               <Route path="/convert" component={Convert} />
               <Route path="/loans" component={CryptoLoans} />
               <Route path="/leaderboard" component={Leaderboard} />
-              <Route path="/p2p" component={P2PExpress} />
+              <Route path="/p2p" component={P2PExpressLegacy} />
+              <Route path="/p2p-express" component={P2PExpress} />
               <Route path="/rwa-vaults" component={RWAVaults} />
               <Route path="/deposit-method" component={DepositMethod} />
               <Route path="/deposit/select-asset" component={SelectAsset} />

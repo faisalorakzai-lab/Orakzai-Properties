@@ -39,7 +39,7 @@ const TRADE_ADVANCED: ServiceItem[] = [
   { icon: RefreshCw, label: "Convert",       color: "#0ecb81", bg: "rgba(14,203,129,0.10)", href: "/convert" },
   { icon: Landmark,  label: "Crypto Loans",  color: "#fbbf24", bg: "rgba(251,191,36,0.10)", href: "/loans" },
   { icon: Trophy,    label: "Leaderboard",   color: "#f0b90b", bg: "rgba(240,185,11,0.10)", href: "/leaderboard" },
-  { icon: Handshake, label: "P2P Express",  color: "#c084fc", bg: "rgba(192,132,252,0.10)", href: "/p2p" },
+  { icon: Handshake, label: "P2P Express",  color: "#c084fc", bg: "rgba(192,132,252,0.10)", href: "/p2p-express" },
   { icon: Vault,     label: "RWA Vaults",    color: "#fb7185", bg: "rgba(251,113,133,0.10)", href: "/rwa-vaults" },
 ];
 
