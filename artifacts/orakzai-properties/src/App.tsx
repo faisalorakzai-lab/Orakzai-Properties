@@ -66,6 +66,7 @@ import Community from "@/pages/Community";
 import Vip from "@/pages/Vip";
 import SubmitRequest from "@/pages/SubmitRequest";
 import { DemoTrade, Convert, Loans, Leaderboard, P2PExpress, RWAVaults } from "@/pages/TradeAdvancedFinance";
+import { DepositMethod, SelectAsset, SelectNetwork, DepositAddress } from "@/pages/DepositWorkflow";
 import { ModeProvider } from "@/contexts/ModeContext";
 import { AppStoreProvider } from "@/store/AppStoreContext";
 
@@ -244,6 +245,10 @@ function AppContent() {
               <Route path="/leaderboard" component={Leaderboard} />
               <Route path="/p2p" component={P2PExpress} />
               <Route path="/rwa-vaults" component={RWAVaults} />
+              <Route path="/deposit-method" component={DepositMethod} />
+              <Route path="/deposit/select-asset" component={SelectAsset} />
+              <Route path="/deposit/select-network" component={SelectNetwork} />
+              <Route path="/deposit/address" component={DepositAddress} />
               <Route path="/trade/:id" component={TradingFloor} />
               <Route path="/wallet" component={Wallet} />
               <Route path="/withdraw/on-chain" component={CryptoWithdrawFlow} />
