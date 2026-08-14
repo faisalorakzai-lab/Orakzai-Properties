@@ -43,7 +43,7 @@ const SUPPORT_COMMUNITY: ServiceItem[] = [
   { icon: PenLine,        label: "User Feedback",       color: GOLD,      bg: "rgba(201,168,76,0.12)",   href: "/feedback" },
   { icon: HeadphonesIcon, label: "Support",             color: "#3b82f6", bg: "rgba(59,130,246,0.15)",  href: "/support" },
   { icon: MessageCircle,  label: "Customer Service",    color: "#06b6d4", bg: "rgba(6,182,212,0.15)",  href: "/customer-service" },
-  { icon: Award,          label: "Affiliate Program",   color: GOLD,      bg: "rgba(201,168,76,0.12)",  href: "/profile" },
+  { icon: Award,          label: "Affiliate Program",   color: GOLD,      bg: "rgba(201,168,76,0.12)",  href: "/affiliate-program" },
   { icon: Building2,      label: "Marketplace",         color: "#10b981", bg: "rgba(16,185,129,0.15)",  switchToMarket: true },
   { icon: Heart,          label: "Charity /\nPhilanthropy", color: "#ef4444", bg: "rgba(239,68,68,0.15)", href: "/" },
   // 5 New Service Items added as requested:
