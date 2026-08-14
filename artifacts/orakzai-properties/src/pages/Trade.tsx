@@ -227,6 +227,7 @@ export default function Trade() {
   const {
     activePair, setActivePair, setChartFullScreen, activeQuoteCurrency,
     liveCryptoList, setLiveCryptoList, cryptoFetching, setCryptoFetching,
+    isDemoTrading, demoBalances, updateDemoBalance,
   } = useMode();
   const {
     prices, wallet, filledOrders, positions,
@@ -248,6 +249,7 @@ export default function Trade() {
   const cryptoFetchedRef = useRef(false);
   const [showOrderDrop,  setShowOrderDrop]  = useState(false);
   const [announcement,   setAnnouncement]   = useState(true);
+  const [demoOrderNote,  setDemoOrderNote]  = useState("");
 
   /* ── Derived pair values ── */
   const canonicalPair = resolveCanonicalPair(activePair);
@@ -274,8 +276,8 @@ export default function Trade() {
   const isPos      = assetMeta.change >= 0;
 
   /* Wallet balances */
-  const avblUSDT   = wallet?.balances?.USDT   ?? 0;
-  const avblOKBOND = wallet?.balances?.OKBOND ?? 0;
+  const avblUSDT   = isDemoTrading ? demoBalances.USDT : (wallet?.balances?.USDT ?? 0);
+  const avblOKBOND = isDemoTrading ? demoBalances.OKBOND : (wallet?.balances?.OKBOND ?? 0);
 
   /* Per-pair data */
   const pairOrders = filledOrders.filter(o => o.pair === canonicalPair);
@@ -342,10 +344,22 @@ export default function Trade() {
   const handleTrade = useCallback(() => {
     const amt = tokenAmt > 0 ? tokenAmt : (pct > 0 ? avblUSDT * pct / 100 / livePrice : 0);
     if (amt <= 0) return;
-    dispatchTrade(canonicalPair, side === "buy" ? "BUY" : "SELL", amt, "USDT");
+    if (isDemoTrading) {
+      const notional = amt * livePrice;
+      if (side === "buy") {
+        updateDemoBalance("USDT", demoBalances.USDT - notional);
+        if (baseTicker === "OKBOND") updateDemoBalance("OKBOND", demoBalances.OKBOND + amt);
+      } else {
+        updateDemoBalance("USDT", demoBalances.USDT + notional);
+        if (baseTicker === "OKBOND") updateDemoBalance("OKBOND", demoBalances.OKBOND - amt);
+      }
+      setDemoOrderNote(`Demo ${side.toUpperCase()} executed · ${amt.toFixed(4)} ${baseTicker}`);
+    } else {
+      dispatchTrade(canonicalPair, side === "buy" ? "BUY" : "SELL", amt, "USDT");
+    }
     setTotal("");
     setPct(0);
-  }, [tokenAmt, pct, avblUSDT, livePrice, canonicalPair, side, dispatchTrade]);
+  }, [tokenAmt, pct, avblUSDT, livePrice, canonicalPair, side, dispatchTrade, isDemoTrading, demoBalances, updateDemoBalance, baseTicker]);
 
   return (
     <div style={{ minHeight: "100dvh", background: BG, fontFamily: "'Plus Jakarta Sans',sans-serif", paddingBottom: 80 }}>
@@ -391,6 +405,8 @@ export default function Trade() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {isDemoTrading && demoOrderNote && <div style={{ margin: "8px 14px 0", padding: "9px 12px", borderRadius: 9, background: "rgba(34,211,238,0.1)", border: "1px solid rgba(34,211,238,0.28)", color: "#22d3ee", fontSize: 11, fontWeight: 800 }}>{demoOrderNote}</div>}
 
       {/* ── Top nav tabs ── */}
       <div style={{ display: "flex", alignItems: "center", padding: "12px 16px 0", borderBottom: `1px solid ${BORD}`, overflowX: "auto", scrollbarWidth: "none" }}>
@@ -702,7 +718,7 @@ export default function Trade() {
                 cursor: totalUSDT > 0 || pct > 0 ? "pointer" : "not-allowed", fontSize: 14, fontWeight: 800,
                 background: side === "buy" ? GREEN : RED, color: "#fff", fontFamily: "inherit",
                 opacity: totalUSDT > 0 || pct > 0 ? 1 : 0.6 }}>
-              {side === "buy" ? `Buy ${baseTicker}` : `Sell ${baseTicker}`}
+              {isDemoTrading ? `Demo ${side === "buy" ? "Buy" : "Sell"} ${baseTicker}` : (side === "buy" ? `Buy ${baseTicker}` : `Sell ${baseTicker}`)}
             </motion.button>
           </div>
         </div>
@@ -711,6 +727,7 @@ export default function Trade() {
         <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 0, minWidth: 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
             <span style={{ fontSize: 9, color: DIM }}>Price<br />({quoteCurrency})</span>
+            {isDemoTrading && <span style={{ marginLeft: "auto", marginRight: 8, color: "#22d3ee", background: "rgba(34,211,238,0.12)", border: "1px solid rgba(34,211,238,0.3)", borderRadius: 5, padding: "3px 6px", fontSize: 9, fontWeight: 900 }}>DEMO ORDER</span>}
             <span style={{ fontSize: 9, color: DIM, textAlign: "right" }}>Amount<br />({baseTicker})</span>
           </div>
 

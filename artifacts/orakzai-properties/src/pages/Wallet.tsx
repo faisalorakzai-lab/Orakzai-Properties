@@ -23,6 +23,7 @@ import {
 } from "@/lib/walletEngine";
 import { supabase } from "@/lib/supabase";
 import { useAppStore } from "@/store/AppStoreContext";
+import { useMode } from "@/contexts/ModeContext";
 import { CryptoDepositFlow } from "./CryptoDepositFlow";
 
 /* ─── Design System ──────────────────────────────────────────────────────────── */
@@ -1196,6 +1197,7 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
 
   /* Sync real-time balances from AppStore into the static ASSETS display */
   const { wallet: storeWallet } = useAppStore();
+  const { isDemoTrading, demoBalances, resetDemoFunds } = useMode();
   const liveWallet = storeWallet ?? wallet;
   const liveAssets = ASSETS.map(a => {
     if (a.name === "USDT")   return { ...a, bal: liveWallet.balances.USDT,   pkr: liveWallet.balances.USDT   * 278 };
@@ -1204,6 +1206,12 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
     if (a.name === "PKR")    return { ...a, bal: liveWallet.balances.PKR,    pkr: liveWallet.balances.PKR        };
     return a;
   });
+  const demoAssets = [
+    { ...ASSETS[0], name: "USDT", sub: "Demo TestNet Wallet", bal: demoBalances.USDT, pkr: demoBalances.USDT * 278, color: T.cyan, bg: "rgba(34,211,238,0.1)" },
+    { ...ASSETS[2], name: "OKBOND", sub: "Demo Token · Virtual", bal: demoBalances.OKBOND, pkr: demoBalances.OKBOND * 88 },
+  ];
+  const displayAssets = isDemoTrading ? demoAssets : liveAssets;
+  const visibleAssetTabs = isDemoTrading ? ASSET_TABS.filter(tab => tab !== "Real Estate" && tab !== "Yield / Rental") : ASSET_TABS;
 
   useEffect(() => {
     const h = () => setIsMobile(window.innerWidth < 768);
@@ -1223,12 +1231,9 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
 
   const sideW = isMobile ? 0 : sidebarCollapsed ? 68 : 220;
 
-  const totalNW =
-    liveWallet.balances.PKR +
-    liveWallet.balances.USDT * 278 +
-    liveWallet.balances.USDC * 278 +
-    liveWallet.balances.OKBOND * 88 +
-    14_125_000;
+  const totalNW = isDemoTrading
+    ? demoBalances.USDT * 278 + demoBalances.OKBOND * 88
+    : liveWallet.balances.PKR + liveWallet.balances.USDT * 278 + liveWallet.balances.USDC * 278 + liveWallet.balances.OKBOND * 88 + 14_125_000;
 
   const RECENT = txns.map(t => ({
     id:     t.id,
@@ -1288,7 +1293,7 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
           paddingTop: "env(safe-area-inset-top, 0px)",
         }}>
           <div style={{ display: "flex", overflowX: "auto", scrollbarWidth: "none", padding: "0 4px" }}>
-            {ASSET_TABS.map(tab => {
+            {visibleAssetTabs.map(tab => {
               const active = tab === activeTab;
               return (
                 <button key={tab} onClick={() => setActiveTab(tab)} style={{
@@ -1311,6 +1316,8 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
           {/* ═══════════════ OVERVIEW TAB ═══════════════ */}
           {activeTab === "Overview" && (
             <>
+              {isDemoTrading && <div style={{ margin: "14px 16px 12px", padding: 16, borderRadius: 16, border: `1px solid ${T.cyan}55`, background: `linear-gradient(135deg, ${T.cyan}18, rgba(255,255,255,0.03))` }}><div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}><div><div style={{ color: T.cyan, fontSize: 10, fontWeight: 900, letterSpacing: ".1em" }}>DEMO TESTNET WALLET</div><div style={{ color: T.fg, fontSize: 22, fontWeight: 900, marginTop: 5 }}>$100,000.00 <span style={{ color: T.dim, fontSize: 11 }}>USDT Virtual</span></div><div style={{ color: T.dim, fontSize: 11, marginTop: 3 }}>50,000 OKBOND Demo Token</div></div><button onClick={() => { resetDemoFunds(); }} style={{ border: `1px solid ${T.cyan}55`, background: `${T.cyan}12`, color: T.cyan, borderRadius: 9, padding: "8px 10px", fontSize: 10, fontWeight: 900, whiteSpace: "nowrap" }}>Reset TestNet Funds</button></div></div>}
+
               {/* Balance hero */}
               <BalanceHeroSection totalNW={totalNW} onDeposit={() => setIsDepositModalOpen(true)} />
 
@@ -1318,14 +1325,15 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
               <QuickActionsRow onAddFunds={() => setIsDepositModalOpen(true)} onWithdraw={() => setSWM(true)} />
 
               {/* Horizontal allocation bar */}
-              <AllocationBarSection />
+              {!isDemoTrading && <AllocationBarSection />}
 
               {/* Crypto section */}
               <SectionHeader title="Crypto" />
               <ListCard>
-                {liveAssets.map((a, i) => <CryptoRow key={a.name} a={a} i={i} />)}
+                {displayAssets.map((a, i) => <CryptoRow key={a.name} a={a} i={i} />)}
               </ListCard>
 
+              {!isDemoTrading && <>
               {/* Real Estate section */}
               <SectionHeader
                 title="Real Estate"
@@ -1365,6 +1373,7 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
                   </ResponsiveContainer>
                 </div>
               </div>
+              </>}
             </>
           )}
 
@@ -1410,12 +1419,12 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
               <div style={{ padding: "18px 16px 10px" }}>
                 <div style={{ fontSize: 10, color: T.dim, marginBottom: 4 }}>Crypto & Fiat Holdings</div>
                 <div style={{ fontSize: 28, fontWeight: 900, color: T.fg, fontVariantNumeric: "tabular-nums" }}>
-                  PKR {fmtNum(ASSETS.reduce((s, a) => s + a.pkr, 0), 0)}
+                  {isDemoTrading ? `$${demoBalances.USDT.toLocaleString("en-US", { minimumFractionDigits: 2 })} USDT` : `PKR ${fmtNum(ASSETS.reduce((s, a) => s + a.pkr, 0), 0)}`}
                 </div>
               </div>
               <SectionHeader title="All Assets" />
               <ListCard>
-                {liveAssets.map((a, i) => <CryptoRow key={a.name} a={a} i={i} />)}
+                {displayAssets.map((a, i) => <CryptoRow key={a.name} a={a} i={i} />)}
               </ListCard>
             </>
           )}

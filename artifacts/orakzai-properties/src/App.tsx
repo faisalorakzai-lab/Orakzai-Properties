@@ -68,6 +68,8 @@ import SubmitRequest from "@/pages/SubmitRequest";
 import { DemoTrade, Convert, Loans, Leaderboard, P2PExpress, RWAVaults } from "@/pages/TradeAdvancedFinance";
 import { DepositMethod, SelectAsset, SelectNetwork, DepositAddress } from "@/pages/DepositWorkflow";
 import WithdrawFiat from "@/pages/WithdrawFiat";
+import DemoTrading from "@/pages/DemoTrading";
+import DemoModeBanner from "@/components/DemoModeBanner";
 import { ModeProvider } from "@/contexts/ModeContext";
 import { AppStoreProvider } from "@/store/AppStoreContext";
 
@@ -213,6 +215,7 @@ function AppContent() {
       <FirebaseQueryCacheInvalidator />
       <TooltipProvider>
         <AuthGuard>
+          <DemoModeBanner />
           <PageTransition>
             <Switch>
               <Route path="/" component={Home} />
@@ -241,6 +244,7 @@ function AppContent() {
               <Route path="/vip" component={Vip} />
               <Route path="/submit-request" component={SubmitRequest} />
               <Route path="/demo-trade" component={DemoTrade} />
+              <Route path="/demo-trading" component={DemoTrading} />
               <Route path="/convert" component={Convert} />
               <Route path="/loans" component={Loans} />
               <Route path="/leaderboard" component={Leaderboard} />

@@ -35,7 +35,7 @@ const COMMON_FUNCTION: ServiceItem[] = [
 ];
 
 const TRADE_ADVANCED: ServiceItem[] = [
-  { icon: Gamepad2,  label: "Demo Trading",  color: "#22d3ee", bg: "rgba(34,211,238,0.10)", href: "/demo-trade" },
+  { icon: Gamepad2,  label: "Demo Trading",  color: "#22d3ee", bg: "rgba(34,211,238,0.10)", href: "/demo-trading" },
   { icon: RefreshCw, label: "Convert",       color: "#0ecb81", bg: "rgba(14,203,129,0.10)", href: "/convert" },
   { icon: Landmark,  label: "Crypto Loans",  color: "#fbbf24", bg: "rgba(251,191,36,0.10)", href: "/loans" },
   { icon: Trophy,    label: "Leaderboard",   color: "#f0b90b", bg: "rgba(240,185,11,0.10)", href: "/leaderboard" },
