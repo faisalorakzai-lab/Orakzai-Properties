@@ -64,6 +64,7 @@ import Announcements from "@/pages/Announcements";
 import Learn from "@/pages/Learn";
 import Community from "@/pages/Community";
 import Vip from "@/pages/Vip";
+import SubmitRequest from "@/pages/SubmitRequest";
 import { ModeProvider } from "@/contexts/ModeContext";
 import { AppStoreProvider } from "@/store/AppStoreContext";
 
@@ -235,6 +236,7 @@ function AppContent() {
               <Route path="/learn" component={Learn} />
               <Route path="/community" component={Community} />
               <Route path="/vip" component={Vip} />
+              <Route path="/submit-request" component={SubmitRequest} />
               <Route path="/trade/:id" component={TradingFloor} />
               <Route path="/wallet" component={Wallet} />
               <Route path="/withdraw/on-chain" component={CryptoWithdrawFlow} />
