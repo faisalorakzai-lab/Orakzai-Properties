@@ -30,7 +30,7 @@ const COMMON_FUNCTION: ServiceItem[] = [
   { icon: PlusCircle,     label: "Add Funds",        color: "#10b981", bg: "rgba(16,185,129,0.15)",   href: "/deposit-method" },
   { icon: Rocket,         label: "Launchpool",       color: "#f97316", bg: "rgba(249,115,22,0.15)",   href: "/launchpad" },
   { icon: Users,          label: "Referral",         color: "#06b6d4", bg: "rgba(6,182,212,0.15)",    href: "/referral" },
-  { icon: ArrowDownCircle,label: "Withdraw Fiat",    color: "#a78bfa", bg: "rgba(167,139,250,0.15)",  href: "/wallet" },
+  { icon: ArrowDownCircle,label: "Withdraw Fiat",    color: "#a78bfa", bg: "rgba(167,139,250,0.15)",  href: "/withdraw-fiat" },
   { icon: Shield,         label: "Security",         color: GOLD,      bg: "rgba(201,168,76,0.12)",   href: "/security" },
 ];
 

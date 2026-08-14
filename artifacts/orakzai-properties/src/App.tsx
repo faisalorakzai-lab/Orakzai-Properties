@@ -67,6 +67,7 @@ import Vip from "@/pages/Vip";
 import SubmitRequest from "@/pages/SubmitRequest";
 import { DemoTrade, Convert, Loans, Leaderboard, P2PExpress, RWAVaults } from "@/pages/TradeAdvancedFinance";
 import { DepositMethod, SelectAsset, SelectNetwork, DepositAddress } from "@/pages/DepositWorkflow";
+import WithdrawFiat from "@/pages/WithdrawFiat";
 import { ModeProvider } from "@/contexts/ModeContext";
 import { AppStoreProvider } from "@/store/AppStoreContext";
 
@@ -249,6 +250,7 @@ function AppContent() {
               <Route path="/deposit/select-asset" component={SelectAsset} />
               <Route path="/deposit/select-network" component={SelectNetwork} />
               <Route path="/deposit/address" component={DepositAddress} />
+              <Route path="/withdraw-fiat" component={WithdrawFiat} />
               <Route path="/trade/:id" component={TradingFloor} />
               <Route path="/wallet" component={Wallet} />
               <Route path="/withdraw/on-chain" component={CryptoWithdrawFlow} />
