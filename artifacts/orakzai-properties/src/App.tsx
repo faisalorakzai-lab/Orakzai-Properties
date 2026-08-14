@@ -60,6 +60,7 @@ import AirdropHub from "@/pages/AirdropHub";
 import AffiliateProgram from "@/pages/AffiliateProgram";
 import Marketplace from "@/pages/Marketplace";
 import Charity from "@/pages/Charity";
+import Announcements from "@/pages/Announcements";
 import { ModeProvider } from "@/contexts/ModeContext";
 import { AppStoreProvider } from "@/store/AppStoreContext";
 
@@ -227,6 +228,7 @@ function AppContent() {
               <Route path="/affiliate-program" component={AffiliateProgram} />
               <Route path="/marketplace" component={Marketplace} />
               <Route path="/charity" component={Charity} />
+              <Route path="/announcements" component={Announcements} />
               <Route path="/trade/:id" component={TradingFloor} />
               <Route path="/wallet" component={Wallet} />
               <Route path="/withdraw/on-chain" component={CryptoWithdrawFlow} />
