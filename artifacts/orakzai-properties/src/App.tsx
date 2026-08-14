@@ -46,6 +46,7 @@ import P2P from "@/pages/P2P";
 import CryptoWithdrawFlow, { WithdrawalHistoryPage } from "@/pages/CryptoWithdrawFlow";
 import WithdrawalHelp from "@/pages/WithdrawalHelp";
 import Feedback from "@/pages/Feedback";
+import Support from "@/pages/Support";
 import RwaStaking from "@/pages/RwaStaking";
 import BotTrading from "@/pages/BotTrading";
 import GiftRewards from "@/pages/GiftRewards";
@@ -224,6 +225,7 @@ function AppContent() {
               <Route path="/withdraw/on-chain" component={CryptoWithdrawFlow} />
               <Route path="/help/how-to-withdraw" component={WithdrawalHelp} />
               <Route path="/feedback" component={Feedback} />
+              <Route path="/support" component={Support} />
               <Route path="/history" component={WithdrawalHistoryPage} />
               <Route path="/wallet/okzbyte-pay" component={OkzBytePayReceive} />
               <Route path="/wallet/okzbyte-pay-send" component={OkzBytePaySend} />
