@@ -75,6 +75,8 @@ import DemoTrading from "@/pages/DemoTrading";
 import DemoModeBanner from "@/components/DemoModeBanner";
 import { ModeProvider } from "@/contexts/ModeContext";
 import { AppStoreProvider } from "@/store/AppStoreContext";
+import { UserRegionProvider, useUserRegion } from "@/contexts/UserRegionContext";
+import RegionSwitcher from "@/components/RegionSwitcher";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 60_000, gcTime: 5 * 60_000 } },
@@ -191,6 +193,15 @@ function HideBottomNavOnAuthPages() {
   return <BottomNav />;
 }
 
+function GlobalRegionBar() {
+  const { policy, source, isKycVerified, isLoading } = useUserRegion();
+  const { isSignedIn } = useUser();
+  const [location] = useLocation();
+  const hidden = !isSignedIn || location.startsWith("/sign-in") || location.startsWith("/sign-up") || location.startsWith("/admin");
+  if (hidden) return null;
+  return <div style={{ position: "sticky", top: 0, zIndex: 60, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, minHeight: 38, padding: "4px 14px", background: "rgba(11,14,17,.97)", borderBottom: "1px solid rgba(255,255,255,.08)", backdropFilter: "blur(16px)" }}><span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "#929aa5", fontSize: 9, fontWeight: 700 }}>{isLoading ? "Detecting region…" : `${policy.flag} ${policy.name} · ${isKycVerified ? "KYC verified" : source === "ip_detected" ? "IP detected" : "Active view"}`}</span><RegionSwitcher /></div>;
+}
+
 function FirebaseQueryCacheInvalidator() {
   const { addListener } = useClerk();
   const qc = useQueryClient();
@@ -218,8 +229,10 @@ function AppContent() {
       <FirebaseQueryCacheInvalidator />
       <TooltipProvider>
         <AuthGuard>
-          <DemoModeBanner />
-          <PageTransition>
+          <UserRegionProvider>
+            <GlobalRegionBar />
+            <DemoModeBanner />
+            <PageTransition>
             <Switch>
               <Route path="/" component={Home} />
               <Route path="/browse" component={Browse} />
@@ -297,8 +310,9 @@ function AppContent() {
               <Route path="/sign-up/*?">{() => <AuthPage defaultMode="signup" />}</Route>
               <Route component={NotFound} />
             </Switch>
-          </PageTransition>
-          <HideBottomNavOnAuthPages />
+            </PageTransition>
+            <HideBottomNavOnAuthPages />
+          </UserRegionProvider>
         </AuthGuard>
         <Toaster />
       </TooltipProvider>

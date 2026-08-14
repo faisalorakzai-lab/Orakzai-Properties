@@ -2,12 +2,14 @@ import React, { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Banknote, ChevronRight, Clock3, Globe2, History, LockKeyhole, Search, ShieldCheck, Smartphone, WalletCards, X } from "lucide-react";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
+import { useUserRegion } from "@/contexts/UserRegionContext";
 
 const C = { bg: "#0b0e11", card: "#181a20", panel: "#0b0e11", line: "#2b313a", text: "#f5f5f5", muted: "#929aa5", green: "#0ecb81" };
 const assets = ["USDT", "BTC", "OKBOND", "ETH"];
 type Region = { code: string; name: string; flag: string; currency: string; symbol: string; rate: number; methods: { name: string; icon: React.ElementType; best?: boolean; time: string }[] };
 const REGIONS: Region[] = [
   { code: "PK", name: "Pakistan", flag: "🇵🇰", currency: "PKR", symbol: "Rs", rate: 282.5, methods: [{ name: "Bank Transfer / Raast", icon: Banknote, best: true, time: "Instant · 0% fee" }, { name: "EasyPaisa", icon: Smartphone, time: "1–3 min" }, { name: "JazzCash", icon: WalletCards, time: "1–3 min" }] },
+  { code: "BD", name: "Bangladesh", flag: "🇧🇩", currency: "BDT", symbol: "৳", rate: 117.2, methods: [{ name: "Local Bank Transfer", icon: Banknote, best: true, time: "5–15 min" }, { name: "bKash", icon: Smartphone, time: "1–3 min" }, { name: "Nagad", icon: WalletCards, time: "1–3 min" }] },
   { code: "AE", name: "United Arab Emirates", flag: "🇦🇪", currency: "AED", symbol: "AED", rate: 3.673, methods: [{ name: "UAE Bank Transfer · Mashreq / ENBD / FAB", icon: Banknote, best: true, time: "5–15 min" }, { name: "Cash Deposit at ATM", icon: WalletCards, time: "15–30 min" }, { name: "ADCB Hayyak", icon: Smartphone, time: "1–3 min" }] },
   { code: "US", name: "United States", flag: "🇺🇸", currency: "USD", symbol: "$", rate: 1, methods: [{ name: "Zelle Instant", icon: Smartphone, best: true, time: "Instant" }, { name: "Wire / ACH Bank Transfer", icon: Banknote, time: "1–3 business days" }, { name: "Wise", icon: WalletCards, time: "5–20 min" }] },
   { code: "GB", name: "United Kingdom", flag: "🇬🇧", currency: "GBP", symbol: "£", rate: 0.79, methods: [{ name: "Faster Payments (FPS)", icon: Banknote, best: true, time: "Instant" }, { name: "Revolut", icon: Smartphone, time: "1–3 min" }, { name: "Wise", icon: WalletCards, time: "5–20 min" }] },
@@ -23,6 +25,7 @@ function formatRate(value: number) { return value < 10 ? value.toFixed(3) : valu
 export default function P2PExpress() {
   const [, nav] = useLocation();
   const { toast } = useToast();
+  const { userCountry, setUserCountry } = useUserRegion();
   const [side, setSide] = useState<"BUY" | "SELL">("BUY");
   const [asset, setAsset] = useState("USDT");
   const [basis, setBasis] = useState<"fiat" | "crypto">("fiat");
@@ -35,17 +38,16 @@ export default function P2PExpress() {
   const [region, setRegion] = useState<Region>(REGIONS[0]);
 
   useEffect(() => {
-    const saved = typeof window !== "undefined" ? window.localStorage.getItem("user_p2p_country") : null;
-    const found = REGIONS.find(item => item.code === saved);
+    const found = REGIONS.find(item => item.code === userCountry);
     if (found) setRegion(found);
-  }, []);
+  }, [userCountry]);
 
   const selectRegion = (next: Region) => {
     setRegion(next);
     setMethod(0);
     setRegionOpen(false);
     setRegionSearch("");
-    window.localStorage.setItem("user_p2p_country", next.code);
+    setUserCountry(next.code);
     toast({ title: `${next.flag} ${next.name} selected`, description: `P2P payment methods and ${next.currency} rates updated.` });
   };
 
