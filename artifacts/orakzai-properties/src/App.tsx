@@ -61,6 +61,7 @@ import AffiliateProgram from "@/pages/AffiliateProgram";
 import Marketplace from "@/pages/Marketplace";
 import Charity from "@/pages/Charity";
 import Announcements from "@/pages/Announcements";
+import Learn from "@/pages/Learn";
 import { ModeProvider } from "@/contexts/ModeContext";
 import { AppStoreProvider } from "@/store/AppStoreContext";
 
@@ -229,6 +230,7 @@ function AppContent() {
               <Route path="/marketplace" component={Marketplace} />
               <Route path="/charity" component={Charity} />
               <Route path="/announcements" component={Announcements} />
+              <Route path="/learn" component={Learn} />
               <Route path="/trade/:id" component={TradingFloor} />
               <Route path="/wallet" component={Wallet} />
               <Route path="/withdraw/on-chain" component={CryptoWithdrawFlow} />
