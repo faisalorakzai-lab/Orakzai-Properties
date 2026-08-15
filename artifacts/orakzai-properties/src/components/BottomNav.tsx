@@ -5,7 +5,7 @@ import {
   BarChart2,
   ArrowLeftRight,
   Wallet,
-  User,
+  Users,
   Building2,
   Plus,
   Newspaper,
@@ -19,7 +19,7 @@ const EXCHANGE_ITEMS = [
   { label: "Markets", icon: BarChart2,       href: "/markets" },
   { label: "Trade",   icon: ArrowLeftRight,  href: "/trade"   },
   { label: "Assets",  icon: Wallet,          href: "/wallet"  },
-  { label: "Profile", icon: User,            href: "/profile" },
+  { label: "Hub",     icon: Users,           href: "/hub"     },
 ];
 
 // ── Market Mode nav items (center slot = publish CTA) ───────────────────────

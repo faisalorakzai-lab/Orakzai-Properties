@@ -2,6 +2,8 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Star, ChevronUp, ChevronDown, MoreVertical, Loader2 } from "lucide-react";
 import { useLocation } from "wouter";
+import { useUser } from "@/contexts/AuthContext";
+import { useProfilePhoto } from "@/hooks/useProfilePhoto";
 import { useMode } from "@/contexts/ModeContext";
 import { useAppStore, ASSET_DEFS } from "@/store/AppStoreContext";
 
@@ -107,6 +109,8 @@ export default function Markets() {
   const [cryptoError,   setCryptoError]   = useState(false);
   const fetchedRef                         = useRef(false);
   const [, navigate]                      = useLocation();
+  const { user } = useUser();
+  const profilePhoto = useProfilePhoto();
 
   /* ── Global state from ModeContext ── */
   const {
@@ -285,9 +289,12 @@ export default function Markets() {
   return (
     <div style={{ minHeight: "100dvh", background: BG, paddingBottom: 80, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
 
-      {/* ── Search bar ── */}
-      <div style={{ padding: "12px 12px 8px", background: BG, position: "sticky", top: 0, zIndex: 50 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, background: CARD, border: `1px solid ${BORD}`, borderRadius: 10, padding: "10px 14px" }}>
+      {/* ── Search bar + profile access ── */}
+      <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "12px 12px 8px", background: BG, position: "sticky", top: 0, zIndex: 50 }}>
+        <button aria-label="Open profile settings" onClick={() => navigate("/profile-center")} style={{ width: 38, height: 38, padding: 0, flexShrink: 0, borderRadius: "50%", border: `1px solid ${GOLD}70`, background: `linear-gradient(135deg,${GOLD},#8b6914)`, overflow: "hidden", color: "#111", fontWeight: 900, fontSize: 14 }}>
+          {profilePhoto ? <img src={profilePhoto} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : (user?.firstName?.[0] ?? user?.primaryEmailAddress?.emailAddress?.[0] ?? "U").toUpperCase()}
+        </button>
+        <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 8, background: CARD, border: `1px solid ${BORD}`, borderRadius: 10, padding: "10px 14px" }}>
           <Search size={15} color={DIM} />
           <input
             value={search}

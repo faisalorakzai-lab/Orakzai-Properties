@@ -255,6 +255,7 @@ function AppContent() {
               <Route path="/charity" component={Charity} />
               <Route path="/announcements" component={Announcements} />
               <Route path="/learn" component={Learn} />
+              <Route path="/hub" component={Community} />
               <Route path="/community" component={Community} />
               <Route path="/vip" component={Vip} />
               <Route path="/submit-request" component={SubmitRequest} />
