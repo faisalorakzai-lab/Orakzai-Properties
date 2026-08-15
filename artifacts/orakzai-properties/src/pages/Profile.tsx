@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useUser, Show } from "@/contexts/AuthContext";
 import { useKYCStatus } from "@/lib/useKYCStatus";
+import RegionSwitcher from "@/components/RegionSwitcher";
 
 /* ── Design tokens ─────────────────────────────────────────────────── */
 const T = {
@@ -705,31 +706,29 @@ export default function Profile() {
           </div>
           <div style={{ background: "rgba(255,255,255,0.025)", border: `1px solid ${T.border}`, borderRadius: 18, overflow: "hidden" }}>
             {SETTINGS.map(({ emoji, label, sub, href }, i) => (
-              <Link key={label} href={href}>
-                <motion.div
-                  whileHover={{ background: T.panelHov }}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 13,
-                    padding: "14px 18px",
-                    borderBottom: i < SETTINGS.length - 1 ? `1px solid rgba(255,255,255,0.04)` : "none",
-                    cursor: "pointer", transition: "background .15s",
-                  }}
-                >
-                  <div style={{
-                    width: 38, height: 38, borderRadius: 11,
-                    background: "rgba(255,255,255,0.04)", border: `1px solid ${T.border}`,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 18, flexShrink: 0,
-                  }}>
-                    {emoji}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: T.fg }}>{label}</div>
-                    <div style={{ fontSize: 10, color: T.dim, marginTop: 2 }}>{sub}</div>
-                  </div>
-                  <ChevronRight size={14} color={T.dim} style={{ flexShrink: 0 }} />
-                </motion.div>
-              </Link>
+              <div key={label} style={{ borderBottom: i < SETTINGS.length - 1 ? `1px solid rgba(255,255,255,0.04)` : "none" }}>
+                {label === "Currency & Region" ? (
+                  <motion.div whileHover={{ background: T.panelHov }} style={{ display: "flex", alignItems: "center", gap: 13, padding: "14px 18px", transition: "background .15s" }}>
+                    <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>{emoji}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: T.fg }}>{label}</div>
+                      <div style={{ fontSize: 10, color: T.dim, marginTop: 2 }}>{sub}</div>
+                    </div>
+                    <RegionSwitcher />
+                  </motion.div>
+                ) : (
+                  <Link href={href}>
+                    <motion.div whileHover={{ background: T.panelHov }} style={{ display: "flex", alignItems: "center", gap: 13, padding: "14px 18px", cursor: "pointer", transition: "background .15s" }}>
+                      <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>{emoji}</div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: T.fg }}>{label}</div>
+                        <div style={{ fontSize: 10, color: T.dim, marginTop: 2 }}>{sub}</div>
+                      </div>
+                      <ChevronRight size={14} color={T.dim} style={{ flexShrink: 0 }} />
+                    </motion.div>
+                  </Link>
+                )}
+              </div>
             ))}
           </div>
         </motion.div>

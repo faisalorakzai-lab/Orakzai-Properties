@@ -230,7 +230,6 @@ function AppContent() {
       <TooltipProvider>
         <AuthGuard>
           <UserRegionProvider>
-            <GlobalRegionBar />
             <DemoModeBanner />
             <PageTransition>
             <Switch>
