@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useLocation } from "wouter";
-import { BadgeCheck, Bell, Bookmark, CheckCircle2, Image as ImageIcon, MessageCircle, MoreHorizontal, Pin, Repeat2, Search, Send, Share2, ThumbsUp, TrendingUp, WalletCards } from "lucide-react";
+import { BadgeCheck, Bookmark, CheckCircle2, Image as ImageIcon, MessageCircle, MoreHorizontal, Pin, Repeat2, Search, Send, Share2, ThumbsUp, TrendingUp, WalletCards, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useProfilePhoto } from "@/hooks/useProfilePhoto";
 import { useAuth } from "@/contexts/AuthContext";
@@ -111,6 +111,7 @@ export default function Community() {
   const [tab, setTab] = useState<Tab>("Discover");
   const [query, setQuery] = useState("");
   const [composer, setComposer] = useState("");
+  const [composerOpen, setComposerOpen] = useState(false);
   const [posts, setPosts] = useState(seedPosts);
   const [liked, setLiked] = useState<string[]>([]);
   const [saved, setSaved] = useState<string[]>([]);
@@ -135,6 +136,7 @@ export default function Community() {
     }
     setPosts((current) => [{ id: `user-${Date.now()}`, author: "You", role: "OkzByte community member", time: "Just now", sentiment: "Bullish", body: composer.trim(), tags: ["#OkzByteHub"], likes: 0, comments: 0, reposts: 0 }, ...current]);
     setComposer("");
+    setComposerOpen(false);
     toast({ title: "Post published", description: "Your insight is now visible in the Hub feed." });
   };
 
@@ -155,13 +157,13 @@ export default function Community() {
         <section className="border-b border-[#2b313a] bg-[#181a20] p-3">
           <div className="flex items-center gap-2.5">
             <Avatar name={initials} photo={profilePhoto} size="h-8 w-8" />
-            <button onClick={() => document.getElementById("hub-composer")?.focus()} className="flex-1 rounded-full border border-[#2b313a] bg-[#0b0e11] px-4 py-2 text-left text-xs text-gray-400 hover:bg-[#13171d]">What's on your mind? Share market ideas...</button>
-            <button aria-label="Attach media" onClick={() => toast({ title: "Media attachment", description: "Attach verified charts or property documents to your post." })} className="shrink-0 rounded-full p-2 text-emerald-400 hover:bg-[#2b313a]"><ImageIcon size={18} /></button>
+            <button onClick={() => setComposerOpen(true)} className="flex-1 rounded-full border border-[#2b313a] bg-[#0b0e11] px-4 py-2 text-left text-xs text-gray-400 hover:bg-[#13171d]">What's on your mind? Share market ideas...</button>
+            <button aria-label="Attach media" onClick={() => { setComposerOpen(true); toast({ title: "Media attachment", description: "Attach verified charts or property documents to your post." }); }} className="shrink-0 rounded-full p-2 text-emerald-400 hover:bg-[#2b313a]"><ImageIcon size={18} /></button>
           </div>
-          <div className="mt-2.5 flex items-end gap-2">
-            <textarea id="hub-composer" value={composer} onChange={(event) => setComposer(event.target.value)} rows={2} placeholder="Share market insights, RWA ideas, or analysis..." className="min-w-0 flex-1 resize-none rounded-xl border border-[#2b313a] bg-[#0b0e11] px-3 py-2 text-xs leading-relaxed text-white outline-none focus:border-yellow-500/50" />
-            <button onClick={publish} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-yellow-400 text-black hover:bg-yellow-300" aria-label="Publish post"><Send size={14} /></button>
-          </div>
+          {composerOpen && <div className="mt-2.5 rounded-xl border border-[#2b313a] bg-[#0b0e11] p-2.5">
+            <div className="mb-2 flex items-center justify-between"><span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">New community post</span><button aria-label="Close composer" onClick={() => setComposerOpen(false)} className="rounded-full p-1 text-gray-500 hover:text-white"><X size={14} /></button></div>
+            <div className="flex items-end gap-2"><textarea id="hub-composer" autoFocus value={composer} onChange={(event) => setComposer(event.target.value)} rows={3} placeholder="Share market insights, RWA ideas, or analysis..." className="min-w-0 flex-1 resize-none bg-transparent px-1 py-1 text-xs leading-relaxed text-white outline-none placeholder:text-gray-500" /><button onClick={publish} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-yellow-400 text-black hover:bg-yellow-300" aria-label="Publish post"><Send size={14} /></button></div>
+          </div>}
         </section>
 
         <nav className="scrollbar-none flex gap-6 overflow-x-auto border-b border-[#181a20] bg-[#0b0e11] px-4 py-2.5 text-xs font-semibold text-gray-400">
