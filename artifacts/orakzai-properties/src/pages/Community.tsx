@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useLocation } from "wouter";
-import { BadgeCheck, Bookmark, CheckCircle2, Image as ImageIcon, MessageCircle, MoreHorizontal, Pin, Repeat2, Search, Send, Share2, ThumbsUp, TrendingUp, WalletCards, X } from "lucide-react";
+import { BadgeCheck, Bookmark, CheckCircle2, Inbox as InboxIcon, MessageCircle, MoreHorizontal, Pin, Repeat2, Search, Send, Share2, ThumbsUp, TrendingUp, WalletCards, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useProfilePhoto } from "@/hooks/useProfilePhoto";
 import { useAuth } from "@/contexts/AuthContext";
@@ -144,12 +144,11 @@ export default function Community() {
     <div className="min-h-screen overflow-x-hidden bg-[#0b0e11] pb-[calc(96px+env(safe-area-inset-bottom))] font-sans antialiased text-white">
       <header className="sticky top-0 z-50 h-14 border-b border-[#181a20] bg-[#0b0e11]/95 px-4 py-2.5 backdrop-blur-md">
         <div className="mx-auto flex h-full max-w-2xl items-center gap-3">
-          <button aria-label="Open profile settings" onClick={() => navigate("/profile-center")} className="shrink-0"><Avatar name={initials} photo={profilePhoto} size="h-8 w-8" /></button>
           <label className="flex min-w-0 flex-1 items-center gap-2 rounded-full border border-[#2b313a] bg-[#181a20] px-3 py-1.5 text-xs text-gray-400 focus-within:border-yellow-500/50">
             <Search size={14} className="shrink-0" />
             <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search posts, topics, or RWA tokens..." className="min-w-0 flex-1 bg-transparent text-xs text-white outline-none placeholder:text-gray-500" />
           </label>
-          <button aria-label="Open marketplace inbox" onClick={() => navigate("/chats")} className="relative shrink-0 rounded-lg p-2 text-gray-300 hover:text-yellow-400"><MessageCircle size={19} /><span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red-500" /></button>
+          <button aria-label="Open Inbox" onClick={() => navigate("/inbox")} className="relative shrink-0 rounded-lg p-2 text-gray-300 transition-colors hover:bg-[#181a20] hover:text-yellow-400"><InboxIcon size={19} /><span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red-500" /></button>
         </div>
       </header>
 
@@ -158,7 +157,7 @@ export default function Community() {
           <div className="flex items-center gap-2.5">
             <Avatar name={initials} photo={profilePhoto} size="h-8 w-8" />
             <button onClick={() => setComposerOpen(true)} className="flex-1 rounded-full border border-[#2b313a] bg-[#0b0e11] px-4 py-2 text-left text-xs text-gray-400 hover:bg-[#13171d]">What's on your mind? Share market ideas...</button>
-            <button aria-label="Attach media" onClick={() => { setComposerOpen(true); toast({ title: "Media attachment", description: "Attach verified charts or property documents to your post." }); }} className="shrink-0 rounded-full p-2 text-emerald-400 hover:bg-[#2b313a]"><ImageIcon size={18} /></button>
+            <button aria-label="Open Inbox" onClick={() => navigate("/inbox")} className="shrink-0 rounded-full border border-emerald-500/20 bg-emerald-500/10 p-2 text-emerald-400 transition-colors hover:bg-emerald-500/20"><InboxIcon size={18} /></button>
           </div>
           {composerOpen && <div className="mt-2.5 rounded-xl border border-[#2b313a] bg-[#0b0e11] p-2.5">
             <div className="mb-2 flex items-center justify-between"><span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">New community post</span><button aria-label="Close composer" onClick={() => setComposerOpen(false)} className="rounded-full p-1 text-gray-500 hover:text-white"><X size={14} /></button></div>
