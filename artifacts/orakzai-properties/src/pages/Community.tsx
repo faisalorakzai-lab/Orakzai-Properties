@@ -24,10 +24,14 @@ type FeedPost = {
   id: string;
   author: string;
   role: string;
+  influence: string;
+  title: string;
   time: string;
   sentiment: "Bullish" | "Bearish";
   body: string;
   tags: string[];
+  symbols?: { label: string; value: string; tone: "gold" | "green" | "red" }[];
+  media?: string;
   official?: boolean;
   metric?: { label: string; value: string; detail: string };
   likes: number;
@@ -36,10 +40,10 @@ type FeedPost = {
 };
 
 const seedPosts: FeedPost[] = [
-  { id: "okbond-phase-ii", author: "Orakzai Bond", role: "Official · OKBOND Network", time: "2h ago", sentiment: "Bullish", body: "Orakzai Bond (OKBOND) Staking Vault Phase II is now live with boosted APY rewards. Review the published vault terms, verified deed information, and settlement disclosures before participating.", tags: ["#OKBOND", "#RWAVaults", "#OrakzaiBond"], official: true, metric: { label: "Phase II Vault", value: "10.50% APY", detail: "Verified on-chain settlement" }, likes: 428, comments: 64, reposts: 91 },
-  { id: "faisal-rwa", author: "Faisal Orakzai", role: "Founder · Orakzai Group", time: "4h ago", sentiment: "Bullish", body: "RWA markets need infrastructure before they need noise: transparent property records, disciplined settlement, and useful liquidity. That is the standard we are building across OkzByte and Orakzai Bond.", tags: ["#RealWorldAssets", "#PropertyTokenization", "#Pakistan"], metric: { label: "OkzByte RWA Desk", value: "$14.85M TVL", detail: "Real estate and land-bond vaults" }, likes: 242, comments: 38, reposts: 52 },
-  { id: "bond-holder", author: "Bond Holder PK", role: "Verified bond holder", time: "Yesterday", sentiment: "Bullish", body: "The strongest RWA conversations start with verified documentation, transparent cash-flow reporting, and clear settlement terms. Looking forward to the next OKBOND disclosure.", tags: ["#BondCommunity", "#DueDiligence"], likes: 118, comments: 21, reposts: 14 },
-  { id: "market-desk", author: "OkzByte Research", role: "Market & risk desk", time: "Yesterday", sentiment: "Bearish", body: "Volatility remains elevated across major assets. Keep position sizing disciplined and separate short-term market views from long-duration property-backed allocations.", tags: ["#MarketStructure", "#RiskManagement"], metric: { label: "Market Pulse", value: "Risk controlled", detail: "Review liquidity before entry" }, likes: 86, comments: 17, reposts: 9 },
+  { id: "okbond-phase-ii", author: "Orakzai Bond", role: "Official · OKBOND Network", influence: "Institutional RWA desk", title: "Orakzai Bond Phase II vault is now live", time: "2h ago", sentiment: "Bullish", body: "Orakzai Bond (OKBOND) Staking Vault Phase II is now live with boosted APY rewards. Review the published vault terms, verified deed information, and settlement disclosures before participating.", tags: ["#OKBOND", "#RWAVaults", "#OrakzaiBond"], symbols: [{ label: "OKBOND", value: "+10.50% APY", tone: "gold" }, { label: "RWA", value: "Verified", tone: "green" }], media: "/orakzai-bond-logo.png", official: true, metric: { label: "Phase II Vault", value: "10.50% APY", detail: "Verified on-chain settlement" }, likes: 428, comments: 64, reposts: 91 },
+  { id: "faisal-rwa", author: "Faisal Orakzai", role: "Founder · Orakzai Group", influence: "142.70 influence score", title: "Building the infrastructure behind responsible RWA markets", time: "4h ago", sentiment: "Bullish", body: "RWA markets need infrastructure before they need noise: transparent property records, disciplined settlement, and useful liquidity. That is the standard we are building across OkzByte and Orakzai Bond.", tags: ["#RealWorldAssets", "#PropertyTokenization", "#Pakistan"], symbols: [{ label: "RWA DESK", value: "$14.85M TVL", tone: "green" }], media: "/faisal-orakzai-profile.jpg", metric: { label: "OkzByte RWA Desk", value: "$14.85M TVL", detail: "Real estate and land-bond vaults" }, likes: 242, comments: 38, reposts: 52 },
+  { id: "bond-holder", author: "Bond Holder PK", role: "Verified bond holder", influence: "Community contributor", title: "What serious bond communities should verify first", time: "Yesterday", sentiment: "Bullish", body: "The strongest RWA conversations start with verified documentation, transparent cash-flow reporting, and clear settlement terms. Looking forward to the next OKBOND disclosure.", tags: ["#BondCommunity", "#DueDiligence"], symbols: [{ label: "OKBOND", value: "Community", tone: "gold" }], likes: 118, comments: 21, reposts: 14 },
+  { id: "market-desk", author: "OkzByte Research", role: "Market & risk desk", influence: "Risk intelligence", title: "Volatility is elevated — protect the downside", time: "Yesterday", sentiment: "Bearish", body: "Volatility remains elevated across major assets. Keep position sizing disciplined and separate short-term market views from long-duration property-backed allocations.", tags: ["#MarketStructure", "#RiskManagement"], symbols: [{ label: "MARKET PULSE", value: "Risk controlled", tone: "red" }], likes: 86, comments: 17, reposts: 9 },
 ];
 
 function Avatar({ name, photo, official = false, size = "h-10 w-10" }: { name: string; photo?: string | null; official?: boolean; size?: string }) {
@@ -94,7 +98,7 @@ export default function Community() {
 
   const publish = () => {
     if (!composer.trim()) { setComposerOpen(true); setInlineStatus("Add a market insight before publishing."); return; }
-    setPosts((current) => [{ id: `user-${Date.now()}`, author: "You", role: "OkzByte community member", time: "Just now", sentiment: "Bullish", body: composer.trim(), tags: ["#OkzByteHub"], likes: 0, comments: 0, reposts: 0 }, ...current]);
+    setPosts((current) => [{ id: `user-${Date.now()}`, author: "You", role: "OkzByte community member", influence: "Community contributor", title: "A new market idea", time: "Just now", sentiment: "Bullish", body: composer.trim(), tags: ["#OkzByteHub"], likes: 0, comments: 0, reposts: 0 }, ...current]);
     setComposer(""); setComposerOpen(false);
     setInlineStatus("Post published to the Hub feed.");
   };
@@ -127,19 +131,22 @@ export default function Community() {
               <div className="flex items-start gap-3">
                 <Avatar name={post.author} official={post.official} />
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5"><span className="truncate text-[14px] font-bold text-white">{post.author}</span>{post.official && <BadgeCheck size={14} className="shrink-0 text-[#f0b90b]" />}<span className="text-[12px] text-[#8995a8]">· {post.time}</span></div>
-                  <p className="mt-0.5 truncate text-[11px] text-[#8995a8]">{post.role}</p>
+                  <div className="flex items-center gap-1.5"><span className="truncate text-sm font-bold text-white">{post.author}</span>{post.official && <BadgeCheck size={14} className="shrink-0 text-[#f0b90b]" />}<span className="text-xs text-gray-500">· {post.time}</span><span className={`ml-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${post.sentiment === "Bullish" ? "bg-emerald-400/10 text-emerald-400" : "bg-rose-400/10 text-rose-400"}`}><span className={`h-1.5 w-1.5 rounded-full ${post.sentiment === "Bullish" ? "bg-emerald-400" : "bg-rose-400"}`} />{post.sentiment}</span></div>
+                  <p className="mt-0.5 truncate text-[11px] text-gray-500">{post.influence}</p>
                 </div>
-                {!post.official && <button onClick={(event) => { event.stopPropagation(); toggle(followed, setFollowed, post.id); }} className={`rounded-md px-2 py-1 text-[11px] font-bold ${isFollowed ? "bg-[#0ecb81]/10 text-[#0ecb81]" : "bg-[#f0b90b]/10 text-[#f0b90b]"}`}>{isFollowed ? <Check size={13} /> : "+ Follow"}</button>}
-                <button aria-label="Post options" onClick={(event) => event.stopPropagation()} className="p-1 text-[#8995a8]"><MoreHorizontal size={17} /></button>
+                {!post.official && <button onClick={(event) => { event.stopPropagation(); toggle(followed, setFollowed, post.id); }} className={`shrink-0 rounded-xl px-3 py-1.5 text-xs font-bold ${isFollowed ? "bg-[#0ecb81]/10 text-[#0ecb81]" : "bg-yellow-400 text-black"}`}>{isFollowed ? <><Check size={13} className="inline" /> Following</> : "+ Follow"}</button>}
+                <button aria-label="Post options" onClick={(event) => event.stopPropagation()} className="p-1 text-gray-500"><MoreHorizontal size={17} /></button>
               </div>
-              {post.official && <div className="mt-3 inline-flex items-center gap-1.5 rounded-md bg-[#f0b90b]/10 px-2 py-1 text-[11px] font-bold text-[#f0b90b]"><Pin size={12} /> Official Announcement</div>}
-              <p className="text-xs font-normal leading-relaxed text-gray-200">{post.body}</p>
+              {post.official && <div className="inline-flex items-center gap-1.5 rounded-lg bg-yellow-400/10 px-2 py-1 text-[10px] font-bold text-yellow-400"><Pin size={12} /> Official Announcement</div>}
+              <h3 className="text-base font-semibold leading-snug text-white">{post.title}</h3>
+              <p className="text-sm font-normal leading-relaxed text-gray-300">{expandedPosts.includes(post.id) ? post.body : `${post.body.slice(0, 148)}${post.body.length > 148 ? "..." : ""}`} {!expandedPosts.includes(post.id) && post.body.length > 148 && <span className="font-semibold text-yellow-400"> Read all</span>}</p>
+              {post.symbols && <div className="flex flex-wrap gap-2">{post.symbols.map((symbol) => <span key={symbol.label} className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold ${symbol.tone === "green" ? "bg-emerald-400/10 text-emerald-400" : symbol.tone === "red" ? "bg-rose-400/10 text-rose-400" : "bg-yellow-400/10 text-yellow-400"}`}><span>{symbol.label}</span><span className="opacity-80">{symbol.value}</span></span>)}</div>}
+              {post.media && <div className="overflow-hidden rounded-xl border border-[#262c35] bg-[#0b0e11]"><img src={post.media} alt={`${post.author} post media`} className={`h-44 w-full ${post.official ? "object-contain p-5" : "object-cover"}`} /></div>}
               {post.metric && <InsightCard metric={post.metric} />}
-              <div className="mt-2.5 flex flex-wrap gap-x-3 gap-y-1">{post.tags.map((tag) => <span key={tag} className="text-[13px] font-semibold text-[#f0b90b]">{tag}</span>)}</div>
-              {expandedPosts.includes(post.id) && <div className="rounded-xl border border-[#262c35] bg-[#0b0e11] p-3 text-[11px] leading-relaxed text-gray-400"><span className="font-bold text-yellow-400">Market context</span><p className="mt-1">This post is expanded inline. Review the published disclosures, settlement information, and risk context before taking action.</p></div>}
+              <div className="flex flex-wrap gap-x-3 gap-y-1">{post.tags.map((tag) => <span key={tag} className="text-xs font-semibold text-yellow-400">{tag}</span>)}</div>
+              {expandedPosts.includes(post.id) && <div className="rounded-xl border border-[#262c35] bg-[#0b0e11] p-3 text-[11px] leading-relaxed text-gray-400"><span className="font-bold text-yellow-400">Market context</span><p className="mt-1">Review the published disclosures, settlement information, and risk context before taking action.</p></div>}
               <div className="flex items-center justify-between border-t border-[#262c35]/50 pt-2 text-xs text-gray-400">
-                <button onClick={(event) => { event.stopPropagation(); toggle(liked, setLiked, post.id); }} className={`flex items-center gap-1.5 text-xs hover:text-[#f0b90b] ${isLiked ? "text-[#f0b90b]" : ""}`}><ThumbsUp size={16} />{post.likes + (isLiked ? 1 : 0)}</button>
+                <button onClick={(event) => { event.stopPropagation(); toggle(liked, setLiked, post.id); }} className={`flex items-center gap-1.5 text-xs hover:text-[#f0b90b] ${isLiked ? "text-[#f0b90b]" : ""}`}><ThumbsUp size={16} />{post.likes + (isLiked ? 1 : 0)}</button><span className="flex items-center gap-1.5 text-xs"><span className="text-gray-500">◉</span>{(post.likes * 7 + 900).toLocaleString()}</span>
                 <button onClick={(event) => { event.stopPropagation(); setCommenting((current) => current.includes(post.id) ? current.filter((id) => id !== post.id) : [...current, post.id]); }} className={`flex items-center gap-1.5 text-xs hover:text-white ${commenting.includes(post.id) ? "text-yellow-400" : ""}`}><MessageCircle size={17} />{post.comments}</button>
                 <button onClick={(event) => { event.stopPropagation(); setInlineStatus("Post reposted to your Hub feed."); }} className="flex items-center gap-1.5 text-xs hover:text-[#0ecb81]"><Repeat2 size={17} />{post.reposts}</button>
                 <button onClick={(event) => { event.stopPropagation(); toggle(saved, setSaved, post.id); }} className={`flex items-center gap-1.5 text-xs hover:text-white ${isSaved ? "text-[#f0b90b]" : ""}`}><Bookmark size={17} />{isSaved ? "Saved" : "Save"}</button>
