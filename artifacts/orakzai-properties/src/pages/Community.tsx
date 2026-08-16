@@ -7,7 +7,6 @@ import {
   Bookmark,
   Check,
   CheckCircle2,
-  ChevronDown,
   Inbox as InboxIcon,
   MessageCircle,
   MoreHorizontal,
@@ -55,7 +54,7 @@ function Avatar({ name, photo, official = false, size = "h-10 w-10" }: { name: s
   const initials = name.replace(/[^A-Za-z]/g, "").slice(0, 2).toUpperCase() || "OK";
   return (
     <div className={`${size} grid shrink-0 place-items-center overflow-hidden rounded-full border ${official ? "border-[#f0b90b] bg-[#f0b90b] text-[#111820]" : "border-white/10 bg-[#2a3342] text-[#f0b90b]"} text-[11px] font-black`}>
-      {photo ? <img src={photo} alt="Profile" className="h-full w-full object-cover" /> : official ? <WalletCards size={18} /> : initials}
+      <img src={photo || (official ? "/orakzai-bond-logo.png" : "/faisal-orakzai-profile.jpg")} alt={`${name} profile`} className="h-full w-full object-cover" />
     </div>
   );
 }
@@ -91,6 +90,7 @@ export default function Community() {
   const [liked, setLiked] = useState<string[]>([]);
   const [saved, setSaved] = useState<string[]>([]);
   const [followed, setFollowed] = useState<string[]>([]);
+  const [selectedPost, setSelectedPost] = useState<FeedPost | null>(null);
   const initials = (user?.firstName?.[0] || user?.email?.[0] || "F").toUpperCase();
 
   const filtered = useMemo(() => posts.filter((post) => {
@@ -113,11 +113,10 @@ export default function Community() {
       <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#1f2733]/95 backdrop-blur-xl">
         <div className="mx-auto flex h-[62px] max-w-2xl items-center justify-between px-4">
           <div className="flex items-center gap-2.5">
-            <div className="grid h-8 w-8 place-items-center rounded-lg bg-[#f0b90b] text-[#17202b]"><span className="text-sm font-black">OK</span></div>
-            <div><p className="text-[15px] font-extrabold tracking-tight"><span className="text-[#f0b90b]">OKZBYTE</span> <span className="text-white">SQUARE</span></p><p className="text-[9px] font-medium uppercase tracking-[0.16em] text-[#8995a8]">Market community</p></div>
+            <img src="/okzbyte-icon.png" alt="OkzByte" className="h-8 w-8 rounded-lg object-cover" />
+            <div><p className="text-[15px] font-extrabold tracking-tight text-white">OKZBYTE HUB</p><p className="text-[9px] font-medium uppercase tracking-[0.16em] text-[#8995a8]">Market community</p></div>
           </div>
           <div className="flex items-center gap-1">
-            {searchOpen && <input autoFocus value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search" className="w-28 rounded-lg border border-white/10 bg-[#273140] px-2.5 py-1.5 text-xs text-white outline-none placeholder:text-[#8995a8]" />}
             <button aria-label="Search Hub" onClick={() => setSearchOpen((value) => !value)} className="rounded-full p-2.5 text-[#d4dbe5] hover:bg-white/5"><Search size={21} /></button>
             <Link href="/inbox" aria-label="Open Inbox" className="relative rounded-full p-2.5 text-[#d4dbe5] hover:bg-white/5"><Bell size={21} /><span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-[#f0b90b]" /></Link>
           </div>
@@ -127,31 +126,33 @@ export default function Community() {
         </nav>
       </header>
 
+      {searchOpen && <div className="sticky top-[62px] z-40 border-b border-white/[0.06] bg-[#1f2733] px-4 py-2"><div className="mx-auto flex max-w-2xl items-center gap-2 rounded-full border border-[#2b313a] bg-[#181a20] px-3.5 py-2"><Search size={15} className="shrink-0 text-[#8995a8]" /><input autoFocus value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search posts, vaults, or traders..." className="min-w-0 flex-1 bg-transparent text-xs text-white outline-none placeholder:text-[#8995a8]" /><button onClick={() => { setSearchOpen(false); setQuery(""); }} className="text-[#8995a8] hover:text-white"><X size={14} /></button></div></div>}
+
       <main className="mx-auto w-full max-w-2xl">
-        <div className="flex items-center justify-between px-4 py-3 text-[11px] text-[#8995a8]"><span className="font-semibold">{tab}</span><button className="flex items-center gap-1 hover:text-white">For you <ChevronDown size={13} /></button></div>
+        <section className="border-b border-white/[0.07] px-4 py-3"><div className="flex items-center gap-3"><Avatar name="Faisal Orakzai" photo={profilePhoto || "/faisal-orakzai-profile.jpg"} size="h-9 w-9" /><button onClick={() => setComposerOpen(true)} className="min-w-0 flex-1 rounded-full border border-white/10 bg-[#273140] px-4 py-2.5 text-left text-[13px] text-[#a6b0bf] transition-colors hover:border-[#f0b90b]/40">What's on your mind?</button></div></section>
         <section className="divide-y divide-white/[0.07]">
           {filtered.map((post) => {
             const isLiked = liked.includes(post.id); const isSaved = saved.includes(post.id); const isFollowed = followed.includes(post.id);
-            return <article key={post.id} className="px-4 py-4">
+            return <article key={post.id} onClick={() => setSelectedPost(post)} className="cursor-pointer px-4 py-4 transition-colors active:bg-[#131a24] hover:bg-white/[0.015]">
               <div className="flex items-start gap-3">
                 <Avatar name={post.author} official={post.official} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5"><span className="truncate text-[14px] font-bold text-white">{post.author}</span>{post.official && <BadgeCheck size={14} className="shrink-0 text-[#f0b90b]" />}<span className="text-[12px] text-[#8995a8]">· {post.time}</span></div>
                   <p className="mt-0.5 truncate text-[11px] text-[#8995a8]">{post.role}</p>
                 </div>
-                {!post.official && <button onClick={() => toggle(followed, setFollowed, post.id)} className={`rounded-md px-2 py-1 text-[11px] font-bold ${isFollowed ? "bg-[#0ecb81]/10 text-[#0ecb81]" : "bg-[#f0b90b]/10 text-[#f0b90b]"}`}>{isFollowed ? <Check size={13} /> : "+ Follow"}</button>}
-                <button aria-label="Post options" className="p-1 text-[#8995a8]"><MoreHorizontal size={17} /></button>
+                {!post.official && <button onClick={(event) => { event.stopPropagation(); toggle(followed, setFollowed, post.id); }} className={`rounded-md px-2 py-1 text-[11px] font-bold ${isFollowed ? "bg-[#0ecb81]/10 text-[#0ecb81]" : "bg-[#f0b90b]/10 text-[#f0b90b]"}`}>{isFollowed ? <Check size={13} /> : "+ Follow"}</button>}
+                <button aria-label="Post options" onClick={(event) => event.stopPropagation()} className="p-1 text-[#8995a8]"><MoreHorizontal size={17} /></button>
               </div>
               {post.official && <div className="mt-3 inline-flex items-center gap-1.5 rounded-md bg-[#f0b90b]/10 px-2 py-1 text-[11px] font-bold text-[#f0b90b]"><Pin size={12} /> Official Announcement</div>}
               <p className="mt-3 text-[15px] leading-[1.55] text-[#edf1f7]">{post.body}</p>
               {post.metric && <InsightCard metric={post.metric} />}
               <div className="mt-2.5 flex flex-wrap gap-x-3 gap-y-1">{post.tags.map((tag) => <span key={tag} className="text-[13px] font-semibold text-[#f0b90b]">{tag}</span>)}</div>
               <div className="mt-3 flex items-center justify-between text-[#8995a8]">
-                <button onClick={() => toggle(liked, setLiked, post.id)} className={`flex items-center gap-1.5 text-xs hover:text-[#f0b90b] ${isLiked ? "text-[#f0b90b]" : ""}`}><ThumbsUp size={16} />{post.likes + (isLiked ? 1 : 0)}</button>
-                <button onClick={() => toast({ title: "Discussion thread", description: "Comments are ready for the community backend." })} className="flex items-center gap-1.5 text-xs hover:text-white"><MessageCircle size={17} />{post.comments}</button>
-                <button onClick={() => toast({ title: "Post reposted", description: "This insight was added to your Hub feed." })} className="flex items-center gap-1.5 text-xs hover:text-[#0ecb81]"><Repeat2 size={17} />{post.reposts}</button>
-                <button onClick={() => toggle(saved, setSaved, post.id)} className={`flex items-center gap-1.5 text-xs hover:text-white ${isSaved ? "text-[#f0b90b]" : ""}`}><Bookmark size={17} />{isSaved ? "Saved" : "Save"}</button>
-                <button onClick={() => { navigator.clipboard?.writeText(`${window.location.origin}/hub`); toast({ title: "Link copied", description: "Share this OkzByte Hub post." }); }} className="flex items-center gap-1.5 text-xs hover:text-white"><Share2 size={17} /></button>
+                <button onClick={(event) => { event.stopPropagation(); toggle(liked, setLiked, post.id); }} className={`flex items-center gap-1.5 text-xs hover:text-[#f0b90b] ${isLiked ? "text-[#f0b90b]" : ""}`}><ThumbsUp size={16} />{post.likes + (isLiked ? 1 : 0)}</button>
+                <button onClick={(event) => { event.stopPropagation(); toast({ title: "Discussion thread", description: "Comments are ready for the community backend." }); }} className="flex items-center gap-1.5 text-xs hover:text-white"><MessageCircle size={17} />{post.comments}</button>
+                <button onClick={(event) => { event.stopPropagation(); toast({ title: "Post reposted", description: "This insight was added to your Hub feed." }); }} className="flex items-center gap-1.5 text-xs hover:text-[#0ecb81]"><Repeat2 size={17} />{post.reposts}</button>
+                <button onClick={(event) => { event.stopPropagation(); toggle(saved, setSaved, post.id); }} className={`flex items-center gap-1.5 text-xs hover:text-white ${isSaved ? "text-[#f0b90b]" : ""}`}><Bookmark size={17} />{isSaved ? "Saved" : "Save"}</button>
+                <button onClick={(event) => { event.stopPropagation(); navigator.clipboard?.writeText(`${window.location.origin}/hub`); toast({ title: "Link copied", description: "Share this OkzByte Hub post." }); }} className="flex items-center gap-1.5 text-xs hover:text-white"><Share2 size={17} /></button>
               </div>
             </article>;
           })}
@@ -160,7 +161,19 @@ export default function Community() {
         <footer className="flex items-center justify-center gap-2 px-4 py-6 text-[10px] text-[#8995a8]"><CheckCircle2 size={13} className="text-[#0ecb81]" /> Official Bond announcements are marked and sourced from the Orakzai Bond Network.</footer>
       </main>
 
-      <button aria-label="Create post" onClick={() => setComposerOpen(true)} className="fixed bottom-[calc(86px+env(safe-area-inset-bottom))] right-5 z-[60] grid h-14 w-14 place-items-center rounded-full bg-[#f0b90b] text-[#17202b] shadow-[0_8px_24px_rgba(240,185,11,0.28)] transition-transform hover:scale-105 active:scale-95"><Plus size={28} strokeWidth={2.5} /></button>
+      <button aria-label="Create post" onClick={() => setComposerOpen(true)} className="fixed bottom-[calc(86px+env(safe-area-inset-bottom))] right-5 z-40 grid h-14 w-14 place-items-center rounded-full bg-[#f0b90b] text-[#17202b] shadow-lg shadow-yellow-500/10 transition-transform hover:scale-105 active:scale-95"><Plus size={28} strokeWidth={2.5} /></button>
+
+      {selectedPost && <div className="fixed inset-0 z-[90] flex items-end bg-black/65 backdrop-blur-sm" onClick={() => setSelectedPost(null)}>
+        <section className="max-h-[86vh] w-full overflow-y-auto rounded-t-3xl border-t border-white/10 bg-[#252e3c] p-4 pb-[calc(24px+env(safe-area-inset-bottom))]" onClick={(event) => event.stopPropagation()}>
+          <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-white/15" />
+          <div className="mb-4 flex items-center justify-between"><span className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#8995a8]">Post details</span><button aria-label="Close post details" onClick={() => setSelectedPost(null)} className="rounded-full p-2 text-[#8995a8] hover:bg-white/5 hover:text-white"><X size={18} /></button></div>
+          <div className="flex items-center gap-3"><Avatar name={selectedPost.author} official={selectedPost.official} size="h-11 w-11" /><div><p className="flex items-center gap-1.5 text-sm font-bold">{selectedPost.author}{selectedPost.official && <BadgeCheck size={14} className="text-[#f0b90b]" />}</p><p className="text-[11px] text-[#8995a8]">{selectedPost.role} · {selectedPost.time}</p></div></div>
+          <p className="mt-5 text-base leading-relaxed text-white">{selectedPost.body}</p>
+          {selectedPost.metric && <InsightCard metric={selectedPost.metric} />}
+          <div className="mt-4 flex flex-wrap gap-2">{selectedPost.tags.map((tag) => <span key={tag} className="rounded-md bg-[#f0b90b]/10 px-2 py-1 text-xs font-semibold text-[#f0b90b]">{tag}</span>)}</div>
+          <button onClick={() => { setSelectedPost(null); toast({ title: "Opening market context", description: "Related OkzByte market tools are available from the Hub." }); }} className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#f0b90b] py-3 text-sm font-extrabold text-[#17202b]">View market context <ArrowUpRight size={16} /></button>
+        </section>
+      </div>}
 
       {composerOpen && <div className="fixed inset-0 z-[100] flex items-end bg-black/65 backdrop-blur-sm" onClick={() => setComposerOpen(false)}>
         <section className="w-full rounded-t-3xl border-t border-white/10 bg-[#252e3c] p-4 pb-[calc(20px+env(safe-area-inset-bottom))]" onClick={(event) => event.stopPropagation()}>
