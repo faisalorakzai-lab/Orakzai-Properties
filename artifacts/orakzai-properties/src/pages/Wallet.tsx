@@ -674,14 +674,14 @@ const QUICK_4 = [
   { label: "AI Advisor",icon: Sparkles        },
 ] as const;
 
-function QuickActionsRow({ onAddFunds, onWithdraw }: { onAddFunds: () => void; onWithdraw: () => void }) {
+function QuickActionsRow({ onAddFunds, onWithdraw, onTransfer }: { onAddFunds: () => void; onWithdraw: () => void; onTransfer: () => void }) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8, padding: "12px 16px 16px" }}>
       {QUICK_4.map(({ label, icon: Icon }) => (
         <motion.button
           key={label}
           whileTap={{ scale: 0.92 }}
-          onClick={label === "Add Funds" ? onAddFunds : label === "Withdraw" ? onWithdraw : undefined}
+          onClick={label === "Add Funds" ? onAddFunds : label === "Withdraw" ? onWithdraw : label === "Transfer" ? onTransfer : undefined}
           style={{
             display: "flex", flexDirection: "column", alignItems: "center", gap: 9,
             padding: "14px 6px 12px", borderRadius: 14,
@@ -1322,7 +1322,7 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
               <BalanceHeroSection totalNW={totalNW} onDeposit={() => setIsDepositModalOpen(true)} />
 
               {/* 4-button quick actions */}
-              <QuickActionsRow onAddFunds={() => setIsDepositModalOpen(true)} onWithdraw={() => setSWM(true)} />
+              <QuickActionsRow onAddFunds={() => setIsDepositModalOpen(true)} onWithdraw={() => setSWM(true)} onTransfer={() => nav("/assets/transfer")} />
 
               {/* Horizontal allocation bar */}
               {!isDemoTrading && <AllocationBarSection />}
