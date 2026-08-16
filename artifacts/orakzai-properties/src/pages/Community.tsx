@@ -155,8 +155,7 @@ export default function Community() {
         <section className="border-b border-[#2b313a] bg-[#181a20] p-3">
           <div className="flex items-center gap-2.5">
             <Avatar name={initials} photo={profilePhoto} size="h-8 w-8" />
-            <button onClick={() => setComposerOpen(true)} className="flex-1 rounded-full border border-[#2b313a] bg-[#0b0e11] px-4 py-2 text-left text-xs text-gray-400 hover:bg-[#13171d]">What's on your mind? Share market ideas...</button>
-            <Link href="/inbox" aria-label="Open Inbox" className="shrink-0 rounded-full border border-emerald-500/20 bg-emerald-500/10 p-2 text-emerald-400 transition-colors hover:bg-emerald-500/20"><InboxIcon size={18} /></Link>
+            <button onClick={() => setComposerOpen(true)} className="min-w-0 flex-1 rounded-full border border-[#2b313a] bg-[#0b0e11] px-4 py-2 text-left text-xs text-gray-400 transition-colors hover:border-yellow-500/30 hover:bg-[#13171d]">What's on your mind? Share market ideas...</button>
           </div>
           {composerOpen && <div className="mt-2.5 rounded-xl border border-[#2b313a] bg-[#0b0e11] p-2.5">
             <div className="mb-2 flex items-center justify-between"><span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">New community post</span><button aria-label="Close composer" onClick={() => setComposerOpen(false)} className="rounded-full p-1 text-gray-500 hover:text-white"><X size={14} /></button></div>
