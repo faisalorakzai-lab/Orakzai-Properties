@@ -79,6 +79,7 @@ export default function Community() {
   const [liked, setLiked] = useState<string[]>([]);
   const [saved, setSaved] = useState<string[]>([]);
   const [followed, setFollowed] = useState<string[]>([]);
+  const [expandedPosts, setExpandedPosts] = useState<string[]>([]);
   const [commenting, setCommenting] = useState<string[]>([]);
   const [commentDraft, setCommentDraft] = useState<Record<string, string>>({});
   const [inlineStatus, setInlineStatus] = useState("");
@@ -122,7 +123,7 @@ export default function Community() {
         <section className="divide-y divide-white/[0.07]">
           {filtered.map((post) => {
             const isLiked = liked.includes(post.id); const isSaved = saved.includes(post.id); const isFollowed = followed.includes(post.id);
-            return <article key={post.id} className="mx-3 my-3 space-y-3 rounded-2xl border border-[#262c35] bg-[#14171d] p-4 shadow-sm transition-colors active:bg-[#13171d]">
+            return <article key={post.id} onClick={() => setExpandedPosts((current) => current.includes(post.id) ? current.filter((id) => id !== post.id) : [...current, post.id])} className="mx-3 my-3 cursor-pointer space-y-3 rounded-2xl border border-[#262c35] bg-[#14171d] p-4 shadow-sm transition-colors active:bg-[#13171d]">
               <div className="flex items-start gap-3">
                 <Avatar name={post.author} official={post.official} />
                 <div className="min-w-0 flex-1">
@@ -136,6 +137,7 @@ export default function Community() {
               <p className="text-xs font-normal leading-relaxed text-gray-200">{post.body}</p>
               {post.metric && <InsightCard metric={post.metric} />}
               <div className="mt-2.5 flex flex-wrap gap-x-3 gap-y-1">{post.tags.map((tag) => <span key={tag} className="text-[13px] font-semibold text-[#f0b90b]">{tag}</span>)}</div>
+              {expandedPosts.includes(post.id) && <div className="rounded-xl border border-[#262c35] bg-[#0b0e11] p-3 text-[11px] leading-relaxed text-gray-400"><span className="font-bold text-yellow-400">Market context</span><p className="mt-1">This post is expanded inline. Review the published disclosures, settlement information, and risk context before taking action.</p></div>}
               <div className="flex items-center justify-between border-t border-[#262c35]/50 pt-2 text-xs text-gray-400">
                 <button onClick={(event) => { event.stopPropagation(); toggle(liked, setLiked, post.id); }} className={`flex items-center gap-1.5 text-xs hover:text-[#f0b90b] ${isLiked ? "text-[#f0b90b]" : ""}`}><ThumbsUp size={16} />{post.likes + (isLiked ? 1 : 0)}</button>
                 <button onClick={(event) => { event.stopPropagation(); setCommenting((current) => current.includes(post.id) ? current.filter((id) => id !== post.id) : [...current, post.id]); }} className={`flex items-center gap-1.5 text-xs hover:text-white ${commenting.includes(post.id) ? "text-yellow-400" : ""}`}><MessageCircle size={17} />{post.comments}</button>
