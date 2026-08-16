@@ -1322,7 +1322,7 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
               <BalanceHeroSection totalNW={totalNW} onDeposit={() => setIsDepositModalOpen(true)} />
 
               {/* 4-button quick actions */}
-              <QuickActionsRow onAddFunds={() => setIsDepositModalOpen(true)} onWithdraw={() => setSWM(true)} onTransfer={() => nav("/assets/transfer")} />
+              <QuickActionsRow onAddFunds={() => setIsDepositModalOpen(true)} onWithdraw={() => setSWM(true)} onTransfer={() => { window.location.assign("/assets/transfer"); }} />
 
               {/* Horizontal allocation bar */}
               {!isDemoTrading && <AllocationBarSection />}
