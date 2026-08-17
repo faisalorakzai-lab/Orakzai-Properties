@@ -15,6 +15,19 @@ import { formatPrice } from "@/components/PropertyCard";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
+/* The Buy Properties portal includes curated marketplace inventory so the
+   experience remains fully navigable even before those records are seeded in
+   the properties table. These records intentionally use the same shape as
+   the Supabase mapping below. */
+const MARKETPLACE_FALLBACKS: Record<number, Record<string, any>> = {
+  101: { id: 101, category: "buy", type: "house", title: "5 Marla Modern Luxury Villa", city: "Lahore", location: "DHA Phase 6, Lahore", price: 28500000, price_label: "PKR 2.85 Cr", images: ["https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600&q=88"], beds: 4, baths: 5, area_sqft: 2250, description: "A newly finished modern villa in DHA Phase 6 with premium materials, refined interiors, and secure family-focused planning.", owner_name: "Sovereign Estates", owner_phone: "", is_verified: true, is_available: true, tag: "New" },
+  102: { id: 102, category: "buy", type: "house", title: "1 Kanal Executive Residence", city: "Lahore", location: "Bahria Town, Lahore", price: 67500000, price_label: "PKR 6.75 Cr", images: ["https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1600&q=88"], beds: 5, baths: 6, area_sqft: 4500, description: "An executive residence with generous living areas, private circulation, and a premium Bahria Town address.", owner_name: "Orakzai Properties", owner_phone: "", is_verified: true, is_available: true, tag: "Sovereign Verified" },
+  103: { id: 103, category: "buy", type: "house", title: "Sea View Luxury Villa", city: "Karachi", location: "DHA Phase 8, Karachi", price: 220000000, price_label: "PKR 22 Cr", images: ["https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1600&q=88"], beds: 7, baths: 8, area_sqft: 12000, description: "A landmark coastal villa designed for high-end family living, entertaining, and long-term value.", owner_name: "Emaar Pakistan", owner_phone: "", is_verified: true, is_available: true, tag: "Luxury" },
+  104: { id: 104, category: "buy", type: "commercial", title: "Corner Commercial Plaza", city: "Islamabad", location: "Blue Area, Islamabad", price: 115000000, price_label: "PKR 11.5 Cr", images: ["https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1600&q=88"], beds: 0, baths: 4, area_sqft: 5800, description: "A high-visibility corner commercial asset in Islamabad's central business district, suited to retail, office, or mixed use.", owner_name: "Capital Realty Group", owner_phone: "", is_verified: true, is_available: true, tag: "Income Asset" },
+  105: { id: 105, category: "buy", type: "house", title: "Marina Heights Residence", city: "Dubai", location: "Dubai Marina, Dubai", price: 2800000, price_label: "AED 2.8M", images: ["https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1600&q=88"], beds: 3, baths: 3, area_sqft: 2200, description: "A refined Dubai Marina residence with sea views, resort-grade amenities, and strong international rental demand.", owner_name: "Emaar Properties", owner_phone: "", is_verified: true, is_available: true, tag: "12.4% ROI" },
+  106: { id: 106, category: "buy", type: "plot", title: "DHA Phase 9 Commercial Plot", city: "Lahore", location: "DHA Phase 9, Lahore", price: 42000000, price_label: "PKR 4.2 Cr", images: ["https://images.unsplash.com/photo-1448630360428-65456885c650?w=1600&q=88"], beds: 0, baths: 0, area_sqft: 1800, description: "A limited commercial plot positioned for long-term frontage, development flexibility, and strategic DHA Phase 9 exposure.", owner_name: "DHA Authorized Dealer", owner_phone: "", is_verified: true, is_available: true, tag: "Limited Inventory" },
+};
+
 const CAT_STYLE: Record<string, { pill: string; glow: string; name: string; accent: string }> = {
   buy:  { pill: "bg-emerald-500/15 text-emerald-300 border-emerald-500/35", glow: "shadow-emerald-500/20", name: "For Sale",   accent: "#22c55e" },
   sell: { pill: "bg-blue-500/15 text-blue-300 border-blue-500/35",         glow: "shadow-blue-500/20",   name: "Selling",    accent: "#3b82f6" },
@@ -388,20 +401,22 @@ export default function PropertyDetail() {
     setIsLoading(true);
     supabase.from("properties").select("*").eq("id", id).single()
       .then(({ data, error }) => {
-        if (!error && data) {
-          // Map snake_case from DB to camelCase expected by frontend
-          const mapped = {
-            ...data,
-            areaSqFt: data.area_sqft ?? data.areaSqFt ?? 0,
-            isVerified: data.is_verified ?? data.isVerified ?? false,
-            isAvailable: data.is_available ?? data.isAvailable ?? true,
-            whatsappNumber: data.whatsapp_number || data.whatsappNumber || data.owner_phone || data.ownerPhone,
-            ownerRating: data.owner_rating || data.ownerRating || 4.8,
-            furnishedStatus: data.furnished_status || data.furnishedStatus,
-            occupancyType: data.occupancy_type || data.occupancyType,
-            rentalDuration: data.rental_duration || data.rentalDuration,
-          };
-          setProperty(mapped);
+        // Map snake_case from DB to camelCase expected by frontend. If the
+        // curated marketplace card is not seeded yet, use its local record so
+        // View Details never dead-ends on a false 404.
+        const source = !error && data ? data : MARKETPLACE_FALLBACKS[id];
+        if (source) {
+          setProperty({
+            ...source,
+            areaSqFt: source.area_sqft ?? source.areaSqFt ?? 0,
+            isVerified: source.is_verified ?? source.isVerified ?? false,
+            isAvailable: source.is_available ?? source.isAvailable ?? true,
+            whatsappNumber: source.whatsapp_number || source.whatsappNumber || source.owner_phone || source.ownerPhone,
+            ownerRating: source.owner_rating || source.ownerRating || 4.8,
+            furnishedStatus: source.furnished_status || source.furnishedStatus,
+            occupancyType: source.occupancy_type || source.occupancyType,
+            rentalDuration: source.rental_duration || source.rentalDuration,
+          });
         }
         setIsLoading(false);
       });
