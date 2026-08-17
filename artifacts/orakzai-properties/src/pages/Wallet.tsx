@@ -1192,7 +1192,17 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
   const [showDepositFlow, setSDF]    = useState(false);
   const [sidebarCollapsed, setSB]    = useState(false);
   const [isMobile, setIsMobile]      = useState(window.innerWidth < 768);
-  const [activeTab, setActiveTab]    = useState<AssetTab>("Overview");
+  const queryTab = (() => {
+    const raw = new URLSearchParams(window.location.search).get("tab")?.toLowerCase();
+    if (raw === "spot") return "Spot" as AssetTab;
+    if (raw === "real-estate" || raw === "realestate") return "Real Estate" as AssetTab;
+    if (raw === "yield" || raw === "yield-rental" || raw === "rental") return "Yield / Rental" as AssetTab;
+    if (raw === "history") return "History" as AssetTab;
+    return "Overview" as AssetTab;
+  })();
+  const [activeTab, setActiveTab]    = useState<AssetTab>(queryTab);
+  const [spotSearch, setSpotSearch]   = useState("");
+  const [hideZeroSpot, setHideZeroSpot] = useState(false);
   const [txns, setTxns]              = useState(() => getTxns().slice(0, 10));
   const [, setLocation]              = useWouterLocation();
 
@@ -1221,6 +1231,12 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
     window.addEventListener("resize", h);
     return () => window.removeEventListener("resize", h);
   }, []);
+
+  useEffect(() => {
+    const raw = new URLSearchParams(window.location.search).get("tab")?.toLowerCase();
+    const next = raw === "spot" ? "Spot" : raw === "real-estate" || raw === "realestate" ? "Real Estate" : raw === "yield" || raw === "yield-rental" || raw === "rental" ? "Yield / Rental" : raw === "history" ? "History" : "Overview";
+    if (next !== activeTab) setActiveTab(next as AssetTab);
+  }, [activeTab]);
 
   useEffect(() => {
     const ch = supabase
@@ -1306,7 +1322,7 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
             {visibleAssetTabs.map(tab => {
               const active = tab === activeTab;
               return (
-                <button key={tab} onClick={() => setActiveTab(tab)} style={{
+                <button key={tab} onClick={() => { setActiveTab(tab); const slug = tab === "Real Estate" ? "real-estate" : tab === "Yield / Rental" ? "yield" : tab.toLowerCase(); window.history.replaceState({}, "", `${window.location.pathname}?tab=${slug}`); }} style={{
                   padding: "14px 14px", fontSize: 13, fontWeight: active ? 700 : 500,
                   border: "none", cursor: "pointer", background: "transparent",
                   whiteSpace: "nowrap", color: active ? T.fg : T.dim,
@@ -1438,20 +1454,37 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
             </div>
           )}
 
-          {/* ═══════════════ SPOT TAB ═══════════════ */}
+          {/* ═══════════════ INSTITUTIONAL SPOT TAB ═══════════════ */}
           {activeTab === "Spot" && (
-            <>
-              <div style={{ padding: "18px 16px 10px" }}>
-                <div style={{ fontSize: 10, color: T.dim, marginBottom: 4 }}>Crypto & Fiat Holdings</div>
-                <div style={{ fontSize: 28, fontWeight: 900, color: T.fg, fontVariantNumeric: "tabular-nums" }}>
-                  {isDemoTrading ? `$${demoBalances.USDT.toLocaleString("en-US", { minimumFractionDigits: 2 })} USDT` : `PKR ${fmtNum(liveAssets.reduce((s, a) => s + a.pkr, 0), 0)}`}
+            <div style={{ paddingBottom: 18 }}>
+              <section style={{ margin: "14px 14px 12px", padding: 18, background: "linear-gradient(145deg, rgba(255,255,255,.045), rgba(255,255,255,.018))", border: `1px solid ${T.border}`, borderRadius: 19, boxShadow: "inset 0 1px 0 rgba(255,255,255,.05)" }}>
+                <div style={{ color: T.gold, fontSize: 10, fontWeight: 900, letterSpacing: ".13em", textTransform: "uppercase" }}>Crypto & Fiat Spot Portfolio</div>
+                <div style={{ marginTop: 8, color: T.fg, fontSize: 27, lineHeight: 1, fontWeight: 900, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontVariantNumeric: "tabular-nums" }}>{isDemoTrading ? `$${fmtNum(demoBalances.USDT, 2)} USDT` : `PKR ${fmtNum(liveAssets.reduce((s, a) => s + a.pkr, 0), 0)}`}</div>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 12, padding: "6px 9px", borderRadius: 8, color: T.green, background: T.greenGlow, border: "1px solid rgba(16,185,129,.22)", fontSize: 11, fontWeight: 900, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}><TrendingUp size={13} /> +PKR 5.56 Cr (+0.02%) 24h</span>
+                <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 16 }}>
+                  <div style={{ position: "relative", flex: 1 }}><Search size={14} color={T.dim} style={{ position: "absolute", left: 11, top: 12 }} /><input value={spotSearch} onChange={e => setSpotSearch(e.target.value)} placeholder="Search asset..." style={{ width: "100%", boxSizing: "border-box", height: 38, padding: "0 10px 0 32px", color: T.fg, background: T.bg, border: `1px solid ${T.border}`, borderRadius: 11, outline: "none", fontSize: 11 }} /></div>
+                  <label style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0, color: T.dimMid, fontSize: 10, cursor: "pointer" }}><input type="checkbox" checked={hideZeroSpot} onChange={e => setHideZeroSpot(e.target.checked)} style={{ accentColor: T.gold }} /> Hide zero</label>
                 </div>
-              </div>
-              <SectionHeader title="All Assets" />
-              <ListCard>
-                {displayAssets.map((a, i) => <CryptoRow key={a.name} a={a} i={i} />)}
-              </ListCard>
-            </>
+              </section>
+
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "2px 14px 10px" }}><div style={{ color: T.fg, fontSize: 18, fontWeight: 900 }}>Spot Assets</div><span style={{ color: T.dim, fontSize: 10, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase" }}>{displayAssets.length} instruments</span></div>
+              <section style={{ margin: "0 14px", display: "flex", flexDirection: "column", gap: 9 }}>
+                {displayAssets.filter(a => (!hideZeroSpot || a.bal > 0) && (!spotSearch.trim() || `${a.name} ${a.sub} ${a.unit}`.toLowerCase().includes(spotSearch.trim().toLowerCase()))).map((a, i) => {
+                  const pnlPositive = a.chg >= 0;
+                  const tradePair = a.name === "PKR" ? "USDT_PKR" : `${a.name}_USDT`;
+                  return <motion.div key={a.name} whileTap={{ scale: .99 }} style={{ padding: 14, background: "linear-gradient(145deg, rgba(255,255,255,.035), rgba(255,255,255,.018))", border: `1px solid ${T.border}`, borderRadius: 17, boxShadow: "inset 0 1px 0 rgba(255,255,255,.035)" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
+                      <div style={{ width: 42, height: 42, flexShrink: 0, display: "grid", placeItems: "center", overflow: "hidden", borderRadius: "50%", background: a.bg, border: `1px solid ${a.color}55` }}>{a.logo ? <img src={a.logo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ color: a.color, fontSize: 18, fontWeight: 900 }}>{a.icon}</span>}</div>
+                      <div style={{ minWidth: 0, flex: 1 }}><div style={{ color: T.fg, fontSize: 15, fontWeight: 900 }}>{a.name}</div><div style={{ marginTop: 3, color: T.dim, fontSize: 11 }}>{a.sub}</div></div>
+                      <div style={{ flexShrink: 0, textAlign: "right" }}><div style={{ color: T.fg, fontSize: 14, fontWeight: 900, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}>{fmtNum(a.bal, a.bal < 1000 ? 2 : 0)}</div><div style={{ marginTop: 3, color: T.dim, fontSize: 10, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}>{fmtPKR(a.pkr)}</div></div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginTop: 12, paddingTop: 11, borderTop: `1px solid ${T.border}` }}><span style={{ color: pnlPositive ? T.green : T.red, fontSize: 11, fontWeight: 800, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}>{pnlPositive ? "+" : ""}PKR {a.name === "USDT" ? "5.56 Cr" : a.name === "OKBOND" ? "515" : a.name === "USDC" ? "14" : "0"} ({pnlPositive ? "+" : ""}{a.chg.toFixed(2)}%)</span><span style={{ color: T.dim, fontSize: 10 }}>Floating PnL</span></div>
+                    <div style={{ display: "flex", gap: 7, marginTop: 10 }}><button onClick={() => setLocation(`/staking?asset=${a.name}`)} style={{ flex: 1, minHeight: 35, border: `1px solid ${T.border}`, borderRadius: 10, background: "rgba(255,255,255,.045)", color: T.dimMid, fontSize: 10, fontWeight: 900, cursor: "pointer" }}>Earn / Vault</button><button onClick={() => setLocation(`/trade?pair=${tradePair}`)} style={{ flex: 1, minHeight: 35, border: 0, borderRadius: 10, background: `linear-gradient(135deg, ${T.gold}, ${T.goldBright})`, color: T.bg, fontSize: 10, fontWeight: 900, cursor: "pointer" }}>Trade</button><button aria-label={`Transfer ${a.name}`} onClick={() => setLocation(`/assets/transfer?asset=${a.name}`)} style={{ width: 39, minHeight: 35, display: "grid", placeItems: "center", border: `1px solid ${T.border}`, borderRadius: 10, background: "rgba(255,255,255,.045)", color: T.dimMid, cursor: "pointer" }}><ArrowLeftRight size={15} /></button></div>
+                  </motion.div>;
+                })}
+                {displayAssets.filter(a => (!hideZeroSpot || a.bal > 0) && (!spotSearch.trim() || `${a.name} ${a.sub} ${a.unit}`.toLowerCase().includes(spotSearch.trim().toLowerCase()))).length === 0 && <div style={{ padding: 28, textAlign: "center", color: T.dim, border: `1px solid ${T.border}`, borderRadius: 16 }}>No spot assets match your filter.</div>}
+              </section>
+            </div>
           )}
 
           {/* ═══════════════ YIELD / RENTAL TAB ═══════════════ */}
