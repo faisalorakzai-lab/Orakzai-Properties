@@ -3,40 +3,54 @@ import { ArrowLeft, Bot, CheckCircle2, ChevronRight, MessageCircle, Send, Shield
 import { useLocation } from "wouter";
 import { accountLabel, useWalletStore, type Currency } from "@/store/WalletStoreContext";
 
+const BG = "#0B0E11";
+const CARD = "#12161C";
+const PANEL = "#1E2329";
+const LINE = "#2B313A";
+const GREEN = "#0ECB81";
+const GOLD = "#F0B90B";
+const PURPLE = "#8B5CF6";
+const CYAN = "#22D3EE";
+const DIM = "#848E9C";
+const FG = "#EAECEF";
+
 const money = (value: number) => `PKR ${Math.round(value).toLocaleString("en-PK")}`;
 const num = (value: number) => value.toLocaleString("en-US", { maximumFractionDigits: 2 });
 const prices: Record<Currency, number> = { PKR: 1, USDT: 278, USDC: 278, OKBOND: 88 };
 
+type Message = { role: "ai" | "user"; text: string };
+
 export default function AIPortfolioAdvisor() {
-  const [, setLocation] = useLocation();
+  const [, nav] = useLocation();
   const { ledger, totalValuePKR, getBalance, transfer } = useWalletStore();
-  const [messages, setMessages] = useState<{ role: "ai" | "user"; text: string }[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [prompt, setPrompt] = useState("");
   const [allocated, setAllocated] = useState(false);
   const [notice, setNotice] = useState("");
 
   const metrics = useMemo(() => {
-    const value = (account: keyof typeof ledger) => Object.entries(ledger[account]).reduce((s, [asset, amount]) => s + amount * prices[asset as Currency], 0);
+    const value = (account: keyof typeof ledger) => Object.entries(ledger[account]).reduce((sum, [asset, amount]) => sum + amount * prices[asset as Currency], 0);
     const realEstate = value("realEstate");
     const crypto = value("spot") + value("rwaStakingYield") + value("yieldDesk");
     const fiat = value("funding");
     const total = realEstate + crypto + fiat || 1;
+    const estatePct = Math.round(realEstate / total * 100);
+    const cryptoPct = Math.round(crypto / total * 100);
     const allocations = [
-      { label: "Real Estate", value: Math.round(realEstate / total * 100), color: "#f0b90b" },
-      { label: "Crypto", value: Math.round(crypto / total * 100), color: "#8b5cf6" },
-      { label: "Fiat", value: Math.max(0, 100 - Math.round(realEstate / total * 100) - Math.round(crypto / total * 100)), color: "#22d3ee" },
+      { label: "Real Estate", value: estatePct, color: GOLD },
+      { label: "Crypto", value: cryptoPct, color: PURPLE },
+      { label: "Fiat", value: Math.max(0, 100 - estatePct - cryptoPct), color: CYAN },
     ];
-    const volatility = allocations[1].value;
-    const score = Math.max(58, Math.min(96, Math.round(92 - Math.max(0, volatility - 30) * 0.45)));
-    return { realEstate, crypto, fiat, total, allocations, score, idleUsdt: ledger.spot.USDT };
-  }, [ledger]);
+    const score = Math.max(58, Math.min(96, Math.round(92 - Math.max(0, cryptoPct - 30) * 0.45)));
+    return { allocations, score, idleUsdt: ledger.spot.USDT, total: totalValuePKR, estatePct, cryptoPct };
+  }, [ledger, totalValuePKR]);
 
   const ask = (text: string) => {
     const lower = text.toLowerCase();
-    let response = "Your portfolio is being monitored across Spot, Real Estate, Fiat, and yield accounts. A measured rebalance keeps liquidity available while improving income potential.";
-    if (lower.includes("rental") || lower.includes("yield")) response = `Your Real Estate allocation is ${metrics.allocations[0].value}%. To increase monthly rental yield, keep the core property exposure intact and direct idle liquidity toward approved RWA yield products. Current portfolio value is ${money(totalValuePKR)}.`;
-    if (lower.includes("risk") || lower.includes("rebalance")) response = `The current health score is ${metrics.score}/100. Crypto represents ${metrics.allocations[1].value}% of the live ledger. A gradual allocation of idle Spot USDT to yield can reduce idle capital without forcing a large market move.`;
-    if (lower.includes("crypto") || lower.includes("optimal")) response = `The live Crypto allocation is ${metrics.allocations[1].value}%. Spot currently holds ${num(ledger.spot.USDT)} USDT, ${num(ledger.spot.USDC)} USDC, and ${num(ledger.spot.OKBOND)} OKBOND. Consider your liquidity needs before changing exposure.`;
+    let response = `Your live ledger is being monitored across Spot, Real Estate, Fiat, and yield accounts. Current portfolio value is ${money(totalValuePKR)}.`;
+    if (lower.includes("rental") || lower.includes("yield")) response = `Real Estate represents ${metrics.estatePct}% of the live ledger. To improve monthly rental yield, keep core property exposure intact and direct suitable idle liquidity toward approved RWA yield products.`;
+    if (lower.includes("risk") || lower.includes("rebalance")) response = `Current health score is ${metrics.score}/100. Crypto represents ${metrics.cryptoPct}% of the live ledger. A gradual allocation of idle Spot USDT toward yield can improve capital efficiency while preserving liquidity.`;
+    if (lower.includes("crypto") || lower.includes("optimal")) response = `Crypto represents ${metrics.cryptoPct}% of the live ledger. Spot currently holds ${num(ledger.spot.USDT)} USDT, ${num(ledger.spot.USDC)} USDC, and ${num(ledger.spot.OKBOND)} OKBOND. Review your liquidity needs before changing exposure.`;
     setMessages(prev => [...prev, { role: "user", text }, { role: "ai", text: response }]);
     setPrompt("");
   };
@@ -49,31 +63,44 @@ export default function AIPortfolioAdvisor() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b0e11] text-white pb-28">
-      <header className="sticky top-0 z-40 flex items-center gap-3 border-b border-[#262c35] bg-[#0b0e11]/95 px-4 py-3 backdrop-blur-xl">
-        <button onClick={() => setLocation("/wallet")} className="rounded-xl p-2 text-gray-300 hover:bg-white/5"><ArrowLeft size={19} /></button>
-        <div><p className="text-sm font-extrabold">AI Portfolio Advisor</p><p className="text-[10px] uppercase tracking-[0.18em] text-yellow-400/70">Institutional intelligence desk</p></div>
-        <div className="ml-auto rounded-full border border-yellow-500/30 bg-yellow-500/10 p-2 text-yellow-400"><Sparkles size={16} /></div>
-      </header>
+    <div style={{ minHeight: "100dvh", maxWidth: "100vw", overflowX: "hidden", background: BG, color: FG, fontFamily: "'Plus Jakarta Sans','Inter',sans-serif" }}>
+      <div style={{ position: "sticky", top: 0, zIndex: 40, background: BG, borderBottom: `1px solid ${LINE}` }}>
+        <div style={{ height: 54, display: "flex", alignItems: "center", padding: "0 12px 0 4px" }}>
+          <button onClick={() => nav("/wallet")} aria-label="Back" style={{ padding: "10px 12px", color: DIM, display: "flex", background: "none", border: 0 }}><ArrowLeft size={21} /></button>
+          <div style={{ minWidth: 0 }}><div style={{ color: FG, fontSize: 15, fontWeight: 800 }}>AI Portfolio Advisor</div><div style={{ color: GOLD, fontSize: 10, letterSpacing: "2px", textTransform: "uppercase", marginTop: 2 }}>Institutional intelligence desk</div></div>
+          <div style={{ marginLeft: "auto", width: 34, height: 34, display: "grid", placeItems: "center", borderRadius: 10, background: `${GOLD}14`, border: `1px solid ${GOLD}44`, color: GOLD }}><Sparkles size={18} /></div>
+        </div>
+      </div>
 
-      <main className="mx-auto max-w-2xl space-y-4 px-4 py-4">
-        <section className="rounded-2xl border border-yellow-500/25 bg-gradient-to-br from-[#1a1710] via-[#14171d] to-[#10151b] p-4 shadow-[0_0_35px_rgba(240,185,11,0.08)]">
-          <div className="flex items-start justify-between gap-4"><div><p className="text-[10px] font-bold uppercase tracking-[0.18em] text-yellow-400">Live portfolio scan</p><h1 className="mt-1 text-2xl font-extrabold">Portfolio Health: {metrics.score}/100</h1><p className="mt-1 text-xs text-emerald-400">{metrics.score >= 80 ? "Balanced · Moderate risk" : "Review recommended · Controlled risk"}</p></div><ShieldCheck className="text-emerald-400" size={28} /></div>
-          <div className="mt-4 grid grid-cols-2 gap-2"><div className="rounded-xl border border-white/10 bg-black/20 p-3"><p className="text-[10px] text-gray-500">Total Value Analyzed</p><p className="mt-1 font-mono text-sm font-bold">{money(totalValuePKR)}</p></div><div className="rounded-xl border border-white/10 bg-black/20 p-3"><p className="text-[10px] text-gray-500">Live PnL</p><p className="mt-1 font-mono text-sm font-bold text-emerald-400">+2.45%</p></div></div>
-          <p className="mt-3 text-xs leading-relaxed text-gray-300">Key signal: {metrics.allocations[1].value < 40 ? "Low crypto volatility exposure" : "Crypto exposure requires active monitoring"}. Real Estate represents {metrics.allocations[0].value}% of the unified ledger.</p>
-          <div className="mt-3 flex flex-wrap gap-2">{[["Risk Profile", "Moderate"], ["Est. APY", "+14.2%"], ["Rebalance", "Slight"]].map(([a,b]) => <span key={a} className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] text-gray-300">{a}: <b className="text-white">{b}</b></span>)}</div>
+      <main style={{ maxWidth: 760, margin: "0 auto", padding: "12px 0 calc(100px + env(safe-area-inset-bottom))" }}>
+        <section style={{ margin: "0 12px 14px", padding: 16, border: `1px solid ${GOLD}44`, borderRadius: 14, background: "linear-gradient(135deg,#171A20,#11151A)", boxShadow: `0 0 28px ${GOLD}0D` }}>
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+            <div><div style={{ color: GOLD, fontSize: 11, fontWeight: 800, letterSpacing: "2px" }}>LIVE PORTFOLIO SCAN</div><h1 style={{ margin: "7px 0 0", color: FG, fontFamily: "Georgia,serif", fontSize: 25, lineHeight: 1.08 }}>Portfolio Health: {metrics.score}/100</h1><div style={{ marginTop: 7, color: GREEN, fontSize: 12 }}>Review recommended · Controlled risk</div></div>
+            <ShieldCheck size={25} color={GREEN} />
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, marginTop: 16, background: LINE, borderRadius: 10, overflow: "hidden" }}>
+            <div style={{ background: BG, padding: 11 }}><div style={{ color: DIM, fontSize: 10 }}>Total value analyzed</div><strong style={{ display: "block", marginTop: 4, color: FG, fontSize: 14, fontFamily: "monospace" }}>{money(metrics.total)}</strong></div>
+            <div style={{ background: BG, padding: 11 }}><div style={{ color: DIM, fontSize: 10 }}>Live PnL</div><strong style={{ display: "block", marginTop: 4, color: GREEN, fontSize: 16, fontFamily: "monospace" }}>+2.45%</strong></div>
+          </div>
+          <p style={{ margin: "12px 0 0", color: DIM, fontSize: 12, lineHeight: 1.55 }}>Key signal: {metrics.cryptoPct < 40 ? "Low crypto volatility exposure" : "Crypto exposure requires active monitoring"}. Real Estate represents {metrics.estatePct}% of the unified ledger.</p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 12 }}>{[["Risk Profile", "Moderate"], ["Est. APY", "+14.2%"], ["Rebalance", "Slight"]].map(([label, value]) => <span key={label} style={{ padding: "6px 9px", borderRadius: 7, background: PANEL, border: `1px solid ${LINE}`, color: DIM, fontSize: 10 }}>{label} <b style={{ color: FG }}>{value}</b></span>)}</div>
         </section>
 
-        <section className="rounded-2xl border border-[#262c35] bg-[#14171d] p-4"><div className="mb-3 flex items-center justify-between"><h2 className="text-sm font-bold">Allocation intelligence</h2><span className="text-[10px] text-gray-500">Derived from unified ledger</span></div><div className="flex h-3 overflow-hidden rounded-full bg-white/5">{metrics.allocations.map(a => <div key={a.label} style={{ width: `${a.value}%`, background: a.color }} />)}</div><div className="mt-3 grid grid-cols-3 gap-2">{metrics.allocations.map(a => <div key={a.label}><p className="text-[10px] text-gray-500">{a.label}</p><p className="font-mono text-sm font-bold">{a.value}%</p></div>)}</div></section>
-
-        <section className="space-y-3"><div className="flex items-center gap-2"><Bot size={17} className="text-yellow-400" /><h2 className="text-sm font-bold">Recommended actions</h2></div>
-          <article className="rounded-2xl border border-yellow-500/20 bg-[#14171d] p-4"><div className="flex gap-3"><div className="rounded-xl bg-yellow-500/10 p-2.5 text-yellow-400"><TrendingUp size={18} /></div><div className="min-w-0 flex-1"><p className="text-xs font-bold">Yield Maximizer</p><p className="mt-1 text-xs leading-relaxed text-gray-400">Unused <b className="text-white">{num(metrics.idleUsdt)} USDT</b> is currently sitting in Spot Wallet. Allocate 40% to Yield Desk for a target RWA yield strategy.</p><button disabled={allocated} onClick={autoAllocate} className="mt-3 flex items-center gap-2 rounded-xl bg-yellow-400 px-3 py-2 text-[11px] font-extrabold text-black disabled:cursor-not-allowed disabled:opacity-60"><Zap size={13} />{allocated ? "Allocated" : "One-Tap Auto Allocate"}</button></div></div></article>
-          <article className="rounded-2xl border border-purple-500/20 bg-[#14171d] p-4"><div className="flex gap-3"><div className="rounded-xl bg-purple-500/10 p-2.5 text-purple-400"><WalletCards size={18} /></div><div><p className="text-xs font-bold">Diversification Alert</p><p className="mt-1 text-xs leading-relaxed text-gray-400">Fiat liquidity is {metrics.allocations[2].value}%. Consider reviewing OKBOND vault exposure for a fixed quarterly-yield sleeve.</p><button onClick={() => setLocation("/rwa-vaults")} className="mt-3 flex items-center gap-2 rounded-xl border border-purple-400/30 px-3 py-2 text-[11px] font-bold text-purple-300">Explore OKBOND Vault <ChevronRight size={13} /></button></div></div></article>
-          {notice && <p className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-300">{notice}</p>}
+        <section style={{ margin: "0 12px 14px", padding: 14, background: CARD, border: `1px solid ${LINE}`, borderRadius: 14 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}><h2 style={{ margin: 0, color: FG, fontFamily: "Georgia,serif", fontSize: 17 }}>Allocation intelligence</h2><span style={{ color: DIM, fontSize: 10 }}>Live ledger</span></div>
+          <div style={{ display: "flex", height: 10, overflow: "hidden", borderRadius: 99, background: PANEL }}>{metrics.allocations.map(a => <div key={a.label} style={{ width: `${a.value}%`, background: a.color, transition: "width .3s" }} />)}</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 1, marginTop: 12, background: LINE, borderRadius: 9, overflow: "hidden" }}>{metrics.allocations.map(a => <div key={a.label} style={{ background: BG, padding: 9 }}><div style={{ color: DIM, fontSize: 10 }}>{a.label}</div><strong style={{ display: "block", marginTop: 3, color: a.color, fontSize: 17 }}>{a.value}%</strong></div>)}</div>
         </section>
 
-        <section className="rounded-2xl border border-[#262c35] bg-[#14171d] p-4"><div className="flex items-center gap-2"><MessageCircle size={17} className="text-cyan-400" /><h2 className="text-sm font-bold">Ask your portfolio advisor</h2></div><div className="mt-3 flex flex-wrap gap-2">{["How to increase my monthly rental yield?", "Rebalance my portfolio for low risk", "Is my Crypto allocation optimal?"].map(q => <button key={q} onClick={() => ask(q)} className="rounded-full border border-cyan-400/20 bg-cyan-400/5 px-2.5 py-1.5 text-[10px] text-cyan-200">{q}</button>)}</div><div className="mt-3 space-y-2">{messages.map((m,i) => <div key={i} className={`rounded-xl px-3 py-2 text-xs leading-relaxed ${m.role === "ai" ? "border border-yellow-500/15 bg-yellow-500/5 text-gray-200" : "ml-6 bg-white/5 text-gray-300"}`}>{m.text}</div>)}</div><form onSubmit={e => { e.preventDefault(); if (prompt.trim()) ask(prompt.trim()); }} className="mt-3 flex items-center gap-2 rounded-xl border border-[#2d3440] bg-[#1a1e26] px-3"><input value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="Ask about your live portfolio..." className="min-w-0 flex-1 bg-transparent py-3 text-xs text-white outline-none placeholder:text-gray-500" /><button className="rounded-lg p-2 text-yellow-400 hover:bg-yellow-400/10"><Send size={16} /></button></form></section>
-        <p className="flex items-center gap-2 px-1 text-[10px] leading-relaxed text-gray-500"><CheckCircle2 size={12} className="text-emerald-400" />Insights are calculated from current ledger balances. All allocations require your confirmation and remain subject to product terms and risk limits.</p>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 12px 10px" }}><Bot size={17} color={GOLD} /><h2 style={{ margin: 0, color: FG, fontFamily: "Georgia,serif", fontSize: 18 }}>Recommended actions</h2></div>
+        <section style={{ margin: "0 12px 14px", border: `1px solid ${GOLD}44`, borderRadius: 14, background: CARD, overflow: "hidden" }}>
+          <div style={{ display: "flex", gap: 12, padding: 15 }}><div style={{ width: 40, height: 40, flexShrink: 0, display: "grid", placeItems: "center", borderRadius: 11, background: `${GOLD}18`, color: GOLD }}><TrendingUp size={20} /></div><div style={{ minWidth: 0, flex: 1 }}><div style={{ color: FG, fontSize: 14, fontWeight: 800 }}>Yield Maximizer</div><p style={{ margin: "6px 0 0", color: DIM, fontSize: 12, lineHeight: 1.55 }}>Idle <b style={{ color: FG }}>{num(metrics.idleUsdt)} USDT</b> is currently in Spot Wallet. Allocate 40% to Yield Desk for a target RWA strategy.</p><button disabled={allocated} onClick={autoAllocate} style={{ display: "inline-flex", alignItems: "center", gap: 7, marginTop: 12, padding: "10px 13px", border: 0, borderRadius: 10, background: allocated ? PANEL : GOLD, color: allocated ? DIM : BG, fontSize: 11, fontWeight: 800 }}><Zap size={14} />{allocated ? "Allocated" : "One-Tap Auto Allocate"}</button></div></div>
+        </section>
+        <section style={{ margin: "0 12px 14px", border: `1px solid ${PURPLE}55`, borderRadius: 14, background: CARD, overflow: "hidden" }}><div style={{ display: "flex", gap: 12, padding: 15 }}><div style={{ width: 40, height: 40, flexShrink: 0, display: "grid", placeItems: "center", borderRadius: 11, background: `${PURPLE}18`, color: PURPLE }}><WalletCards size={20} /></div><div><div style={{ color: FG, fontSize: 14, fontWeight: 800 }}>Diversification Alert</div><p style={{ margin: "6px 0 0", color: DIM, fontSize: 12, lineHeight: 1.55 }}>Fiat liquidity is {metrics.allocations[2].value}%. Review OKBOND vault exposure for a fixed quarterly-yield sleeve.</p><button onClick={() => nav("/rwa-vaults")} style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 12, padding: "9px 12px", borderRadius: 10, border: `1px solid ${PURPLE}66`, background: `${PURPLE}12`, color: "#C4B5FD", fontSize: 11, fontWeight: 800 }}>Explore OKBOND Vault <ChevronRight size={14} /></button></div></div></section>
+        {notice && <div style={{ margin: "0 12px 14px", padding: "10px 12px", borderRadius: 10, border: `1px solid ${GREEN}44`, background: `${GREEN}10`, color: GREEN, fontSize: 11 }}>{notice}</div>}
+
+        <section style={{ margin: "0 12px 14px", padding: 15, background: CARD, border: `1px solid ${LINE}`, borderRadius: 14 }}><div style={{ display: "flex", alignItems: "center", gap: 8 }}><MessageCircle size={18} color={CYAN} /><h2 style={{ margin: 0, color: FG, fontFamily: "Georgia,serif", fontSize: 18 }}>Ask your portfolio advisor</h2></div><div style={{ display: "flex", gap: 6, overflowX: "auto", padding: "12px 0 2px" }}>{["Increase monthly rental yield", "Rebalance for low risk", "Is my crypto allocation optimal?"].map(q => <button key={q} onClick={() => ask(q)} style={{ flexShrink: 0, padding: "8px 10px", borderRadius: 8, border: `1px solid ${CYAN}44`, background: `${CYAN}0D`, color: "#A5F3FC", fontSize: 10, whiteSpace: "nowrap" }}>{q}</button>)}</div><div style={{ display: "flex", flexDirection: "column", gap: 7 }}>{messages.map((m, i) => <div key={i} style={{ alignSelf: m.role === "user" ? "flex-end" : "stretch", maxWidth: m.role === "user" ? "88%" : "100%", padding: "9px 11px", borderRadius: 10, background: m.role === "user" ? PANEL : `${GOLD}0D`, border: `1px solid ${m.role === "user" ? LINE : `${GOLD}33`}`, color: m.role === "user" ? DIM : FG, fontSize: 11, lineHeight: 1.55 }}>{m.text}</div>)}</div><form onSubmit={e => { e.preventDefault(); if (prompt.trim()) ask(prompt.trim()); }} style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12, padding: "0 4px 0 12px", borderRadius: 11, background: PANEL, border: `1px solid ${LINE}` }}><input value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="Ask about your live portfolio..." style={{ minWidth: 0, flex: 1, padding: "12px 0", border: 0, outline: 0, background: "transparent", color: FG, fontSize: 11 }} /><button type="submit" aria-label="Send" style={{ padding: 9, border: 0, background: "none", color: GOLD }}><Send size={17} /></button></form></section>
+        <div style={{ display: "flex", gap: 7, alignItems: "flex-start", margin: "0 12px", color: DIM, fontSize: 10, lineHeight: 1.55 }}><CheckCircle2 size={13} color={GREEN} style={{ flexShrink: 0, marginTop: 1 }} />Insights are calculated from current ledger balances. Allocations require confirmation and remain subject to product terms and risk limits.</div>
       </main>
     </div>
   );
