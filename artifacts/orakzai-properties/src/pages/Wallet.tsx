@@ -1201,6 +1201,8 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
   const [showWithdrawModal, setSWM]  = useState(false);
   const [showDepositFlow, setSDF]    = useState(false);
+  const [autoReinvestYield, setAutoReinvestYield] = useState(false);
+  const [yieldNotice, setYieldNotice] = useState("");
   const [sidebarCollapsed, setSB]    = useState(false);
   const [isMobile, setIsMobile]      = useState(window.innerWidth < 768);
   const queryTab = (() => {
@@ -1474,46 +1476,26 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
             </div>
           )}
 
-          {/* ═══════════════ YIELD / RENTAL TAB ═══════════════ */}
-          {activeTab === "Yield / Rental" && (
-            <>
-              <div style={{ padding: "18px 16px 10px" }}>
-                <div style={{ fontSize: 10, color: T.dim, marginBottom: 4 }}>Monthly Rental Income</div>
-                <div style={{ fontSize: 28, fontWeight: 900, color: T.fg, marginBottom: 4 }}>PKR {fmtNum(moduleLedger.rwaStakingYield.PKR + moduleLedger.rwaStakingYield.USDT * 278 + moduleLedger.rwaStakingYield.OKBOND * 88 + moduleLedger.yieldDesk.PKR, 0)}</div>
-                <div style={{ fontSize: 12, color: T.green, fontWeight: 600 }}>+8.65% from last month</div>
-              </div>
+          {/* ═══════════════ INSTITUTIONAL YIELD / RENTAL TAB ═══════════════ */}
+          {activeTab === "Yield / Rental" && (() => {
+            const monthlyRentalTotal = PROPERTIES.reduce((sum, p) => sum + (Number(p.yield.replace(/[^0-9]/g, "")) || 0), 0);
+            const propertyPath = (name: string) => `/property/${encodeURIComponent(name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""))}`;
+            const claimAll = () => { setYieldNotice(`PKR ${fmtNum(monthlyRentalTotal, 0)} yield claim submitted to your Funding Wallet.`); setTimeout(() => setYieldNotice(""), 2800); };
+            return (
+              <div style={{ paddingBottom: 20 }}>
+                <section style={{ margin: "14px 14px 12px", padding: 18, background: "linear-gradient(145deg, rgba(201,168,76,.12), rgba(255,255,255,.035) 55%, rgba(16,185,129,.05))", border: `1px solid ${T.borderHov}`, borderRadius: 20, boxShadow: "inset 0 1px 0 rgba(255,255,255,.06), 0 16px 38px rgba(0,0,0,.18)" }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}><div><div style={{ color: T.dim, fontSize: 10, fontWeight: 900, letterSpacing: ".14em", textTransform: "uppercase" }}>Monthly Rental Income</div><div style={{ marginTop: 8, color: T.fg, fontSize: 29, lineHeight: 1, fontWeight: 900, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontVariantNumeric: "tabular-nums" }}>PKR {fmtNum(monthlyRentalTotal, 0)}</div><div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 12, padding: "6px 9px", borderRadius: 8, color: T.green, background: T.greenGlow, border: "1px solid rgba(16,185,129,.22)", fontSize: 11, fontWeight: 800 }}><TrendingUp size={13} /> +8.65% from last month</div></div><div style={{ color: T.green, fontSize: 9, fontWeight: 900, letterSpacing: ".1em", padding: "5px 7px", borderRadius: 7, background: T.greenGlow, border: "1px solid rgba(16,185,129,.25)" }}>LIVE YIELD</div></div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 17 }}><button onClick={claimAll} style={{ padding: "10px 8px", border: 0, borderRadius: 11, background: T.gold, color: T.bg, fontSize: 10, fontWeight: 900, cursor: "pointer" }}>Claim All Yield</button><button onClick={() => setAutoReinvestYield(v => !v)} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "10px 8px", border: `1px solid ${autoReinvestYield ? T.green : T.border}`, borderRadius: 11, background: autoReinvestYield ? T.greenGlow : T.panel, color: autoReinvestYield ? T.green : T.dimMid, fontSize: 10, fontWeight: 900, cursor: "pointer" }}><span style={{ width: 25, height: 14, padding: 2, display: "flex", justifyContent: autoReinvestYield ? "flex-end" : "flex-start", borderRadius: 99, background: autoReinvestYield ? T.green : T.dim, transition: "all .18s" }}><span style={{ width: 10, height: 10, borderRadius: "50%", background: "#fff" }} /></span>Auto-Reinvest</button></div>
+                  {yieldNotice && <div style={{ marginTop: 10, color: T.green, fontSize: 10, fontWeight: 700 }}>{yieldNotice}</div>}
+                </section>
 
-              <div style={{ margin: "0 16px 16px", background: "rgba(255,255,255,0.03)", border: `1px solid ${T.border}`, borderRadius: 16, padding: "16px" }}>
-                <div style={{ height: 130 }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={INCOME_DATA} barSize={20}>
-                      <XAxis dataKey="m" tick={{ fontSize: 9, fill: T.dim }} axisLine={false} tickLine={false} />
-                      <Tooltip formatter={(v: any) => [`PKR ${fmtNum(v, 0)}`, "Income"]} contentStyle={{ background: "rgba(8,14,28,0.95)", border: `1px solid ${T.border}`, borderRadius: 10, fontSize: 11 }} />
-                      <Bar dataKey="v" radius={[6, 6, 0, 0]}>
-                        {INCOME_DATA.map((_, idx) => <Cell key={idx} fill={idx === INCOME_DATA.length - 1 ? T.gold : `${T.gold}40`} />)}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
+                <section style={{ margin: "0 14px 16px", padding: 16, background: "rgba(255,255,255,.03)", border: `1px solid ${T.border}`, borderRadius: 18 }}><div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}><div><div style={{ color: T.fg, fontSize: 13, fontWeight: 850 }}>Historical Yield</div><div style={{ color: T.dim, fontSize: 10, marginTop: 3 }}>Monthly rental distributions · PKR</div></div><span style={{ color: T.gold, fontSize: 10, fontWeight: 800 }}>6 MONTHS</span></div><div style={{ height: 155 }}><ResponsiveContainer width="100%" height="100%"><BarChart data={INCOME_DATA} barSize={22} margin={{ top: 8, right: 2, left: -18, bottom: 0 }}><defs><linearGradient id="yieldGoldGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#F0B90B" /><stop offset="100%" stopColor="#B77905" /></linearGradient></defs><CartesianGrid vertical={false} stroke="rgba(255,255,255,.06)" /><XAxis dataKey="m" tick={{ fontSize: 9, fill: T.dim }} axisLine={false} tickLine={false} /><YAxis tick={{ fontSize: 8, fill: T.dim }} tickFormatter={(v) => `${Math.round(v / 1000)}k`} axisLine={false} tickLine={false} /><Tooltip cursor={{ fill: "rgba(201,168,76,.06)" }} formatter={(v: any) => [`PKR ${fmtNum(v, 0)}`, "Rental yield"]} contentStyle={{ background: "rgba(8,14,28,.97)", border: `1px solid ${T.borderHov}`, borderRadius: 10, fontSize: 11 }} /><Bar dataKey="v" radius={[6, 6, 0, 0]}>{INCOME_DATA.map((_, idx) => <Cell key={idx} fill={idx === INCOME_DATA.length - 1 ? "url(#yieldGoldGradient)" : `${T.gold}55`} />)}</Bar></BarChart></ResponsiveContainer></div></section>
 
-              <SectionHeader title="Yield per Property" />
-              {PROPERTIES.map((p, i) => (
-                <div key={p.name} style={{ margin: "0 16px 8px", background: "rgba(255,255,255,0.03)", border: `1px solid ${T.border}`, borderRadius: 12, padding: "14px 16px" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: T.fg, marginBottom: 3 }}>{p.name}</div>
-                      <div style={{ fontSize: 10, color: T.dim }}>{p.loc}</div>
-                    </div>
-                    <div style={{ textAlign: "right" }}>
-                      <div style={{ fontSize: 14, fontWeight: 800, color: T.green }}>{p.yield}</div>
-                      <div style={{ fontSize: 10, color: T.dim }}>{p.roi}% APY</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </>
-          )}
+                <SectionHeader title="Yield Breakdown per Property" badge={<span style={{ color: T.green, fontSize: 9, fontWeight: 800 }}>3 ACTIVE ASSETS</span>} />
+                {PROPERTIES.map((p, i) => <motion.div key={p.name} whileTap={{ scale: .985 }} onClick={() => setLocation(propertyPath(p.name))} style={{ margin: "0 14px 10px", padding: 16, background: "rgba(255,255,255,.03)", border: `1px solid ${T.border}`, borderRadius: 17, cursor: "pointer", transition: "background .18s, border-color .18s" }} onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,.06)"; (e.currentTarget as HTMLElement).style.borderColor = T.borderHov; }} onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,.03)"; (e.currentTarget as HTMLElement).style.borderColor = T.border; }}><div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}><div style={{ minWidth: 0 }}><div style={{ color: T.fg, fontSize: 13, fontWeight: 850 }}>{p.name}</div><div style={{ color: T.dim, fontSize: 10, marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}><MapPin size={10} style={{ verticalAlign: "-2px", marginRight: 3 }} />{p.loc}</div></div><div style={{ textAlign: "right", flexShrink: 0 }}><div style={{ color: T.green, fontSize: 14, fontWeight: 900, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}>{p.yield}/mo</div><div style={{ color: T.green, fontSize: 10, fontWeight: 800, marginTop: 4 }}>{p.roi}% APY</div></div></div><div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginTop: 14, paddingTop: 11, borderTop: `1px solid ${T.border}` }}><button onClick={e => { e.stopPropagation(); setYieldNotice(`${p.name} payout history opened.`); setTimeout(() => setYieldNotice(""), 2200); }} style={{ flex: 1, padding: "8px 5px", border: `1px solid ${T.border}`, borderRadius: 9, background: T.panel, color: T.dimMid, fontSize: 10, fontWeight: 800, cursor: "pointer" }}>Payout History</button><button onClick={e => { e.stopPropagation(); setAutoReinvestYield(true); setYieldNotice(`${p.name} yield is now marked for auto-reinvestment.`); setTimeout(() => setYieldNotice(""), 2600); }} style={{ flex: 1, padding: "8px 5px", border: `1px solid ${T.gold}55`, borderRadius: 9, background: T.goldFaint, color: T.gold, fontSize: 10, fontWeight: 900, cursor: "pointer" }}>Reinvest Yield</button><ChevronRight size={15} color={T.dim} /></div></motion.div>)}
+              </div>
+            );
+          })()}
 
           {/* ═══════════════ HISTORY TAB ═══════════════ */}
           {activeTab === "History" && (

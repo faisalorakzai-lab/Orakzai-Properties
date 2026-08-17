@@ -280,6 +280,7 @@ function AppContent() {
               <Route path="/trade/:id" component={TradingFloor} />
               <Route path="/assets/transfer" component={InternalTransfer} />
               <Route path="/assets/ai-advisor" component={AIPortfolioAdvisor} />
+              <Route path="/assets" component={Wallet} />
               <Route path="/wallet" component={Wallet} />
               <Route path="/withdraw/on-chain" component={CryptoWithdrawFlow} />
               <Route path="/help/how-to-withdraw" component={WithdrawalHelp} />
