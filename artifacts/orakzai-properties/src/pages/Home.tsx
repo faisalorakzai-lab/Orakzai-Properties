@@ -85,7 +85,7 @@ import { useProfilePhoto } from "@/hooks/useProfilePhoto";
     { icon: Layers,     label: "Fractional",    color: "#ec4899", bg: "rgba(236,72,153,0.18)",  kycRequired: true,  href: "/invest" },
     { icon: HardHat,    label: "Construction",  color: "#f97316", bg: "rgba(249,115,22,0.18)",  kycRequired: false, marketCat: "Construction" },
     { icon: Star,       label: "Luxury Est.",   color: GOLD,      bg: "rgba(201,168,76,0.12)",  kycRequired: false, marketCat: "Luxury" },
-    { icon: Globe,      label: "International", color: "#3b82f6", bg: "rgba(59,130,246,0.18)",  kycRequired: false, marketCat: "International" },
+    { icon: Grid3x3,    label: "More",          color: "#3b82f6", bg: "rgba(59,130,246,0.18)",  kycRequired: false, href: "/market/services-directory" },
   ];
 
   const COUNTDOWN_PROJECTS = [

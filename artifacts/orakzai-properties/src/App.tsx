@@ -60,6 +60,7 @@ import Wealth from "@/pages/Wealth";
 import AirdropHub from "@/pages/AirdropHub";
 import AffiliateProgram from "@/pages/AffiliateProgram";
 import Marketplace from "@/pages/Marketplace";
+import MarketServicesDirectory from "@/pages/MarketServicesDirectory";
 import Charity from "@/pages/Charity";
 import Announcements from "@/pages/Announcements";
 import Learn from "@/pages/Learn";
@@ -256,6 +257,7 @@ function AppContent() {
               <Route path="/wealth" component={Wealth} />
               <Route path="/airdrop-hub" component={AirdropHub} />
               <Route path="/affiliate-program" component={AffiliateProgram} />
+              <Route path="/market/services-directory" component={MarketServicesDirectory} />
               <Route path="/marketplace" component={Marketplace} />
               <Route path="/charity" component={Charity} />
               <Route path="/announcements" component={Announcements} />
