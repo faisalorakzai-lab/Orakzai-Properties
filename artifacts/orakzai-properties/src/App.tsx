@@ -72,6 +72,7 @@ import CryptoLoans from "@/pages/CryptoLoans";
 import { DepositMethod, SelectAsset, SelectNetwork, DepositAddress } from "@/pages/DepositWorkflow";
 import WithdrawFiat from "@/pages/WithdrawFiat";
 import InternalTransfer from "@/pages/InternalTransfer";
+import AIPortfolioAdvisor from "@/pages/AIPortfolioAdvisor";
 import DemoTrading from "@/pages/DemoTrading";
 import DemoModeBanner from "@/components/DemoModeBanner";
 import { ModeProvider } from "@/contexts/ModeContext";
@@ -276,6 +277,7 @@ function AppContent() {
               <Route path="/withdraw-fiat" component={WithdrawFiat} />
               <Route path="/trade/:id" component={TradingFloor} />
               <Route path="/assets/transfer" component={InternalTransfer} />
+              <Route path="/assets/ai-advisor" component={AIPortfolioAdvisor} />
               <Route path="/wallet" component={Wallet} />
               <Route path="/withdraw/on-chain" component={CryptoWithdrawFlow} />
               <Route path="/help/how-to-withdraw" component={WithdrawalHelp} />
