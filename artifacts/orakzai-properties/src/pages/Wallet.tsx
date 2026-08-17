@@ -1387,40 +1387,55 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
             </>
           )}
 
-          {/* ═══════════════ REAL ESTATE TAB ═══════════════ */}
+          {/* ═══════════════ INSTITUTIONAL RWA TAB ═══════════════ */}
           {activeTab === "Real Estate" && (
-            <>
-              <div style={{ padding: "18px 16px 10px" }}>
-                <div style={{ fontSize: 10, color: T.dim, marginBottom: 4 }}>Property Portfolio Value</div>
-                <div style={{ fontSize: 28, fontWeight: 900, color: T.fg, fontVariantNumeric: "tabular-nums", marginBottom: 4 }}>PKR {fmtNum(moduleLedger.realEstate.PKR + moduleLedger.realEstate.USDT * 278 + moduleLedger.realEstate.OKBOND * 88, 0)}</div>
-                <div style={{ fontSize: 12, color: T.green, fontWeight: 600 }}>+12.45% Avg APY · 3 Active Properties</div>
-              </div>
-
-              <SectionHeader title="Holdings" />
-              <ListCard>
-                {PROPERTIES.map((p, i) => <PropertyRowItem key={p.name} p={p} i={i} expanded />)}
-              </ListCard>
-
-              <SectionHeader title="Upcoming Payouts" />
-              <ListCard>
-                {PAYOUTS.map((p, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 14px", borderBottom: i < PAYOUTS.length - 1 ? `1px solid rgba(255,255,255,0.05)` : "none" }}>
-                    <div style={{ width: 38, height: 38, borderRadius: 11, background: T.goldFaint, border: `1px solid ${T.borderHov}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <Building2 size={15} color={T.gold} />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: T.fg }}>{p.name}</div>
-                      <div style={{ fontSize: 10, color: T.dim }}>{p.date}</div>
-                    </div>
-                    <span style={{ fontSize: 12, fontWeight: 800, color: T.green, background: T.greenGlow, border: "1px solid rgba(16,185,129,0.25)", borderRadius: 8, padding: "4px 10px" }}>{p.amount}</span>
+            <div style={{ paddingBottom: 18 }}>
+              <section style={{ margin: "14px 14px 16px", padding: 18, background: "linear-gradient(145deg, rgba(201,168,76,0.11), rgba(255,255,255,0.025) 48%, rgba(16,185,129,0.05))", border: `1px solid ${T.borderHov}`, borderRadius: 20, boxShadow: `inset 0 1px 0 rgba(255,255,255,.06), 0 18px 45px rgba(0,0,0,.18)` }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                  <div>
+                    <div style={{ color: T.gold, fontSize: 10, fontWeight: 900, letterSpacing: ".14em", textTransform: "uppercase" }}>Institutional RWA Portfolio</div>
+                    <div style={{ marginTop: 8, color: T.fg, fontSize: 27, lineHeight: 1, fontWeight: 900, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontVariantNumeric: "tabular-nums" }}>PKR {fmtNum(moduleLedger.realEstate.PKR + moduleLedger.realEstate.USDT * 278 + moduleLedger.realEstate.OKBOND * 88, 0)}</div>
+                    <div style={{ marginTop: 8, color: T.dimMid, fontSize: 11 }}>Current tokenized-property value across the unified ledger</div>
                   </div>
-                ))}
-                <div style={{ padding: "12px 14px", borderTop: `1px solid ${T.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: 11, color: T.dim }}>Total Expected</span>
-                  <span style={{ fontSize: 14, fontWeight: 900, color: T.gold }}>+PKR 345,750</span>
+                  <div style={{ width: 42, height: 42, display: "grid", placeItems: "center", borderRadius: 13, color: T.gold, background: T.goldFaint, border: `1px solid ${T.borderHov}` }}><Building2 size={20} /></div>
                 </div>
-              </ListCard>
-            </>
+                <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 8, marginTop: 16 }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 9px", borderRadius: 8, color: T.green, background: T.greenGlow, border: "1px solid rgba(16,185,129,.22)", fontSize: 11, fontWeight: 800 }}><TrendingUp size={13} /> +12.45% Avg APY</span>
+                  <span style={{ color: T.dimMid, fontSize: 11, fontWeight: 700 }}>3 Active Tokenized Properties</span>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 16 }}>
+                  <button onClick={() => setLocation("/rwa-vaults")} style={{ minHeight: 42, border: 0, borderRadius: 11, background: `linear-gradient(135deg, ${T.gold}, ${T.goldBright})`, color: T.bg, fontSize: 11, fontWeight: 900, cursor: "pointer" }}>Buy RWA Tokens</button>
+                  <button onClick={() => setLocation("/staking")} style={{ minHeight: 42, border: `1px solid ${T.green}55`, borderRadius: 11, background: T.greenGlow, color: T.green, fontSize: 11, fontWeight: 900, cursor: "pointer" }}>Claim Rental Yield</button>
+                </div>
+              </section>
+
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 14px 10px" }}>
+                <div style={{ color: T.fg, fontSize: 18, fontWeight: 900, letterSpacing: "-.02em" }}>Property Holdings</div>
+                <span style={{ color: T.dim, fontSize: 10, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase" }}>Verified assets</span>
+              </div>
+              <section style={{ margin: "0 14px 16px", display: "flex", flexDirection: "column", gap: 9 }}>
+                {PROPERTIES.map((p, i) => (
+                  <motion.div key={p.name} whileTap={{ scale: .99 }} style={{ padding: 14, background: "linear-gradient(145deg, rgba(255,255,255,.035), rgba(255,255,255,.018))", border: `1px solid ${T.border}`, borderRadius: 17, cursor: "pointer", boxShadow: "inset 0 1px 0 rgba(255,255,255,.035)" }}>
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: 11 }}>
+                      <img src={p.img} alt={p.name} style={{ width: 50, height: 50, flexShrink: 0, objectFit: "cover", borderRadius: 13, border: `1px solid ${T.border}` }} />
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}><span style={{ color: T.fg, fontSize: 13, fontWeight: 900 }}>{p.name}</span><span style={{ padding: "3px 6px", borderRadius: 6, color: T.gold, background: T.goldFaint, border: `1px solid ${T.borderHov}`, fontSize: 8, fontWeight: 900 }}>{i === 0 ? "Sovereign Verified" : "Audited Escrow"}</span></div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 5, color: T.dim, fontSize: 10 }}><MapPin size={11} />{p.loc}</div>
+                      </div>
+                      <div style={{ flexShrink: 0, textAlign: "right" }}><div style={{ color: T.fg, fontSize: 12, fontWeight: 900, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}>{p.value}</div><div style={{ marginTop: 4, color: T.green, fontSize: 10, fontWeight: 800 }}>{p.roi}% APY</div></div>
+                    </div>
+                    <div style={{ height: 6, marginTop: 14, overflow: "hidden", borderRadius: 99, background: T.bg }}><div style={{ width: `${Math.min(p.own, 100)}%`, height: "100%", borderRadius: 99, background: `linear-gradient(90deg, ${T.gold}, ${T.goldBright})` }} /></div>
+                    <div style={{ display: "grid", gridTemplateColumns: "auto 1fr auto", alignItems: "center", gap: 9, marginTop: 9, color: T.dim, fontSize: 10 }}><span>Own: <b style={{ color: T.fg }}>{p.own}%</b></span><span>Monthly Yield: <b style={{ color: T.green }}>{p.yield}</b></span><span style={{ padding: "4px 7px", borderRadius: 6, color: T.green, background: T.greenGlow, border: "1px solid rgba(16,185,129,.2)", fontWeight: 800 }}>Active</span></div>
+                  </motion.div>
+                ))}
+              </section>
+
+              <div style={{ padding: "0 14px 10px", color: T.fg, fontSize: 18, fontWeight: 900 }}>Upcoming Rental Payouts</div>
+              <section style={{ margin: "0 14px", padding: 10, background: "rgba(255,255,255,.025)", border: `1px solid ${T.border}`, borderRadius: 17 }}>
+                {PAYOUTS.map((p, i) => <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 4px", borderBottom: i < PAYOUTS.length - 1 ? `1px solid ${T.border}` : "none" }}><div style={{ width: 36, height: 36, display: "grid", placeItems: "center", flexShrink: 0, borderRadius: 11, color: T.gold, background: T.goldFaint, border: `1px solid ${T.borderHov}` }}><Building2 size={15} /></div><div style={{ minWidth: 0, flex: 1 }}><div style={{ color: T.fg, fontSize: 12, fontWeight: 800 }}>{p.name}</div><div style={{ marginTop: 3, color: T.dim, fontSize: 10 }}>{p.date} · Rental distribution</div></div><span style={{ padding: "6px 9px", borderRadius: 8, color: T.green, background: T.greenGlow, border: "1px solid rgba(16,185,129,.22)", fontSize: 11, fontWeight: 900, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}>{p.amount}</span></div>)}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, padding: "14px 4px 4px" }}><span style={{ color: T.dimMid, fontSize: 11, fontWeight: 700 }}>Total Expected Payout</span><span style={{ color: T.goldBright, fontSize: 15, fontWeight: 900, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}>+PKR 345,750</span></div>
+              </section>
+            </div>
           )}
 
           {/* ═══════════════ SPOT TAB ═══════════════ */}
