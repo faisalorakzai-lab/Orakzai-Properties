@@ -1339,68 +1339,47 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
         {/* ── Scrollable content ── */}
         <div style={{ maxWidth: isMobile ? "100%" : 680, margin: "0 auto" }}>
 
-          {/* ═══════════════ OVERVIEW TAB ═══════════════ */}
+          {/* ═══════════════ INSTITUTIONAL OVERVIEW TAB ═══════════════ */}
           {activeTab === "Overview" && (
-            <>
-              {isDemoTrading && <div style={{ margin: "14px 16px 12px", padding: 16, borderRadius: 16, border: `1px solid ${T.cyan}55`, background: `linear-gradient(135deg, ${T.cyan}18, rgba(255,255,255,0.03))` }}><div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}><div><div style={{ color: T.cyan, fontSize: 10, fontWeight: 900, letterSpacing: ".1em" }}>DEMO TESTNET WALLET</div><div style={{ color: T.fg, fontSize: 22, fontWeight: 900, marginTop: 5 }}>$100,000.00 <span style={{ color: T.dim, fontSize: 11 }}>USDT Virtual</span></div><div style={{ color: T.dim, fontSize: 11, marginTop: 3 }}>50,000 OKBOND Demo Token</div></div><button onClick={() => { resetDemoFunds(); }} style={{ border: `1px solid ${T.cyan}55`, background: `${T.cyan}12`, color: T.cyan, borderRadius: 9, padding: "8px 10px", fontSize: 10, fontWeight: 900, whiteSpace: "nowrap" }}>Reset TestNet Funds</button></div></div>}
+            <div style={{ paddingBottom: 18 }}>
+              {isDemoTrading && <div style={{ margin: "14px 16px 12px", padding: 16, borderRadius: 16, border: `1px solid ${T.cyan}55`, background: `linear-gradient(135deg, ${T.cyan}18, rgba(255,255,255,0.03))` }}><div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}><div><div style={{ color: T.cyan, fontSize: 10, fontWeight: 900, letterSpacing: ".1em" }}>DEMO TESTNET WALLET</div><div style={{ color: T.fg, fontSize: 22, fontWeight: 900, marginTop: 5 }}>$100,000.00 <span style={{ color: T.dim, fontSize: 11 }}>USDT Virtual</span></div><div style={{ color: T.dim, fontSize: 11, marginTop: 3 }}>50,000 OKBOND Demo Token</div></div><button onClick={() => resetDemoFunds()} style={{ border: `1px solid ${T.cyan}55`, background: `${T.cyan}12`, color: T.cyan, borderRadius: 9, padding: "8px 10px", fontSize: 10, fontWeight: 900, whiteSpace: "nowrap" }}>Reset TestNet Funds</button></div></div>}
 
-              {/* Balance hero */}
               <BalanceHeroSection totalNW={totalNW} onDeposit={() => setIsDepositModalOpen(true)} />
+              <QuickActionsRow onAddFunds={() => setIsDepositModalOpen(true)} onWithdraw={() => setSWM(true)} onTransfer={() => window.location.assign("/assets/transfer")} onAiAdvisor={() => window.location.assign("/assets/ai-advisor")} />
 
-              {/* 4-button quick actions */}
-              <QuickActionsRow onAddFunds={() => setIsDepositModalOpen(true)} onWithdraw={() => setSWM(true)} onTransfer={() => { window.location.assign("/assets/transfer"); }} onAiAdvisor={() => { window.location.assign("/assets/ai-advisor"); }} />
+              <section style={{ margin: "0 16px 18px", padding: 16, background: "rgba(255,255,255,0.03)", border: `1px solid ${T.border}`, borderRadius: 16 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}><div><div style={{ fontSize: 10, color: T.dim, textTransform: "uppercase", letterSpacing: ".14em", fontWeight: 800 }}>Portfolio allocation</div><div style={{ fontSize: 11, color: T.dimMid, marginTop: 3 }}>Tap a sleeve to inspect the underlying assets</div></div><span style={{ fontSize: 10, color: T.gold, fontWeight: 800 }}>LIVE LEDGER</span></div>
+                <div style={{ display: "flex", height: 10, borderRadius: 999, overflow: "hidden", background: T.panel, border: `1px solid ${T.border}` }}>
+                  <button aria-label="Real Estate allocation" onClick={() => { setActiveTab("Real Estate"); window.history.replaceState({}, "", `${window.location.pathname}?tab=real-estate`); }} style={{ width: "53%", border: 0, background: `linear-gradient(90deg, ${T.gold}, #e7bd54)`, cursor: "pointer" }} />
+                  <button aria-label="Crypto allocation" onClick={() => { setActiveTab("Spot"); window.history.replaceState({}, "", `${window.location.pathname}?tab=spot`); }} style={{ width: "30%", border: 0, background: "#8b5cf6", cursor: "pointer" }} />
+                  <button aria-label="Fiat allocation" onClick={() => { setActiveTab("Spot"); window.history.replaceState({}, "", `${window.location.pathname}?tab=spot`); }} style={{ width: "17%", border: 0, background: "#22d3ee", cursor: "pointer" }} />
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginTop: 12 }}>
+                  {[{ label: "Real Estate", value: "53%", color: T.gold, tab: "Real Estate" as AssetTab }, { label: "Crypto", value: "30%", color: "#a78bfa", tab: "Spot" as AssetTab }, { label: "Fiat", value: "17%", color: T.cyan, tab: "Spot" as AssetTab }].map(item => <button key={item.label} onClick={() => { setActiveTab(item.tab); const slug = item.tab === "Real Estate" ? "real-estate" : "spot"; window.history.replaceState({}, "", `${window.location.pathname}?tab=${slug}`); }} style={{ textAlign: "left", padding: "9px 8px", borderRadius: 10, border: `1px solid ${item.color}30`, background: `${item.color}0b`, cursor: "pointer" }}><div style={{ display: "flex", alignItems: "center", gap: 6, color: item.color, fontSize: 10, fontWeight: 800 }}><span style={{ width: 6, height: 6, borderRadius: 99, background: item.color }} />{item.label}</div><div style={{ marginTop: 3, color: T.fg, fontSize: 16, fontWeight: 900, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}>{item.value}</div></button>)}
+                </div>
+              </section>
 
-              {/* Horizontal allocation bar */}
-              {!isDemoTrading && <AllocationBarSection />}
-
-              {/* Crypto section */}
-              <SectionHeader title="Crypto" />
-              <ListCard>
-                {displayAssets.map((a, i) => <CryptoRow key={a.name} a={a} i={i} />)}
-              </ListCard>
+              <SectionHeader title="Crypto" badge={<span style={{ fontSize: 9, color: T.dimMid, background: T.panel, border: `1px solid ${T.border}`, borderRadius: 20, padding: "2px 7px" }}>Spot holdings</span>} />
+              <ListCard>{displayAssets.filter(a => ["USDT", "USDC", "OKBOND"].includes(a.name)).map((a, i) => <CryptoRow key={a.name} a={a} i={i} />)}</ListCard>
 
               {!isDemoTrading && <>
-              {/* Real Estate section */}
-              <SectionHeader
-                title="Real Estate"
-                badge={
-                  <span style={{ fontSize: 9, color: T.green, background: T.greenGlow, border: "1px solid rgba(16,185,129,0.25)", borderRadius: 20, padding: "2px 7px" }}>
-                    3 Active
-                  </span>
-                }
-                action={
-                  <Link href={`${bp()}/browse`}>
-                    <button style={{ fontSize: 10, color: T.gold, background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 3 }}>
-                      Browse All <ChevronRight size={11} />
-                    </button>
-                  </Link>
-                }
-              />
-              <ListCard>
-                {PROPERTIES.map((p, i) => <PropertyRowItem key={p.name} p={p} i={i} />)}
-              </ListCard>
+                <SectionHeader title="Real Estate RWAs" badge={<span style={{ fontSize: 9, color: T.green, background: T.greenGlow, border: "1px solid rgba(16,185,129,0.25)", borderRadius: 20, padding: "2px 7px" }}>3 Active</span>} action={<button onClick={() => { setActiveTab("Real Estate"); window.history.replaceState({}, "", `${window.location.pathname}?tab=real-estate`); }} style={{ fontSize: 10, color: T.gold, background: "none", border: 0, cursor: "pointer" }}>View dashboard <ChevronRight size={11} /></button>} />
+                <ListCard>{PROPERTIES.slice(0, 2).map((p, i) => <PropertyRowItem key={p.name} p={p} i={i} />)}</ListCard>
 
-              {/* Monthly rental income teaser */}
-              <div style={{ margin: "0 16px 16px", background: "rgba(255,255,255,0.03)", border: `1px solid ${T.border}`, borderRadius: 16, padding: "16px 16px 14px" }}>
-                <div style={{ fontSize: 10, color: T.dim, marginBottom: 4 }}>Monthly Rental Income</div>
-                <div style={{ fontSize: 24, fontWeight: 900, color: T.fg, fontVariantNumeric: "tabular-nums", marginBottom: 4 }}>PKR 345,750</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: T.green, marginBottom: 14 }}>
-                  <TrendingUp size={11} /> +8.65% from last month
-                </div>
-                <div style={{ height: 60 }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={INCOME_DATA} barSize={14}>
-                      <XAxis dataKey="m" tick={{ fontSize: 8, fill: T.dim }} axisLine={false} tickLine={false} />
-                      <Tooltip formatter={(v: any) => [`PKR ${fmtNum(v, 0)}`, "Income"]} contentStyle={{ background: "rgba(8,14,28,0.95)", border: `1px solid ${T.border}`, borderRadius: 10, fontSize: 11 }} />
-                      <Bar dataKey="v" radius={[4, 4, 0, 0]}>
-                        {INCOME_DATA.map((_, idx) => <Cell key={idx} fill={idx === INCOME_DATA.length - 1 ? T.gold : `${T.gold}40`} />)}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
+                <SectionHeader title="Yield & Staking Vaults" badge={<span style={{ fontSize: 9, color: T.gold, background: T.goldFaint, border: `1px solid ${T.borderHov}`, borderRadius: 20, padding: "2px 7px" }}>Accruing</span>} />
+                <ListCard>
+                  <div style={{ padding: 15, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}><div><div style={{ color: T.fg, fontSize: 13, fontWeight: 800 }}>RWA Staking Yield</div><div style={{ color: T.dim, fontSize: 10, marginTop: 4 }}>Orakzai Bond vault · quarterly distribution</div></div><div style={{ textAlign: "right" }}><div style={{ color: T.green, fontSize: 13, fontWeight: 900 }}>+12.45% APY</div><button onClick={() => setLocation("/staking")} style={{ marginTop: 5, color: T.gold, background: "none", border: 0, fontSize: 10, fontWeight: 800, cursor: "pointer" }}>Open vault <ChevronRight size={10} /></button></div></div>
+                </ListCard>
+
+                <SectionHeader title="Fiat / Cash" badge={<span style={{ fontSize: 9, color: T.cyan, background: `${T.cyan}12`, border: `1px solid ${T.cyan}30`, borderRadius: 20, padding: "2px 7px" }}>Available</span>} />
+                <ListCard>{displayAssets.filter(a => a.name === "PKR" || a.name === "Shares").map((a, i) => <CryptoRow key={a.name} a={a} i={i} />)}</ListCard>
               </>}
-            </>
+
+              <section style={{ margin: "0 16px 18px", padding: 16, background: "rgba(255,255,255,0.03)", border: `1px solid ${T.border}`, borderRadius: 16 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}><div><div style={{ color: T.fg, fontSize: 13, fontWeight: 800 }}>Recent Activity</div><div style={{ color: T.dim, fontSize: 10, marginTop: 3 }}>Latest ledger and wallet operations</div></div><button onClick={() => { setActiveTab("History"); window.history.replaceState({}, "", `${window.location.pathname}?tab=history`); }} style={{ color: T.gold, background: "none", border: 0, fontSize: 10, fontWeight: 800, cursor: "pointer" }}>View All History <ChevronRight size={11} /></button></div>
+                {txnList.slice(0, 3).map((tx, i) => <div key={(tx as any).id ?? `${tx.label}-${i}`} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "11px 0", borderTop: i ? `1px solid ${T.border}` : "none" }}><div><div style={{ color: T.fg, fontSize: 11, fontWeight: 700 }}>{tx.label}</div><div style={{ color: T.dim, fontSize: 10, marginTop: 3 }}>{tx.sub} · {tx.date}</div></div><div style={{ color: tx.isPos ? T.green : T.fg, fontSize: 11, fontWeight: 800, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}>{tx.amount}</div></div>)}
+              </section>
+            </div>
           )}
 
           {/* ═══════════════ INSTITUTIONAL RWA TAB ═══════════════ */}
