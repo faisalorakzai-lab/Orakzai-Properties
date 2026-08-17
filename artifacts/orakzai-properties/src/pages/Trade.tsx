@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { useMode, type CryptoItem } from "@/contexts/ModeContext";
 import { useAppStore, ASSET_DEFS } from "@/store/AppStoreContext";
+import { useWalletStore } from "@/store/WalletStoreContext";
 import { createChart, ColorType, CandlestickSeries, LineSeries, LineStyle } from "lightweight-charts";
 import CandlestickChartView from "@/components/CandlestickChartView";
 import {
@@ -224,6 +225,7 @@ function resolveCanonicalPair(pair: string): string {
    Main Trade Page
 ═══════════════════════════════════════════════════════════════ */
 export default function Trade() {
+  const { ledger: unifiedLedger, debit: debitWallet, credit: creditWallet } = useWalletStore();
   const {
     activePair, setActivePair, setChartFullScreen, activeQuoteCurrency,
     liveCryptoList, setLiveCryptoList, cryptoFetching, setCryptoFetching,
@@ -276,8 +278,8 @@ export default function Trade() {
   const isPos      = assetMeta.change >= 0;
 
   /* Wallet balances */
-  const avblUSDT   = isDemoTrading ? demoBalances.USDT : (wallet?.balances?.USDT ?? 0);
-  const avblOKBOND = isDemoTrading ? demoBalances.OKBOND : (wallet?.balances?.OKBOND ?? 0);
+  const avblUSDT   = isDemoTrading ? demoBalances.USDT : unifiedLedger.spot.USDT;
+  const avblOKBOND = isDemoTrading ? demoBalances.OKBOND : unifiedLedger.spot.OKBOND;
 
   /* Per-pair data */
   const pairOrders = filledOrders.filter(o => o.pair === canonicalPair);
@@ -356,6 +358,8 @@ export default function Trade() {
       setDemoOrderNote(`Demo ${side.toUpperCase()} executed · ${amt.toFixed(4)} ${baseTicker}`);
     } else {
       dispatchTrade(canonicalPair, side === "buy" ? "BUY" : "SELL", amt, "USDT");
+      if (side === "buy") debitWallet("spot", "USDT", totalUSDT);
+      if (side === "sell" && baseTicker === "OKBOND") creditWallet("spot", "OKBOND", amt);
     }
     setTotal("");
     setPct(0);

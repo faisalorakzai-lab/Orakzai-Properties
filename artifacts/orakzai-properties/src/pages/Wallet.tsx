@@ -24,6 +24,7 @@ import {
 import { supabase } from "@/lib/supabase";
 import { useAppStore } from "@/store/AppStoreContext";
 import { useMode } from "@/contexts/ModeContext";
+import { useWalletStore } from "@/store/WalletStoreContext";
 import { CryptoDepositFlow } from "./CryptoDepositFlow";
 
 /* ─── Design System ──────────────────────────────────────────────────────────── */
@@ -1198,12 +1199,14 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
   /* Sync real-time balances from AppStore into the static ASSETS display */
   const { wallet: storeWallet } = useAppStore();
   const { isDemoTrading, demoBalances, resetDemoFunds } = useMode();
+  const { ledger: moduleLedger, history: internalTransfers, totalValuePKR: unifiedTotalPKR } = useWalletStore();
   const liveWallet = storeWallet ?? wallet;
+  const spotBalances = moduleLedger.spot;
   const liveAssets = ASSETS.map(a => {
-    if (a.name === "USDT")   return { ...a, bal: liveWallet.balances.USDT,   pkr: liveWallet.balances.USDT   * 278 };
-    if (a.name === "USDC")   return { ...a, bal: liveWallet.balances.USDC,   pkr: liveWallet.balances.USDC   * 278 };
-    if (a.name === "OKBOND") return { ...a, bal: liveWallet.balances.OKBOND, pkr: liveWallet.balances.OKBOND * 88  };
-    if (a.name === "PKR")    return { ...a, bal: liveWallet.balances.PKR,    pkr: liveWallet.balances.PKR        };
+    if (a.name === "USDT")   return { ...a, bal: spotBalances.USDT,   pkr: spotBalances.USDT   * 278 };
+    if (a.name === "USDC")   return { ...a, bal: spotBalances.USDC,   pkr: spotBalances.USDC   * 278 };
+    if (a.name === "OKBOND") return { ...a, bal: spotBalances.OKBOND, pkr: spotBalances.OKBOND * 88  };
+    if (a.name === "PKR")    return { ...a, bal: spotBalances.PKR,    pkr: spotBalances.PKR        };
     return a;
   });
   const demoAssets = [
@@ -1231,9 +1234,7 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
 
   const sideW = isMobile ? 0 : sidebarCollapsed ? 68 : 220;
 
-  const totalNW = isDemoTrading
-    ? demoBalances.USDT * 278 + demoBalances.OKBOND * 88
-    : liveWallet.balances.PKR + liveWallet.balances.USDT * 278 + liveWallet.balances.USDC * 278 + liveWallet.balances.OKBOND * 88 + 14_125_000;
+  const totalNW = isDemoTrading ? demoBalances.USDT * 278 + demoBalances.OKBOND * 88 : unifiedTotalPKR;
 
   const RECENT = txns.map(t => ({
     id:     t.id,
@@ -1252,7 +1253,16 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
     { label: "OKBOND Allocation",  sub: "Onboarding reward", date: "Today", amount: "+250.00 OKB",    isPos: true  },
     { label: "PKR Deposit",        sub: "Initial balance",   date: "Today", amount: "+PKR 100,000",   isPos: true  },
   ];
-  const txnList = (RECENT.length > 0 ? RECENT : FALLBACK_TXN).slice(0, 8);
+  const TRANSFER_RECENT = internalTransfers.map(t => ({
+    id: t.id,
+    type: "transfer",
+    label: `${t.asset} Internal Transfer`,
+    sub: `${t.from} → ${t.to}`,
+    date: new Date(t.time).toLocaleDateString("en-PK", { day: "numeric", month: "short", year: "numeric" }),
+    amount: `-${fmtNum(t.amount, 2)} ${t.asset}`,
+    isPos: false,
+  }));
+  const txnList = [...TRANSFER_RECENT, ...(RECENT.length > 0 ? RECENT : FALLBACK_TXN)].slice(0, 8);
 
   /* Section helpers */
   const SectionHeader = ({ title, badge, action }: { title: string; badge?: React.ReactNode; action?: React.ReactNode }) => (
@@ -1382,7 +1392,7 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
             <>
               <div style={{ padding: "18px 16px 10px" }}>
                 <div style={{ fontSize: 10, color: T.dim, marginBottom: 4 }}>Property Portfolio Value</div>
-                <div style={{ fontSize: 28, fontWeight: 900, color: T.fg, fontVariantNumeric: "tabular-nums", marginBottom: 4 }}>PKR 15,250,000</div>
+                <div style={{ fontSize: 28, fontWeight: 900, color: T.fg, fontVariantNumeric: "tabular-nums", marginBottom: 4 }}>PKR {fmtNum(moduleLedger.realEstate.PKR + moduleLedger.realEstate.USDT * 278 + moduleLedger.realEstate.OKBOND * 88, 0)}</div>
                 <div style={{ fontSize: 12, color: T.green, fontWeight: 600 }}>+12.45% Avg APY · 3 Active Properties</div>
               </div>
 
@@ -1419,7 +1429,7 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
               <div style={{ padding: "18px 16px 10px" }}>
                 <div style={{ fontSize: 10, color: T.dim, marginBottom: 4 }}>Crypto & Fiat Holdings</div>
                 <div style={{ fontSize: 28, fontWeight: 900, color: T.fg, fontVariantNumeric: "tabular-nums" }}>
-                  {isDemoTrading ? `$${demoBalances.USDT.toLocaleString("en-US", { minimumFractionDigits: 2 })} USDT` : `PKR ${fmtNum(ASSETS.reduce((s, a) => s + a.pkr, 0), 0)}`}
+                  {isDemoTrading ? `$${demoBalances.USDT.toLocaleString("en-US", { minimumFractionDigits: 2 })} USDT` : `PKR ${fmtNum(liveAssets.reduce((s, a) => s + a.pkr, 0), 0)}`}
                 </div>
               </div>
               <SectionHeader title="All Assets" />
@@ -1434,7 +1444,7 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
             <>
               <div style={{ padding: "18px 16px 10px" }}>
                 <div style={{ fontSize: 10, color: T.dim, marginBottom: 4 }}>Monthly Rental Income</div>
-                <div style={{ fontSize: 28, fontWeight: 900, color: T.fg, marginBottom: 4 }}>PKR 345,750</div>
+                <div style={{ fontSize: 28, fontWeight: 900, color: T.fg, marginBottom: 4 }}>PKR {fmtNum(moduleLedger.rwaStakingYield.PKR + moduleLedger.rwaStakingYield.USDT * 278 + moduleLedger.rwaStakingYield.OKBOND * 88 + moduleLedger.yieldDesk.PKR, 0)}</div>
                 <div style={{ fontSize: 12, color: T.green, fontWeight: 600 }}>+8.65% from last month</div>
               </div>
 

@@ -76,6 +76,7 @@ import DemoTrading from "@/pages/DemoTrading";
 import DemoModeBanner from "@/components/DemoModeBanner";
 import { ModeProvider } from "@/contexts/ModeContext";
 import { AppStoreProvider } from "@/store/AppStoreContext";
+import { WalletStoreProvider } from "@/store/WalletStoreContext";
 import { UserRegionProvider, useUserRegion } from "@/contexts/UserRegionContext";
 import RegionSwitcher from "@/components/RegionSwitcher";
 
@@ -328,7 +329,9 @@ export default function App() {
       <FirebaseAuthProvider>
         <ModeProvider>
           <AppStoreProvider>
-            <AppContent />
+            <WalletStoreProvider>
+              <AppContent />
+            </WalletStoreProvider>
           </AppStoreProvider>
         </ModeProvider>
       </FirebaseAuthProvider>
