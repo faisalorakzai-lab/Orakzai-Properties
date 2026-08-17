@@ -568,7 +568,7 @@ import { useProfilePhoto } from "@/hooks/useProfilePhoto";
                 const active = headerTab === tab;
                 return (
                   <motion.button key={tab} whileTap={{ scale: 0.96 }}
-                    onClick={() => { if (tab === "market") { setLocation("/market"); } else { setHeaderTab("exchange"); } }}
+                    onClick={() => setHeaderTab(tab)}
                     style={{ padding: "6px 20px", borderRadius: 22, fontSize: 13, fontWeight: 700, cursor: "pointer",
                       border: active ? "none" : "1px solid rgba(255,255,255,0.12)",
                       background: active ? GOLD : "transparent",
