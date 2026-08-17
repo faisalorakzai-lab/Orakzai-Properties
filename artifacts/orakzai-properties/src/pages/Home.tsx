@@ -78,7 +78,7 @@ import { useProfilePhoto } from "@/hooks/useProfilePhoto";
   ];
 
   const MARKET_QUICK_ACTIONS: { icon: React.ElementType; label: string; color: string; bg: string; kycRequired: boolean; href?: string; marketCat?: string }[] = [
-    { icon: Building2,  label: "Buy Property",  color: "#10b981", bg: "rgba(16,185,129,0.18)",  kycRequired: false, marketCat: "Buy" },
+    { icon: Building2,  label: "Buy Property",  color: "#10b981", bg: "rgba(16,185,129,0.18)",  kycRequired: false, marketCat: "Buy", href: "/market/properties?type=buy" },
     { icon: DollarSign, label: "Sell Asset",    color: GOLD,      bg: "rgba(201,168,76,0.18)",  kycRequired: true,  marketCat: "Sell" },
     { icon: KeyRound,   label: "Rent Market",   color: "#06b6d4", bg: "rgba(6,182,212,0.18)",   kycRequired: false, marketCat: "Rent" },
     { icon: TrendingUp, label: "Invest Hub",    color: "#a78bfa", bg: "rgba(167,139,250,0.18)", kycRequired: false, href: "/invest" },
