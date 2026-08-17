@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
+import { CITY_OPTIONS } from "@/data/cities";
 import {
   ArrowLeft, Bath, BedDouble, Check, ChevronDown, Filter, Heart, List,
   Map, MapPin, MessageCircle, Search, ShieldCheck, SlidersHorizontal,
@@ -44,12 +45,14 @@ const LISTINGS: Listing[] = [
   { id: 106, title: "DHA Phase 9 Commercial Plot", location: "DHA Phase 9, Lahore", city: "Lahore", type: "Plots", price: "PKR 4.2 Cr", amount: 42000000, beds: 0, baths: 0, area: "8 Marla · Main Boulevard", seller: "DHA Authorized Dealer", agencyId: "dha-dealer", image: "https://images.unsplash.com/photo-1448630360428-65456885c650?w=1200&q=85", tag: "Limited Inventory", verified: true, lat: 31.4801, lng: 74.4011 },
 ];
 
-const CITIES = ["All Cities", "Lahore", "Karachi", "Islamabad", "Dubai"];
 const TYPES = ["All Types", "Homes", "Plots", "Commercial", "Luxury Villas"];
+const CITY_NAMES = Array.from(new Set(CITY_OPTIONS.map((item) => item.city))).sort((a, b) => a.localeCompare(b));
 
 export default function BuyProperties() {
   const [, navigate] = useLocation();
   const [city, setCity] = useState("All Cities");
+  const [cityOpen, setCityOpen] = useState(false);
+  const [citySearch, setCitySearch] = useState("");
   const [type, setType] = useState("All Types");
   const [query, setQuery] = useState("");
   const [maxPrice, setMaxPrice] = useState(300000000);
@@ -68,7 +71,12 @@ export default function BuyProperties() {
     });
   }, [city, type, maxPrice, query]);
 
-  const reset = () => { setCity("All Cities"); setType("All Types"); setMaxPrice(300000000); setQuery(""); };
+  const reset = () => { setCity("All Cities"); setCityOpen(false); setCitySearch(""); setType("All Types"); setMaxPrice(300000000); setQuery(""); };
+  const matchingCities = useMemo(() => {
+    const q = citySearch.trim().toLowerCase();
+    if (!q) return CITY_NAMES;
+    return CITY_OPTIONS.filter((item) => `${item.city} ${item.country}`.toLowerCase().includes(q)).map((item) => item.city).filter((name, index, names) => names.indexOf(name) === index).sort((a, b) => a.localeCompare(b));
+  }, [citySearch]);
   const toggleFavorite = (id: number) => setFavorites((current) => current.includes(id) ? current.filter((x) => x !== id) : [...current, id]);
 
   return (
@@ -86,7 +94,7 @@ export default function BuyProperties() {
 
       <main style={{ maxWidth: 760, margin: "0 auto", padding: "12px 14px 0" }}>
         <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 9, scrollbarWidth: "none" }}>
-          <FilterSelect label={city} options={CITIES} onChange={setCity} />
+          <CityFilter value={city} open={cityOpen} search={citySearch} options={matchingCities} onToggle={() => setCityOpen((open) => !open)} onSearch={setCitySearch} onChange={(value) => { setCity(value); setCityOpen(false); setCitySearch(""); }} />
           <FilterSelect label={type} options={TYPES} onChange={setType} />
           <button onClick={() => setPriceOpen((v) => !v)} style={pillButton}><Filter size={13} /> Price Range</button>
           <button onClick={() => setView(view === "list" ? "map" : "list")} style={{ ...pillButton, color: GOLD, borderColor: `${GOLD}55` }}>{view === "list" ? <Map size={14} /> : <List size={14} />} {view === "list" ? "Map View" : "List View"}</button>
@@ -106,6 +114,22 @@ export default function BuyProperties() {
 function FilterSelect({ label, options, onChange }: { label: string; options: string[]; onChange: (value: string) => void }) {
   return <label style={{ position: "relative", flexShrink: 0 }}><select value={label} onChange={(e) => onChange(e.target.value)} style={{ ...pillButton, appearance: "none", paddingRight: 27, cursor: "pointer" }}>{options.map((option) => <option key={option}>{option}</option>)}</select><ChevronDown size={12} color={DIM} style={{ position: "absolute", right: 9, top: 13, pointerEvents: "none" }} /></label>;
 }
+
+function CityFilter({ value, open, search, options, onToggle, onSearch, onChange }: { value: string; open: boolean; search: string; options: string[]; onToggle: () => void; onSearch: (value: string) => void; onChange: (value: string) => void }) {
+  return <div style={{ position: "relative", flexShrink: 0 }}>
+    <button onClick={onToggle} style={{ ...pillButton, minWidth: 132, justifyContent: "space-between", cursor: "pointer" }}><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{value}</span><ChevronDown size={12} color={DIM} /></button>
+    {open && <div style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, zIndex: 70, width: 265, maxWidth: "calc(100vw - 28px)", padding: 10, background: "#171d26", border: `1px solid ${GOLD}55`, borderRadius: 16, boxShadow: "0 18px 45px rgba(0,0,0,.5)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 10px", background: PANEL, border: `1px solid ${LINE}`, borderRadius: 11 }}><Search size={14} color={DIM} /><input autoFocus value={search} onChange={(e) => onSearch(e.target.value)} placeholder="Search city or country..." style={{ ...inputStyle, fontSize: 11 }} /></div>
+      <div style={{ maxHeight: 260, overflowY: "auto", marginTop: 7 }}>
+        <button onClick={() => onChange("All Cities")} style={cityOptionStyle(value === "All Cities")}>All Cities <span style={{ color: DIM, fontSize: 10 }}>432 cities</span></button>
+        {options.map((name) => <button key={name} onClick={() => onChange(name)} style={cityOptionStyle(value === name)}>{name}</button>)}
+        {!options.length && <div style={{ padding: 14, color: DIM, fontSize: 11, textAlign: "center" }}>No cities found</div>}
+      </div>
+    </div>}
+  </div>;
+}
+
+const cityOptionStyle = (active: boolean) => ({ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", border: 0, borderRadius: 9, padding: "10px 9px", background: active ? `${GOLD}18` : "transparent", color: active ? GOLD : "#f5f7fa", textAlign: "left" as const, fontSize: 12, cursor: "pointer" });
 
 function PropertyCard({ item, favorite, onFavorite, onDetails, onChat }: { item: Listing; favorite: boolean; onFavorite: () => void; onDetails: () => void; onChat: () => void }) {
   return <motion.article whileTap={{ scale: .995 }} style={{ marginBottom: 14, overflow: "hidden", background: CARD, border: `1px solid ${LINE}`, borderRadius: 20, boxShadow: "0 12px 28px rgba(0,0,0,.18)" }}>
