@@ -1063,12 +1063,19 @@ function AllocationBarSection() {
 /* ─── Crypto Asset Row (Binance-style with Earn | Trade) ─────────────────────── */
 function CryptoRow({ a, i }: { a: typeof ASSETS[0]; i: number }) {
   const [logoFailed, setLogoFailed] = useState(false);
+  const [, navigate] = useWouterLocation();
+  const openToken = () => navigate(`/assets/token/${encodeURIComponent(a.name)}`);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+      whileTap={{ scale: 0.985 }}
       transition={{ delay: i * 0.05 }}
-      style={{ padding: "14px 14px 12px", borderBottom: `1px solid rgba(255,255,255,0.045)` }}
+      role="button" tabIndex={0} onClick={openToken}
+      onKeyDown={e => { if (e.key === "Enter" || e.key === " ") openToken(); }}
+      style={{ padding: "14px 14px 12px", borderBottom: `1px solid rgba(255,255,255,0.045)`, cursor: "pointer", transition: "background .16s" }}
+      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.035)"; }}
+      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
     >
       <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
         {/* Icon */}
@@ -1119,7 +1126,7 @@ function CryptoRow({ a, i }: { a: typeof ASSETS[0]; i: number }) {
           {/* Earn | Trade buttons */}
           <div style={{ display: "flex", gap: 8 }}>
             {["Earn","Trade"].map(lbl => (
-              <button key={lbl} style={{
+              <button key={lbl} onClick={e => { e.stopPropagation(); navigate(lbl === "Earn" ? `/staking?asset=${encodeURIComponent(a.name)}` : `/trade?pair=${encodeURIComponent(a.name)}_PKR`); }} style={{
                 padding: "5px 18px", borderRadius: 7, fontSize: 11, fontWeight: 600,
                 border: `1px solid rgba(255,255,255,0.1)`,
                 background: "rgba(255,255,255,0.06)", color: T.dimMid, cursor: "pointer",
@@ -1138,10 +1145,14 @@ function CryptoRow({ a, i }: { a: typeof ASSETS[0]; i: number }) {
 
 /* ─── Property Row (compact list) ───────────────────────────────────────────── */
 function PropertyRowItem({ p, i, expanded = false }: { p: typeof PROPERTIES[0]; i: number; expanded?: boolean }) {
+  const [, navigate] = useWouterLocation();
+  const propertyPath = `/property/${encodeURIComponent(p.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""))}`;
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
       transition={{ delay: i * 0.07 }}
+      whileTap={{ scale: 0.985 }}
+      onClick={() => navigate(propertyPath)}
       style={{
         display: "flex", alignItems: "center", gap: 12,
         padding: "13px 14px",
@@ -1204,6 +1215,7 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
   const [spotSearch, setSpotSearch]   = useState("");
   const [hideZeroSpot, setHideZeroSpot] = useState(false);
   const [txns, setTxns]              = useState(() => getTxns().slice(0, 10));
+  const [selectedActivity, setSelectedActivity] = useState<any>(null);
   const [, setLocation]              = useWouterLocation();
 
   /* Sync real-time balances from AppStore into the static ASSETS display */
@@ -1252,17 +1264,12 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
 
   const totalNW = isDemoTrading ? demoBalances.USDT * 278 + demoBalances.OKBOND * 88 : unifiedTotalPKR;
 
-  const RECENT = txns.map(t => ({
-    id:     t.id,
-    type:   t.type,
-    label:  t.type === "deposit" ? `${t.currency} Deposit` : `Trade — ${(t as any).ticker ?? ""}`,
-    sub:    t.type === "deposit" ? t.note || "Wallet top-up" : `${(t as any).side} @ ${(t as any).price ?? ""}`,
-    date:   new Date(t.time).toLocaleDateString("en-PK", { day: "numeric", month: "short", year: "numeric" }),
-    amount: t.type === "deposit"
-      ? `+${fmtNum(t.amount, 2)} ${t.currency}`
-      : `${(t as any).side === "BUY" ? "-" : "+"}${fmtNum((t as any).netTotal ?? 0, 4)} ${(t as any).quote ?? ""}`,
-    isPos: t.type === "deposit" || (t as any).side === "SELL",
-  }));
+  const RECENT = txns.map(t => {
+    const safeDate = t.time ? new Date(t.time).toLocaleDateString("en-PK", { day: "numeric", month: "short", year: "numeric" }) : "Today";
+    if (t.type === "deposit") return { id: t.id, type: t.type, label: `${t.currency} Deposit`, sub: t.note || "Wallet top-up", date: safeDate, amount: `+${fmtNum(t.amount, 2)} ${t.currency}`, isPos: true, fee: "0.00" };
+    if (t.type === "withdrawal") return { id: t.id, type: t.type, label: `${t.currency || "Asset"} Withdrawal`, sub: `${t.network || "Network"} · ${t.status || "Pending"}`, date: safeDate, amount: `-${fmtNum(t.amount, 2)} ${t.currency || ""}`, isPos: false, fee: `${fmtNum(t.fee ?? 0, 4)} ${t.currency || ""}` };
+    return { id: t.id, type: t.type, label: `${t.side === "BUY" ? "Buy" : "Sell"} ${t.ticker || "Asset"}`, sub: `${t.ticker || "Asset"}/${t.quote || "USDT"} · ${t.price ?? "Market"}`, date: safeDate, amount: `${t.side === "BUY" ? "-" : "+"}${fmtNum(t.netTotal ?? 0, 4)} ${t.quote || ""}`, isPos: t.side === "SELL", fee: `${fmtNum(t.fee ?? 0, 4)} ${t.quote || ""}` };
+  });
 
   const FALLBACK_TXN = [
     { label: "USDT Deposit",       sub: "Welcome bonus",     date: "Today", amount: "+500.00 USDT",   isPos: true  },
@@ -1377,7 +1384,8 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
 
               <section style={{ margin: "0 16px 18px", padding: 16, background: "rgba(255,255,255,0.03)", border: `1px solid ${T.border}`, borderRadius: 16 }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}><div><div style={{ color: T.fg, fontSize: 13, fontWeight: 800 }}>Recent Activity</div><div style={{ color: T.dim, fontSize: 10, marginTop: 3 }}>Latest ledger and wallet operations</div></div><button onClick={() => { setActiveTab("History"); window.history.replaceState({}, "", `${window.location.pathname}?tab=history`); }} style={{ color: T.gold, background: "none", border: 0, fontSize: 10, fontWeight: 800, cursor: "pointer" }}>View All History <ChevronRight size={11} /></button></div>
-                {txnList.slice(0, 3).map((tx, i) => <div key={(tx as any).id ?? `${tx.label}-${i}`} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "11px 0", borderTop: i ? `1px solid ${T.border}` : "none" }}><div><div style={{ color: T.fg, fontSize: 11, fontWeight: 700 }}>{tx.label}</div><div style={{ color: T.dim, fontSize: 10, marginTop: 3 }}>{tx.sub} · {tx.date}</div></div><div style={{ color: tx.isPos ? T.green : T.fg, fontSize: 11, fontWeight: 800, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}>{tx.amount}</div></div>)}
+                {txnList.slice(0, 3).map((tx, i) => <button key={(tx as any).id ?? `${tx.label}-${i}`} onClick={() => setSelectedActivity(tx)} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "11px 0", border: 0, borderTop: i ? `1px solid ${T.border}` : "none", background: "transparent", textAlign: "left", cursor: "pointer", transition: "transform .15s, background .15s" }} onPointerDown={e => { (e.currentTarget as HTMLElement).style.transform = "scale(.985)"; }} onPointerUp={e => { (e.currentTarget as HTMLElement).style.transform = "scale(1)"; }}><div><div style={{ color: T.fg, fontSize: 11, fontWeight: 700 }}>{tx.label || "Asset Activity"}</div><div style={{ color: T.dim, fontSize: 10, marginTop: 3 }}>{tx.sub || "Ledger operation"} · {tx.date || "Today"} · <span style={{ color: T.green }}>Success</span></div></div><div style={{ color: tx.isPos ? T.green : T.fg, fontSize: 11, fontWeight: 800, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}>{tx.amount || "—"}</div></button>)}
+                {selectedActivity && <div style={{ marginTop: 10, padding: 13, borderRadius: 12, border: `1px solid ${T.borderHov}`, background: "rgba(201,168,76,.06)" }}><div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}><div><div style={{ color: T.gold, fontSize: 9, fontWeight: 900, letterSpacing: ".12em", textTransform: "uppercase" }}>Transaction Receipt</div><div style={{ color: T.fg, fontSize: 12, fontWeight: 800, marginTop: 5 }}>{selectedActivity.label || "Asset Activity"}</div></div><button onClick={() => setSelectedActivity(null)} style={{ border: 0, background: "transparent", color: T.dimMid, cursor: "pointer", fontSize: 16 }}>×</button></div><div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 11, fontSize: 10 }}><div><div style={{ color: T.dim }}>Timestamp</div><div style={{ color: T.fg, marginTop: 3 }}>{selectedActivity.date || "Today"}</div></div><div><div style={{ color: T.dim }}>Status</div><div style={{ color: T.green, marginTop: 3, fontWeight: 800 }}>Success</div></div><div><div style={{ color: T.dim }}>Amount</div><div style={{ color: T.fg, marginTop: 3, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}>{selectedActivity.amount || "—"}</div></div><div><div style={{ color: T.dim }}>Tx Hash</div><div style={{ color: T.fg, marginTop: 3, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}>{selectedActivity.id ? `0x${String(selectedActivity.id).slice(0, 10)}` : "Internal ledger"}</div></div><div><div style={{ color: T.dim }}>Fee</div><div style={{ color: T.fg, marginTop: 3, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}>{selectedActivity.fee || "0.00"}</div></div></div><button onClick={() => window.open("https://etherscan.io", "_blank", "noopener,noreferrer")} style={{ marginTop: 11, border: 0, background: "transparent", color: T.gold, padding: 0, fontSize: 10, fontWeight: 800, cursor: "pointer" }}>View explorer record <ChevronRight size={11} /></button></div>}
               </section>
             </div>
           )}

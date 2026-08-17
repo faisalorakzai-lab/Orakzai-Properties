@@ -16,6 +16,7 @@ import InvestDetail from "@/pages/InvestDetail";
 import Portfolio from "@/pages/Portfolio";
 import TradingFloor from "@/pages/TradingFloor";
 import Wallet from "@/pages/Wallet";
+import AssetTokenDetail from "@/pages/AssetTokenDetail";
 import OkzBytePayReceive from "@/pages/OkzBytePayReceive";
 import OkzBytePaySend from "@/pages/OkzBytePaySend";
 import DepositDetail from "@/pages/DepositDetail";
@@ -239,6 +240,7 @@ function AppContent() {
               <Route path="/" component={Home} />
               <Route path="/browse" component={Browse} />
               <Route path="/property/:id" component={PropertyDetail} />
+              <Route path="/assets/token/:id" component={AssetTokenDetail} />
               <Route path="/post-property" component={PostProperty} />
               <Route path="/my-properties" component={MyProperties} />
               <Route path="/invest" component={InvestPortal} />
