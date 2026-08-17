@@ -1218,6 +1218,11 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
   const [hideZeroSpot, setHideZeroSpot] = useState(false);
   const [txns, setTxns]              = useState(() => getTxns().slice(0, 10));
   const [selectedActivity, setSelectedActivity] = useState<any>(null);
+  const [historyCategory, setHistoryCategory] = useState("All");
+  const [historySearch, setHistorySearch] = useState("");
+  const [historyRange, setHistoryRange] = useState("All Time");
+  const [selectedHistoryTx, setSelectedHistoryTx] = useState<any>(null);
+  const [historyNotice, setHistoryNotice] = useState("");
   const [, setLocation]              = useWouterLocation();
 
   /* Sync real-time balances from AppStore into the static ASSETS display */
@@ -1288,6 +1293,36 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
     isPos: false,
   }));
   const txnList = [...TRANSFER_RECENT, ...(RECENT.length > 0 ? RECENT : FALLBACK_TXN)].slice(0, 8);
+
+  const historyRows = txnList.map((t: any, index: number) => {
+    const isWithdrawal = t.type === "withdrawal";
+    const isDeposit = t.type === "deposit";
+    const isTransfer = t.type === "transfer";
+    const status = isWithdrawal ? (t.status || "Pending") : "Completed";
+    const asset = t.currency || t.asset || t.ticker || (t.amount || "").toString().split(" ").pop() || "Asset";
+    const network = t.network || (isTransfer ? "OkzByte Internal Ledger" : isDeposit ? "Wallet Deposit" : "BNB Smart Chain (BEP20)");
+    const txHash = t.txid || t.id || `LEDGER-${index + 1}-${asset}`;
+    const timestamp = t.time ? new Date(t.time).toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : `${t.date || "10 Aug 2026"}, 03:09 PM`;
+    const category = isWithdrawal ? "Withdrawals" : isDeposit ? (t.sub?.toLowerCase().includes("yield") ? "Real Estate Yield" : "Deposits") : isTransfer ? "Internal Transfers" : "Deposits";
+    return { ...t, status, asset, network, txHash, timestamp, category, fee: t.fee || (isWithdrawal ? `0.50 ${asset}` : "0.00 USDT"), explorer: network.toLowerCase().includes("tron") ? "https://tronscan.org" : network.toLowerCase().includes("internal") ? "" : "https://bscscan.com", amountColor: isWithdrawal ? T.red : T.green, displayAmount: t.amount };
+  });
+  const filteredHistoryRows = historyRows.filter((row: any) => {
+    const query = historySearch.trim().toLowerCase();
+    const matchesCategory = historyCategory === "All" || row.category === historyCategory;
+    const matchesSearch = !query || [row.txHash, row.asset, row.network, row.label, row.sub].some((v: any) => String(v || "").toLowerCase().includes(query));
+    return matchesCategory && matchesSearch;
+  });
+  const exportLedger = (format: "CSV" | "PDF") => {
+    if (format === "PDF") {
+      setHistoryNotice("Print dialog opened — choose Save as PDF for your compliance report.");
+      setTimeout(() => window.print(), 150);
+      return;
+    }
+    const csv = ["Transaction,Category,Asset,Amount,Status,Network,Fee,Timestamp,TxID", ...filteredHistoryRows.map((row: any) => [row.label, row.category, row.asset, row.displayAmount, row.status, row.network, row.fee, row.timestamp, row.txHash].map((v: any) => `"${String(v ?? "").replaceAll('"', '""')}"`).join(","))].join("\\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a"); link.href = url; link.download = `okzbyte-transaction-ledger-${Date.now()}.csv`; link.click(); URL.revokeObjectURL(url);
+    setHistoryNotice(`${filteredHistoryRows.length} ledger records exported as CSV.`); setTimeout(() => setHistoryNotice(""), 2600);
+  };
 
   /* Section helpers */
   const SectionHeader = ({ title, badge, action }: { title: string; badge?: React.ReactNode; action?: React.ReactNode }) => (
@@ -1500,41 +1535,26 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
           {/* ═══════════════ HISTORY TAB ═══════════════ */}
           {activeTab === "History" && (
             <>
-              <div style={{ padding: "16px 16px 8px" }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: T.fg }}>Transaction History</div>
+              <div style={{ padding: "16px 14px 10px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                <div><div style={{ fontSize: 16, fontWeight: 850, color: T.fg }}>Transaction Audit Ledger</div><div style={{ fontSize: 10, color: T.dim, marginTop: 4 }}>Institutional wallet activity and settlement records</div></div>
+                <div style={{ display: "flex", gap: 5, flexShrink: 0 }}><button onClick={() => exportLedger("CSV")} style={{ display: "flex", alignItems: "center", gap: 4, padding: "8px 9px", borderRadius: 9, border: `1px solid ${T.border}`, background: T.panel, color: T.dimMid, fontSize: 9, fontWeight: 800 }}><Download size={12} /> CSV</button><button onClick={() => exportLedger("PDF")} style={{ display: "flex", alignItems: "center", gap: 4, padding: "8px 9px", borderRadius: 9, border: `1px solid ${T.border}`, background: T.panel, color: T.dimMid, fontSize: 9, fontWeight: 800 }}><ExternalLink size={12} /> PDF</button></div>
               </div>
+              {historyNotice && <div style={{ margin: "0 14px 10px", padding: "9px 11px", borderRadius: 10, background: T.greenGlow, border: `1px solid ${T.green}44`, color: T.green, fontSize: 10, fontWeight: 750 }}>{historyNotice}</div>}
+              <div style={{ display: "flex", gap: 7, overflowX: "auto", padding: "0 14px 9px", scrollbarWidth: "none" }}>
+                {["All", "Deposits", "Withdrawals", "Real Estate Yield", "Internal Transfers"].map(category => <button key={category} onClick={() => setHistoryCategory(category)} style={{ flexShrink: 0, padding: "7px 10px", borderRadius: 999, border: `1px solid ${historyCategory === category ? `${T.gold}88` : T.border}`, background: historyCategory === category ? T.goldFaint : T.panel, color: historyCategory === category ? T.gold : T.dimMid, fontSize: 9, fontWeight: 800 }}>{category}</button>)}
+              </div>
+              <div style={{ display: "flex", gap: 8, padding: "0 14px 12px" }}>
+                <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 7, padding: "9px 10px", borderRadius: 11, border: `1px solid ${T.border}`, background: T.panel }}><Search size={14} color={T.dim} /><input value={historySearch} onChange={e => setHistorySearch(e.target.value)} placeholder="Search TxID, asset, network..." style={{ width: "100%", border: 0, outline: 0, background: "transparent", color: T.fg, fontSize: 10 }} /></div>
+                <select value={historyRange} onChange={e => setHistoryRange(e.target.value)} style={{ width: 96, border: `1px solid ${T.border}`, borderRadius: 11, background: T.panel, color: T.dimMid, fontSize: 9, padding: "0 7px", outline: 0 }}><option>Last 7 Days</option><option>Last 30 Days</option><option>All Time</option></select>
+              </div>
+              <div style={{ margin: "0 14px 8px", display: "flex", justifyContent: "space-between", color: T.dim, fontSize: 9, fontWeight: 750, textTransform: "uppercase", letterSpacing: ".08em" }}><span>{filteredHistoryRows.length} Records</span><span>{historyRange}</span></div>
               <ListCard>
-                {txnList.map((t, i) => (
-                  <Link key={i} href={t.id ? `/wallet/transaction/${t.id}` : "#"} style={{ display: "block", textDecoration: "none", color: "inherit" }}>
-                  <div style={{
-                    display: "flex", alignItems: "center", gap: 12, padding: "13px 14px",
-                    borderBottom: i < txnList.length - 1 ? `1px solid rgba(255,255,255,0.05)` : "none",
-                    cursor: t.id ? "pointer" : "default",
-                    transition: "background 0.15s",
-                  }}
-                  onMouseEnter={e => { if (t.id) (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.03)"; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = ""; }}
-                  >
-                    <div style={{
-                      width: 40, height: 40, borderRadius: 12,
-                      background: t.isPos ? T.greenGlow : T.redGlow,
-                      border: `1px solid ${t.isPos ? "rgba(16,185,129,0.25)" : "rgba(244,63,94,0.25)"}`,
-                      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                    }}>
-                      {t.isPos ? <ArrowDownToLine size={15} color={T.green} /> : <ArrowUpFromLine size={15} color={T.red} />}
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: T.fg, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.label}</div>
-                      <div style={{ fontSize: 9, color: T.dim }}>{t.sub}</div>
-                      <div style={{ fontSize: 8, color: T.dim }}>{t.date}</div>
-                    </div>
-                    <div style={{ textAlign: "right", flexShrink: 0 }}>
-                      <div style={{ fontSize: 12, fontWeight: 800, color: t.isPos ? T.green : T.red }}>{t.amount}</div>
-                      <div style={{ fontSize: 8, color: T.green, background: T.greenGlow, border: "1px solid rgba(16,185,129,0.2)", borderRadius: 8, padding: "1px 6px", marginTop: 3, display: "inline-block" }}>Confirmed</div>
-                    </div>
-                  </div>
-                  </Link>
-                ))}
+                {filteredHistoryRows.map((t: any, i: number) => { const confirmed = t.status === "Completed"; return <button key={`${t.txHash}-${i}`} onClick={() => setSelectedHistoryTx(t)} style={{ width: "100%", display: "flex", alignItems: "center", gap: 11, padding: "14px 12px", border: 0, borderBottom: i < filteredHistoryRows.length - 1 ? `1px solid rgba(255,255,255,0.05)` : "none", background: "transparent", color: T.fg, textAlign: "left", cursor: "pointer" }}>
+                  <div style={{ width: 39, height: 39, borderRadius: 12, background: t.isPos ? T.greenGlow : T.redGlow, border: `1px solid ${t.isPos ? `${T.green}44` : `${T.red}44`}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{t.isPos ? <ArrowDownToLine size={15} color={T.green} /> : <ArrowUpFromLine size={15} color={T.red} />}</div>
+                  <div style={{ minWidth: 0, flex: 1 }}><div style={{ fontSize: 11, fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.label}</div><div style={{ color: T.dim, fontSize: 9, marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.network} · {t.timestamp}</div><div style={{ color: T.dim, fontSize: 8, marginTop: 3 }}>{t.category}</div></div>
+                  <div style={{ minWidth: 100, textAlign: "right" }}><div style={{ color: t.amountColor, fontSize: 11, fontWeight: 900, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}>{t.displayAmount}</div><span style={{ display: "inline-block", marginTop: 5, padding: "3px 7px", borderRadius: 999, border: `1px solid ${confirmed ? `${T.green}55` : `${T.gold}66`}`, background: confirmed ? T.greenGlow : T.goldFaint, color: confirmed ? T.green : T.gold, fontSize: 8, fontWeight: 850 }}>{confirmed ? "Confirmed" : "Pending"}</span></div><ChevronRight size={14} color={T.dim} />
+                </button>; })}
+                {!filteredHistoryRows.length && <div style={{ padding: 32, textAlign: "center", color: T.dim, fontSize: 11 }}>No ledger records match the selected filters.</div>}
               </ListCard>
             </>
           )}
@@ -1572,6 +1592,15 @@ function Dashboard({ wallet, onReload }: { wallet: WalletState; onReload: () => 
         {showDeposit && (
           <DepositModal open={showDeposit} onClose={() => setSD(false)} onDone={onReload} />
         )}
+        {selectedHistoryTx && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedHistoryTx(null)} style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(0,0,0,.72)", display: "flex", alignItems: "flex-end" }}>
+          <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} onClick={e => e.stopPropagation()} style={{ width: "100%", maxHeight: "86dvh", overflowY: "auto", padding: "22px 18px calc(30px + env(safe-area-inset-bottom))", background: "#14171d", borderTop: `1px solid ${T.border}`, borderRadius: "24px 24px 0 0" }}>
+            <div style={{ width: 38, height: 4, borderRadius: 99, background: T.borderHov, margin: "0 auto 18px" }} />
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}><div><div style={{ color: T.dim, fontSize: 10, textTransform: "uppercase", letterSpacing: ".1em", fontWeight: 800 }}>Transaction Receipt</div><div style={{ color: T.fg, fontSize: 17, fontWeight: 850, marginTop: 6 }}>{selectedHistoryTx.label}</div></div><button onClick={() => setSelectedHistoryTx(null)} style={{ border: 0, background: T.panel, color: T.dimMid, borderRadius: 9, padding: 7 }}><X size={16} /></button></div>
+            <div style={{ marginTop: 16, padding: 15, borderRadius: 15, background: T.bg, border: `1px solid ${T.border}` }}><div style={{ color: T.dim, fontSize: 10 }}>Settled amount</div><div style={{ color: selectedHistoryTx.amountColor, fontSize: 25, fontWeight: 900, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", marginTop: 5 }}>{selectedHistoryTx.displayAmount}</div><span style={{ display: "inline-block", marginTop: 9, padding: "4px 8px", borderRadius: 999, background: selectedHistoryTx.status === "Completed" ? T.greenGlow : T.goldFaint, color: selectedHistoryTx.status === "Completed" ? T.green : T.gold, border: `1px solid ${selectedHistoryTx.status === "Completed" ? `${T.green}55` : `${T.gold}66`}`, fontSize: 9, fontWeight: 850 }}>{selectedHistoryTx.status === "Completed" ? "Confirmed" : "Processing"}</span></div>
+            <div style={{ marginTop: 14, border: `1px solid ${T.border}`, borderRadius: 14, overflow: "hidden" }}>{[["Network / Chain", selectedHistoryTx.network], ["Network Fee", selectedHistoryTx.fee], ["Timestamp", selectedHistoryTx.timestamp], ["Category", selectedHistoryTx.category]].map(([label, value]) => <div key={label} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "12px 13px", borderBottom: `1px solid ${T.border}` }}><span style={{ color: T.dim, fontSize: 10 }}>{label}</span><span style={{ color: T.fg, fontSize: 10, fontWeight: 750, textAlign: "right" }}>{value}</span></div>)}<div style={{ padding: 13 }}><div style={{ color: T.dim, fontSize: 10, marginBottom: 7 }}>Transaction Hash (TxID)</div><div style={{ display: "flex", alignItems: "center", gap: 7 }}><code style={{ flex: 1, color: T.fg, fontSize: 10, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{selectedHistoryTx.txHash}</code><button onClick={() => { navigator.clipboard?.writeText(selectedHistoryTx.txHash); setHistoryNotice("TxID copied to clipboard."); setTimeout(() => setHistoryNotice(""), 2000); }} style={{ display: "flex", alignItems: "center", gap: 4, border: `1px solid ${T.border}`, borderRadius: 8, background: T.panel, color: T.dimMid, padding: "6px 8px", fontSize: 9, fontWeight: 800, flexShrink: 0 }}><Copy size={12} /> Copy</button></div></div></div>
+            {selectedHistoryTx.explorer && <button onClick={() => window.open(selectedHistoryTx.explorer, "_blank", "noopener,noreferrer")} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, marginTop: 14, padding: 13, border: `1px solid ${T.gold}66`, borderRadius: 12, background: T.goldFaint, color: T.gold, fontSize: 11, fontWeight: 850 }}><ExternalLink size={14} /> View on-chain explorer</button>}
+          </motion.div>
+        </motion.div>}
       </AnimatePresence>
     </div>
   );
