@@ -49,9 +49,9 @@ function safeArea(source: Record<string, any>) {
 }
 
 const CAT_STYLE: Record<string, { pill: string; glow: string; name: string; accent: string }> = {
-  buy:  { pill: "bg-emerald-500/15 text-emerald-300 border-emerald-500/35", glow: "shadow-emerald-500/20", name: "For Sale",   accent: "#22c55e" },
-  sell: { pill: "bg-blue-500/15 text-blue-300 border-blue-500/35",         glow: "shadow-blue-500/20",   name: "Selling",    accent: "#3b82f6" },
-  rent: { pill: "bg-violet-500/15 text-violet-300 border-violet-500/35",   glow: "shadow-violet-500/20", name: "For Rent",   accent: "#8b5cf6" },
+  buy:  { pill: "bg-emerald-500/15 text-emerald-300 border-emerald-500/35", glow: "shadow-emerald-500/20", name: "LISTING",   accent: "#22c55e" },
+  sell: { pill: "bg-blue-500/15 text-blue-300 border-blue-500/35",         glow: "shadow-blue-500/20",   name: "SELLING",    accent: "#3b82f6" },
+  rent: { pill: "bg-violet-500/15 text-violet-300 border-violet-500/35",   glow: "shadow-violet-500/20", name: "RENTAL",   accent: "#8b5cf6" },
 };
 
 const TYPE_ICON: Record<string, typeof Home> = {
@@ -156,7 +156,7 @@ function Gallery({ images, title }: { images: string[]; title: string }) {
               <button onClick={() => setGridView(true)}
                 className="flex items-center gap-2 bg-[#040b14]/75 border border-white/15 rounded-xl px-3 py-2 backdrop-blur-md hover:border-[#C9A84C]/40 transition-colors">
                 <Image className="h-3.5 w-3.5 text-[#C9A84C]" />
-                <span className="text-white text-xs font-semibold">View All {images.length} Photos</span>
+                <span className="text-white text-xs font-semibold">MEDIA · {images.length}</span>
               </button>
             )}
           </div>
@@ -667,7 +667,7 @@ export default function PropertyDetail() {
                 <div className="flex flex-col gap-2">
                   <div>
                     <p className="text-[#4a6080] text-[10px] uppercase tracking-[.22em] font-semibold mb-2">
-                      {isRental ? "Monthly Rent" : "Listed Price"}
+                      {isRental ? "MONTHLY RATE" : "LISTED PRICE"}
                     </p>
                     <div className="font-sans text-2xl md:text-3xl font-bold text-amber-400 leading-tight tracking-tight break-words"
                       style={{ textShadow: "0 0 60px rgba(201,168,76,0.3)" }}>
@@ -675,7 +675,7 @@ export default function PropertyDetail() {
                     </div>
                     <div className="flex flex-wrap items-center gap-3 mt-3">
                       {isRental && (
-                        <span className="text-[#3a5070] text-xs">per calendar month</span>
+                        <span className="text-[#3a5070] text-xs">per month</span>
                       )}
                       {!isRental && (property.areaSqFt || property.area_sqft) && (
                         <span className="text-[#3a5070] text-xs">
@@ -710,13 +710,13 @@ export default function PropertyDetail() {
             {/* ── Institutional transaction terminal ── */}
             <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.5 }} className="rounded-2xl border border-[#262c35] bg-[#14171d] p-4 mb-4 space-y-2.5" style={{ background: "linear-gradient(135deg, rgba(201,168,76,.09), rgba(10,22,40,.92))" }}>
               <div className="flex items-center justify-between gap-3 mb-3">
-                <div><p className="text-white text-sm font-bold">Secure this asset</p><p className="text-[#6a7f99] text-[10px] mt-1">Institutional settlement desk · ID #{String(property.id).padStart(5, "0")}</p></div>
+                <div><p className="text-white text-sm font-bold">Asset Actions</p><p className="text-[#6a7f99] text-[10px] mt-1">Settlement desk · Asset #{String(property.id).padStart(5, "0")}</p></div>
                 <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2 py-1 text-[10px] font-bold text-emerald-300"><ShieldCheck className="h-3 w-3" /> Verified</span>
               </div>
               <div className="flex flex-col gap-2">
-                <button onClick={() => setActionSheet("buy")} className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-amber-400 px-3 py-3 text-sm font-bold text-black hover:bg-amber-500 active:scale-[.98] transition-all"><ShoppingCart className="h-4 w-4" /> Buy Full Property</button>
-                <button onClick={() => setActionSheet("fractional")} className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-[#323a48] bg-[#1e232d] px-3 py-3 text-sm font-semibold text-white hover:bg-[#282e3d] active:scale-[.98] transition-all"><Coins className="h-4 w-4" /> Fractional Shares</button>
-                <button onClick={() => setActionSheet("offer")} className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-gray-700 bg-transparent px-3 py-2.5 text-sm font-medium text-gray-300 hover:bg-white/5 active:scale-[.98] transition-all"><Gavel className="h-4 w-4" /> Make an Offer</button>
+                <button onClick={() => setActionSheet("buy")} className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-amber-400 px-3 py-3 text-sm font-bold text-black hover:bg-amber-500 active:scale-[.98] transition-all"><ShoppingCart className="h-4 w-4" /> Buy Asset</button>
+                <button onClick={() => setActionSheet("fractional")} className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-[#323a48] bg-[#1e232d] px-3 py-3 text-sm font-semibold text-white hover:bg-[#282e3d] active:scale-[.98] transition-all"><Coins className="h-4 w-4" /> Buy Fractional Units</button>
+                <button onClick={() => setActionSheet("offer")} className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-gray-700 bg-transparent px-3 py-2.5 text-sm font-medium text-gray-300 hover:bg-white/5 active:scale-[.98] transition-all"><Gavel className="h-4 w-4" /> Submit Offer</button>
               </div>
             </motion.div>
 
@@ -731,7 +731,7 @@ export default function PropertyDetail() {
                   style={{ background: "linear-gradient(135deg, rgba(201,168,76,0.05) 0%, transparent 55%)" }} />
                 <h3 className="font-sans text-base font-bold text-white mb-4 relative flex items-center gap-2">
                   <div className="h-5 w-1 rounded-full bg-gradient-to-b from-[#C9A84C] to-[#e8c060]" />
-                  Property Highlights
+                  Asset Overview
                 </h3>
                 <div className={`grid grid-cols-3 sm:grid-cols-${Math.min(specItems.length, 5)} gap-3 relative`}>
                   {specItems.map(s => (
@@ -749,7 +749,7 @@ export default function PropertyDetail() {
             >
               <h3 className="font-sans text-base font-bold text-white mb-4 flex items-center gap-2">
                 <div className="h-5 w-1 rounded-full bg-gradient-to-b from-[#C9A84C] to-[#e8c060]" />
-                Key Features & Amenities
+                Asset Features
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {luxuryFeatures.map((feat, i) => (
@@ -775,7 +775,7 @@ export default function PropertyDetail() {
             >
               <h3 className="font-sans text-lg font-bold text-white mb-4 flex items-center gap-2">
                 <div className="h-5 w-1 rounded-full bg-gradient-to-b from-[#C9A84C] to-[#e8c060]" />
-                About This Property
+                Asset Description
               </h3>
               <p className="text-[#6a7f99] text-sm leading-[1.85] whitespace-pre-line">{property.description}</p>
 
@@ -783,7 +783,7 @@ export default function PropertyDetail() {
               <div className="mt-6 pt-5 border-t border-white/6">
                 <h4 className="font-sans text-sm font-bold text-[#94a3b8] mb-3 flex items-center gap-2">
                   <div className="h-3.5 w-0.5 rounded-full bg-[#C9A84C]/60" />
-                  Listing Details
+                  Asset Metadata
                 </h4>
                 <div className="grid grid-cols-2 gap-x-8 gap-y-2.5">
                   {[
@@ -791,8 +791,8 @@ export default function PropertyDetail() {
                     { label: "Type",        value: (property.type ?? "").charAt(0).toUpperCase() + (property.type ?? "").slice(1) },
                     { label: "City",        value: property.city },
                     { label: "Area",        value: property.area || "N/A" },
-                    { label: "Listed",      value: safeDate(property.created_at ?? property.createdAt) },
-                    { label: "Property ID", value: `#${String(property.id).padStart(5, "0")}` },
+                    { label: "Listed On",   value: safeDate(property.created_at ?? property.createdAt) },
+                    { label: "Asset ID", value: `#${String(property.id).padStart(5, "0")}` },
                   ].map(row => (
                     <div key={row.label} className="flex items-center justify-between py-1.5 border-b border-white/[0.04]">
                       <span className="text-[#2a3a50] text-[10px] uppercase tracking-wider">{row.label}</span>
@@ -815,7 +815,7 @@ export default function PropertyDetail() {
               <div className="flex items-center justify-between gap-3 mt-3">
                 <p className="text-[#2a3a50] text-[10px]">Approximate location shown for privacy</p>
                 <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-xl border border-[#C9A84C]/25 bg-[#C9A84C]/8 px-3 py-2 text-[10px] font-bold text-[#C9A84C] hover:bg-[#C9A84C]/15 transition-colors">
-                  <Navigation className="h-3.5 w-3.5" /> Directions <ExternalLink className="h-3 w-3" />
+                  <Navigation className="h-3.5 w-3.5" /> Open Maps <ExternalLink className="h-3 w-3" />
                 </a>
               </div>
             </motion.div>
@@ -833,7 +833,7 @@ export default function PropertyDetail() {
               >
                 <div className="h-px w-full bg-gradient-to-r from-transparent via-[#C9A84C] to-transparent" />
                 <div className="p-5">
-                  <p className="text-[#3a5070] text-[9px] font-bold uppercase tracking-[.22em] mb-4">Property Consultant</p>
+                  <p className="text-[#3a5070] text-[9px] font-bold uppercase tracking-[.22em] mb-4">VERIFIED COUNTERPARTY</p>
 
                   {/* Avatar + Trust Ring */}
                   <div className="flex items-center gap-3 mb-4">
@@ -851,7 +851,7 @@ export default function PropertyDetail() {
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="text-white font-semibold text-sm truncate">{property.owner_name ?? property.ownerName ?? "Orakzai Agent"}</div>
-                      <div className="text-[#3a5070] text-xs mt-0.5">Verified Consultant</div>
+                      <div className="text-[#3a5070] text-xs mt-0.5">Verified Counterparty</div>
                     </div>
                     <TrustRing rating={ownerRating} />
                   </div>
@@ -860,14 +860,14 @@ export default function PropertyDetail() {
                   <div className="flex items-center gap-2 mb-3">
                     <Stars rating={ownerRating} />
                     <span className="text-[#C9A84C] text-xs font-bold">{ownerRating.toFixed(1)}</span>
-                    <span className="text-[#2a3a50] text-[10px]">Sovereign Trust Rating</span>
+                    <span className="text-[#2a3a50] text-[10px]">Exchange Trust Score</span>
                   </div>
 
                   {/* stat pills */}
                   <div className="grid grid-cols-2 gap-2 mb-4">
                     {[
                       { label: "Response", value: "< 1hr" },
-                      { label: "Properties", value: "12+" },
+                      { label: "Listings", value: "12+" },
                     ].map(({ label, value }) => (
                       <div key={label} className="rounded-xl bg-white/[0.03] border border-white/6 px-3 py-2 text-center">
                         <p className="text-white text-sm font-bold">{value}</p>
@@ -879,10 +879,10 @@ export default function PropertyDetail() {
                   {/* verified badges */}
                   <div className="flex flex-wrap gap-1.5 mb-4">
                     <span className="flex items-center gap-1 text-[9px] bg-[#C9A84C]/8 border border-[#C9A84C]/20 text-[#C9A84C] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">
-                      <CheckCircle2 className="h-2.5 w-2.5" /> ID Verified
+                      <CheckCircle2 className="h-2.5 w-2.5" /> KYC Verified
                     </span>
                     <span className="flex items-center gap-1 text-[9px] bg-emerald-500/8 border border-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">
-                      <ShieldCheck className="h-2.5 w-2.5" /> Trusted Agent
+                      <ShieldCheck className="h-2.5 w-2.5" /> Trusted Counterparty
                     </span>
                   </div>
 
@@ -913,7 +913,7 @@ export default function PropertyDetail() {
                         }}>
                         <button className="w-full flex items-center justify-center gap-2.5 h-12 rounded-xl bg-[#25D366] hover:bg-[#20c55a] text-white font-bold text-sm shadow-lg shadow-[#25D366]/20 transition-all">
                           <MessageCircle className="h-4.5 w-4.5" />
-                          {isRental ? "Request to Rent via WhatsApp" : "WhatsApp for Inquiry"}
+                          {isRental ? "Request Rental Quote" : "Contact Counterparty"}
                         </button>
                       </a>
                     )}
@@ -927,7 +927,7 @@ export default function PropertyDetail() {
                     )}
                     {isRental && !isAvailable && (
                       <button disabled className="w-full flex items-center justify-center gap-2 h-11 rounded-xl border border-rose-500/20 bg-rose-900/10 text-rose-400/60 font-semibold text-sm cursor-not-allowed">
-                        <BanIcon className="h-4 w-4" /> Already Rented
+                        <BanIcon className="h-4 w-4" /> Unavailable
                       </button>
                     )}
                   </div>
@@ -950,12 +950,12 @@ export default function PropertyDetail() {
               >
                 <h4 className="font-sans text-xs font-bold text-[#94a3b8] uppercase tracking-wider flex items-center gap-2">
                   <div className="h-3 w-0.5 rounded-full bg-[#C9A84C]/60" />
-                  Quick Details
+                  Asset Snapshot
                 </h4>
                 {[
-                  { label: "Property ID",  value: `#${String(property.id).padStart(5, "0")}` },
+                  { label: "Asset ID",  value: `#${String(property.id).padStart(5, "0")}` },
                   { label: "Listed On",    value: safeDate(property.created_at ?? property.createdAt) },
-                  { label: "Status",       value: catStyle.name, badge: true, color: catStyle.pill },
+                  { label: "Market Status", value: catStyle.name, badge: true, color: catStyle.pill },
                   ...((property.is_verified ?? property.isVerified) ? [{ label: "Verification", value: "Sovereign Verified", verified: true }] : []),
                 ].map(row => (
                   <div key={row.label} className="flex justify-between items-center py-1.5 border-b border-white/[0.04] last:border-0">
@@ -973,7 +973,7 @@ export default function PropertyDetail() {
                 ))}
               </motion.div>
 
-              {/* ── Sovereign Guarantee seal ── */}
+              {/* ── Verification & Custody seal ── */}
               {(property.isVerified ?? property.is_verified) && (
                 <motion.div
                   initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}
@@ -982,9 +982,9 @@ export default function PropertyDetail() {
                 >
                   <ShieldCheck className="h-5 w-5 text-[#C9A84C] mt-0.5 flex-shrink-0" />
                   <div>
-                    <p className="text-[#C9A84C] text-xs font-bold">Sovereign Guarantee</p>
+                    <p className="text-[#C9A84C] text-xs font-bold">Verification & Custody</p>
                     <p className="text-[#3a5070] text-[10px] leading-relaxed mt-0.5">
-                      This property's price and documentation have been independently verified by the Orakzai Properties team.
+                      Pricing and documentation are independently verified by the OkzByte compliance team.
                     </p>
                   </div>
                 </motion.div>
@@ -1100,7 +1100,7 @@ export default function PropertyDetail() {
         {actionSheet && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[180] flex items-end sm:items-center justify-center bg-black/70 p-4 backdrop-blur-sm" onClick={() => setActionSheet(null)}>
             <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 30, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-3xl border border-[#C9A84C]/30 bg-[#0b1725] p-5 shadow-2xl shadow-black/60">
-              <div className="flex items-start justify-between gap-4 mb-5"><div><p className="text-[#C9A84C] text-[10px] font-bold uppercase tracking-[.18em]">Sovereign settlement desk</p><h3 className="text-white text-lg font-bold mt-1">{actionSheet === "buy" ? "Buy Full Property" : actionSheet === "fractional" ? "Buy Fractional Shares" : actionSheet === "offer" ? "Make an Offer" : "Schedule Site Tour"}</h3><p className="text-[#6a7f99] text-xs mt-1 line-clamp-1">{property.title}</p></div><button onClick={() => setActionSheet(null)} className="h-9 w-9 rounded-xl border border-white/10 bg-white/5 text-[#94a3b8] flex items-center justify-center"><X className="h-4 w-4" /></button></div>
+              <div className="flex items-start justify-between gap-4 mb-5"><div><p className="text-[#C9A84C] text-[10px] font-bold uppercase tracking-[.18em]">Sovereign settlement desk</p><h3 className="text-white text-lg font-bold mt-1">{actionSheet === "buy" ? "Buy Asset" : actionSheet === "fractional" ? "Buy Buy Fractional Units" : actionSheet === "offer" ? "Submit Offer" : "Schedule Site Tour"}</h3><p className="text-[#6a7f99] text-xs mt-1 line-clamp-1">{property.title}</p></div><button onClick={() => setActionSheet(null)} className="h-9 w-9 rounded-xl border border-white/10 bg-white/5 text-[#94a3b8] flex items-center justify-center"><X className="h-4 w-4" /></button></div>
               {actionSheet === "buy" && <div className="space-y-4"><div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/8 p-4"><p className="text-[#6a7f99] text-[10px] uppercase tracking-wider">Settlement amount</p><p className="text-emerald-300 text-2xl font-bold font-mono mt-1">{formatPrice(fullPrice, property.category)}</p><p className="text-[#6a7f99] text-xs mt-2">A consultant will contact you to complete KYC, escrow, and title verification.</p></div><button onClick={() => { setActionSheet(null); handleDirectChat(); }} className="w-full rounded-xl bg-[#C9A84C] py-3.5 text-sm font-extrabold text-[#040b14] inline-flex items-center justify-center gap-2"><Send className="h-4 w-4" /> Start purchase with consultant</button></div>}
               {actionSheet === "fractional" && <div className="space-y-4"><div className="flex items-center justify-between"><span className="text-[#94a3b8] text-xs">Ownership allocation</span><strong className="text-[#e8c060] text-sm">{fractionPercent}%</strong></div><input type="range" min="1" max="100" value={fractionPercent} onChange={(e) => setFractionPercent(Number(e.target.value))} className="w-full accent-[#C9A84C]" /><div className="rounded-2xl border border-[#C9A84C]/20 bg-[#C9A84C]/8 p-4"><p className="text-[#6a7f99] text-[10px] uppercase tracking-wider">Estimated token allocation</p><p className="text-[#e8c060] text-2xl font-bold font-mono mt-1">{formatPrice(Math.round(fullPrice * fractionPercent / 100), property.category)}</p><p className="text-[#6a7f99] text-xs mt-1">Minimum entry from PKR {fractionalMinimum.toLocaleString()}</p></div><button onClick={() => { setActionSheet(null); handleDirectChat(); }} className="w-full rounded-xl border border-[#C9A84C]/35 bg-[#C9A84C]/12 py-3.5 text-sm font-extrabold text-[#e8c060] inline-flex items-center justify-center gap-2"><Coins className="h-4 w-4" /> Reserve fractional allocation</button></div>}
               {actionSheet === "offer" && <div className="space-y-4"><label className="block text-[#94a3b8] text-xs">Your offer amount<input value={offerAmount} onChange={(e) => setOfferAmount(e.target.value)} inputMode="decimal" placeholder="Enter amount in PKR" className="mt-2 w-full rounded-xl border border-white/10 bg-[#06101c] px-4 py-3 text-white outline-none focus:border-[#C9A84C]/60" /></label><button onClick={() => { setActionSheet(null); handleDirectChat(); }} disabled={!offerAmount} className="w-full rounded-xl bg-[#C9A84C] py-3.5 text-sm font-extrabold text-[#040b14] disabled:opacity-40 inline-flex items-center justify-center gap-2"><Gavel className="h-4 w-4" /> Submit offer to consultant</button></div>}
