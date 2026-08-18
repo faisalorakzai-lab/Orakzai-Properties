@@ -530,7 +530,7 @@ export default function PropertyDetail() {
           <div className="h-16 w-16 rounded-2xl bg-[#C9A84C]/8 border border-[#C9A84C]/20 flex items-center justify-center mx-auto mb-6">
             <Home className="h-8 w-8 text-[#C9A84C]/40" />
           </div>
-          <h2 className="font-serif text-2xl text-white mb-2">Property Not Found</h2>
+          <h2 className="font-sans text-2xl text-white mb-2">Property Not Found</h2>
           <p className="text-[#4a6080] text-sm mb-6">This listing may have been removed or is unavailable.</p>
           <Link href={`${basePath}/browse`}>
             <button className="bg-gradient-to-r from-[#C9A84C] to-[#e8c060] hover:opacity-90 text-[#040b14] font-bold px-6 py-3 rounded-xl transition-opacity">
@@ -573,7 +573,7 @@ export default function PropertyDetail() {
   ];
 
   return (
-    <div className="min-h-screen text-foreground" style={{ background: "linear-gradient(180deg, #040b14 0%, #06101c 100%)" }}>
+    <div className="min-h-screen font-sans text-foreground" style={{ background: "linear-gradient(180deg, #040b14 0%, #06101c 100%)" }}>
       {/* ── Ambient glows ── */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <div className="absolute top-60 right-1/3 w-[500px] h-[500px] rounded-full bg-[#C9A84C]/[0.03] blur-[120px]" />
@@ -616,7 +616,7 @@ export default function PropertyDetail() {
       </div>
 
       {/* ══ Main Content ══ */}
-      <div className="relative z-10 max-w-5xl mx-auto px-4 pt-7 pb-44">
+      <div className="relative z-10 max-w-5xl mx-auto px-4 py-5 pb-32 sm:pt-7">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-7">
 
           {/* ════════════════ LEFT COLUMN (2/3) ════════════════ */}
@@ -643,7 +643,7 @@ export default function PropertyDetail() {
                 )}
               </div>
 
-              <h1 className="font-serif text-2xl md:text-[2rem] font-bold text-white leading-tight mb-2">
+              <h1 className="font-sans text-xl md:text-2xl font-bold text-white leading-tight mb-1">
                 {property.title}
               </h1>
               <div className="flex items-center gap-1.5 text-[#4a6080] text-sm">
@@ -655,7 +655,7 @@ export default function PropertyDetail() {
             {/* ── HERO PRICE CARD ── */}
             <motion.div
               initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08, duration: 0.5 }}
-              className="relative overflow-hidden rounded-3xl border border-[#C9A84C]/30"
+              className="relative overflow-hidden rounded-2xl border border-[#262c35] bg-[#14171d]"
               style={{ background: "linear-gradient(135deg, #0c1c0e 0%, #0a1628 50%, #060d16 100%)" }}
             >
               {/* top shine line */}
@@ -663,13 +663,13 @@ export default function PropertyDetail() {
               <div className="absolute inset-0"
                 style={{ background: "radial-gradient(ellipse 60% 80% at 0% 50%, rgba(201,168,76,0.12) 0%, transparent 60%)" }} />
 
-              <div className="relative p-6 md:p-8">
-                <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+              <div className="relative flex flex-col gap-2 p-5">
+                <div className="flex flex-col gap-2">
                   <div>
                     <p className="text-[#4a6080] text-[10px] uppercase tracking-[.22em] font-semibold mb-2">
                       {isRental ? "Monthly Rent" : "Listed Price"}
                     </p>
-                    <div className="font-serif text-5xl md:text-6xl font-bold text-[#C9A84C] leading-none tracking-tight"
+                    <div className="font-sans text-2xl md:text-3xl font-bold text-amber-400 leading-tight tracking-tight break-words"
                       style={{ textShadow: "0 0 60px rgba(201,168,76,0.3)" }}>
                       {formatPrice(Number(property.price), property.category)}
                     </div>
@@ -685,13 +685,13 @@ export default function PropertyDetail() {
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-start md:items-end gap-3">
-                    {property.isVerified && (
-                      <div className="flex items-center gap-2.5 bg-[#C9A84C]/10 border border-[#C9A84C]/30 rounded-2xl px-4 py-2.5">
-                        <ShieldCheck className="h-5 w-5 text-[#C9A84C] flex-shrink-0" />
+                  <div className="flex flex-wrap items-center justify-between gap-2 mt-2 pt-2 border-t border-[#262c35]">
+                    {(property.isVerified ?? property.is_verified) && (
+                      <div className="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-2.5 py-1">
+                        <ShieldCheck className="h-3.5 w-3.5 text-emerald-400 flex-shrink-0" />
                         <div>
-                          <p className="text-[#C9A84C] text-xs font-bold">Sovereign Verified</p>
-                          <p className="text-[#C9A84C]/50 text-[10px]">Price authenticated</p>
+                          <p className="text-emerald-400 text-xs font-semibold">Sovereign Verified</p>
+                          <p className="sr-only">Price authenticated</p>
                         </div>
                       </div>
                     )}
@@ -701,22 +701,22 @@ export default function PropertyDetail() {
                         <span className="text-rose-300 text-xs font-semibold">Currently Rented</span>
                       </div>
                     )}
-                    <div className="text-[11px] text-[#2a3a50] font-mono">ID #{String(property.id).padStart(5, "0")}</div>
+                    <div className="text-xs text-gray-400 font-mono whitespace-nowrap">ID: #{String(property.id).padStart(5, "0")}</div>
                   </div>
                 </div>
               </div>
             </motion.div>
 
             {/* ── Institutional transaction terminal ── */}
-            <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.5 }} className="rounded-2xl border border-[#C9A84C]/25 p-4" style={{ background: "linear-gradient(135deg, rgba(201,168,76,.09), rgba(10,22,40,.92))" }}>
+            <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.5 }} className="rounded-2xl border border-[#262c35] bg-[#14171d] p-4 mb-4 space-y-2.5" style={{ background: "linear-gradient(135deg, rgba(201,168,76,.09), rgba(10,22,40,.92))" }}>
               <div className="flex items-center justify-between gap-3 mb-3">
                 <div><p className="text-white text-sm font-bold">Secure this asset</p><p className="text-[#6a7f99] text-[10px] mt-1">Institutional settlement desk · ID #{String(property.id).padStart(5, "0")}</p></div>
                 <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2 py-1 text-[10px] font-bold text-emerald-300"><ShieldCheck className="h-3 w-3" /> Verified</span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <button onClick={() => setActionSheet("buy")} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#C9A84C] px-3 py-3 text-xs font-extrabold text-[#040b14] hover:bg-[#e8c060] active:scale-[.98] transition-all"><ShoppingCart className="h-4 w-4" /> Buy Full Property</button>
-                <button onClick={() => setActionSheet("fractional")} className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#C9A84C]/35 bg-[#C9A84C]/10 px-3 py-3 text-xs font-bold text-[#e8c060] hover:bg-[#C9A84C]/20 active:scale-[.98] transition-all"><Coins className="h-4 w-4" /> Fractional Shares</button>
-                <button onClick={() => setActionSheet("offer")} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-xs font-bold text-[#c8d8e8] hover:border-[#C9A84C]/35 active:scale-[.98] transition-all"><Gavel className="h-4 w-4" /> Make an Offer</button>
+              <div className="flex flex-col gap-2">
+                <button onClick={() => setActionSheet("buy")} className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-amber-400 px-3 py-3 text-sm font-bold text-black hover:bg-amber-500 active:scale-[.98] transition-all"><ShoppingCart className="h-4 w-4" /> Buy Full Property</button>
+                <button onClick={() => setActionSheet("fractional")} className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-[#323a48] bg-[#1e232d] px-3 py-3 text-sm font-semibold text-white hover:bg-[#282e3d] active:scale-[.98] transition-all"><Coins className="h-4 w-4" /> Fractional Shares</button>
+                <button onClick={() => setActionSheet("offer")} className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-gray-700 bg-transparent px-3 py-2.5 text-sm font-medium text-gray-300 hover:bg-white/5 active:scale-[.98] transition-all"><Gavel className="h-4 w-4" /> Make an Offer</button>
               </div>
             </motion.div>
 
@@ -724,12 +724,12 @@ export default function PropertyDetail() {
             {specItems.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12, duration: 0.5 }}
-                className="relative overflow-hidden rounded-2xl border border-white/8 p-5"
+                className="relative overflow-hidden rounded-2xl border border-[#262c35] bg-[#14171d] p-4 sm:p-5"
                 style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(14,26,46,0.9) 100%)", backdropFilter: "blur(12px)" }}
               >
                 <div className="absolute inset-0 rounded-2xl"
                   style={{ background: "linear-gradient(135deg, rgba(201,168,76,0.05) 0%, transparent 55%)" }} />
-                <h3 className="font-serif text-base font-bold text-white mb-4 relative flex items-center gap-2">
+                <h3 className="font-sans text-base font-bold text-white mb-4 relative flex items-center gap-2">
                   <div className="h-5 w-1 rounded-full bg-gradient-to-b from-[#C9A84C] to-[#e8c060]" />
                   Property Highlights
                 </h3>
@@ -744,10 +744,10 @@ export default function PropertyDetail() {
             {/* ── Luxury Features ── */}
             <motion.div
               initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16, duration: 0.5 }}
-              className="rounded-2xl border border-white/6 p-6"
+              className="rounded-2xl border border-[#262c35] bg-[#14171d] p-4 sm:p-5"
               style={{ background: "linear-gradient(160deg, #0b1828 0%, #060d16 100%)" }}
             >
-              <h3 className="font-serif text-base font-bold text-white mb-4 flex items-center gap-2">
+              <h3 className="font-sans text-base font-bold text-white mb-4 flex items-center gap-2">
                 <div className="h-5 w-1 rounded-full bg-gradient-to-b from-[#C9A84C] to-[#e8c060]" />
                 Key Features & Amenities
               </h3>
@@ -770,10 +770,10 @@ export default function PropertyDetail() {
             {/* ── Description ── */}
             <motion.div
               initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.5 }}
-              className="rounded-2xl border border-white/6 p-6"
+              className="rounded-2xl border border-[#262c35] bg-[#14171d] p-4 sm:p-5"
               style={{ background: "linear-gradient(160deg, #0c1c2e 0%, #060d16 100%)" }}
             >
-              <h3 className="font-serif text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <h3 className="font-sans text-lg font-bold text-white mb-4 flex items-center gap-2">
                 <div className="h-5 w-1 rounded-full bg-gradient-to-b from-[#C9A84C] to-[#e8c060]" />
                 About This Property
               </h3>
@@ -781,7 +781,7 @@ export default function PropertyDetail() {
 
               {/* ── Details table ── */}
               <div className="mt-6 pt-5 border-t border-white/6">
-                <h4 className="font-serif text-sm font-bold text-[#94a3b8] mb-3 flex items-center gap-2">
+                <h4 className="font-sans text-sm font-bold text-[#94a3b8] mb-3 flex items-center gap-2">
                   <div className="h-3.5 w-0.5 rounded-full bg-[#C9A84C]/60" />
                   Listing Details
                 </h4>
@@ -807,7 +807,7 @@ export default function PropertyDetail() {
             <motion.div
               initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24, duration: 0.5 }}
             >
-              <h3 className="font-serif text-lg font-bold text-white mb-3 flex items-center gap-2">
+              <h3 className="font-sans text-lg font-bold text-white mb-3 flex items-center gap-2">
                 <div className="h-5 w-1 rounded-full bg-gradient-to-b from-[#C9A84C] to-[#e8c060]" />
                 Location
               </h3>
@@ -844,7 +844,7 @@ export default function PropertyDetail() {
                       </div>
                     ) : (
                       <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#C9A84C]/20 to-[#C9A84C]/5 border border-[#C9A84C]/30 flex items-center justify-center flex-shrink-0">
-                        <span className="text-[#C9A84C] font-serif text-xl font-bold">
+                        <span className="text-[#C9A84C] font-sans text-xl font-bold">
                           {((property.owner_name ?? property.ownerName) ?? "O")[0].toUpperCase()}
                         </span>
                       </div>
@@ -948,7 +948,7 @@ export default function PropertyDetail() {
                 className="rounded-2xl border border-white/6 p-4 space-y-2.5"
                 style={{ background: "linear-gradient(160deg, #0c1c2e 0%, #060d16 100%)" }}
               >
-                <h4 className="font-serif text-xs font-bold text-[#94a3b8] uppercase tracking-wider flex items-center gap-2">
+                <h4 className="font-sans text-xs font-bold text-[#94a3b8] uppercase tracking-wider flex items-center gap-2">
                   <div className="h-3 w-0.5 rounded-full bg-[#C9A84C]/60" />
                   Quick Details
                 </h4>
@@ -974,7 +974,7 @@ export default function PropertyDetail() {
               </motion.div>
 
               {/* ── Sovereign Guarantee seal ── */}
-              {property.isVerified && (
+              {(property.isVerified ?? property.is_verified) && (
                 <motion.div
                   initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}
                   className="rounded-2xl border border-[#C9A84C]/20 px-4 py-3 flex items-start gap-3"
