@@ -553,14 +553,12 @@ export default function PropertyDetail() {
   };
 
   const specItems = [
-    ...(property.beds     ? [{ icon: Bed,       label: "Bedrooms",   value: property.beds }]   : []),
-    ...(property.baths    ? [{ icon: Bath,       label: "Bathrooms",  value: property.baths }]  : []),
-    ...((property.area_sqft ?? property.areaSqFt ?? property.areaSqft) ? [{ icon: Maximize2, label: "Sq. Ft.", value: (property.area_sqft ?? property.areaSqFt ?? property.areaSqft).toLocaleString() }] : []),
-    { icon: TypeIcon,       label: "Type",       value: (property.type ?? "").charAt(0).toUpperCase() + (property.type ?? "").slice(1) },
-    { icon: MapPin,         label: "City",       value: property.city },
-    ...((isRental && (property as any).furnishedStatus) ? [{ icon: Sofa,  label: "Furnished",  value: FURNISHED_LABEL[(property as any).furnishedStatus] ?? (property as any).furnishedStatus }] : []),
-    ...((isRental && (property as any).occupancyType)   ? [{ icon: Users, label: "Occupancy",  value: OCCUPANCY_LABEL[(property as any).occupancyType] ?? (property as any).occupancyType }] : []),
-    ...((isRental && (property as any).rentalDuration)  ? [{ icon: Clock, label: "Duration",   value: DURATION_LABEL[(property as any).rentalDuration] ?? (property as any).rentalDuration }] : []),
+    { icon: Bed,      label: "Bedrooms",  value: `${property.beds ?? 0} Beds` },
+    { icon: Bath,     label: "Bathrooms", value: `${property.baths ?? 0} Baths` },
+    { icon: Maximize2,label: "Area",      value: `${Number(property.area_sqft ?? property.areaSqFt ?? property.areaSqft ?? 0).toLocaleString()} Sq. Ft.` },
+    { icon: TypeIcon, label: "Type",      value: property.type === "house" ? "House / Villa" : ((property.type ?? "Property").charAt(0).toUpperCase() + (property.type ?? "property").slice(1)) },
+    { icon: MapPin,   label: "City",      value: property.city || "Lahore" },
+    { icon: Tag,      label: "Sector",    value: safeArea(property) || "DHA Phase 6" },
   ];
 
   const luxuryFeatures = [
@@ -652,90 +650,53 @@ export default function PropertyDetail() {
               </div>
             </motion.div>
 
-            {/* ── HERO PRICE CARD ── */}
+            {/* ── INSTITUTIONAL PRICE CARD ── */}
             <motion.div
               initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08, duration: 0.5 }}
-              className="relative overflow-hidden rounded-2xl border border-[#262c35] bg-[#14171d]"
-              style={{ background: "linear-gradient(135deg, #0c1c0e 0%, #0a1628 50%, #060d16 100%)" }}
+              className="rounded-2xl border border-[#232936] bg-[#12161f] p-4 mb-5"
             >
-              {/* top shine line */}
-              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#C9A84C]/60 to-transparent" />
-              <div className="absolute inset-0"
-                style={{ background: "radial-gradient(ellipse 60% 80% at 0% 50%, rgba(201,168,76,0.12) 0%, transparent 60%)" }} />
-
-              <div className="relative flex flex-col gap-2 p-5">
-                <div className="flex flex-col gap-2">
-                  <div>
-                    <p className="text-[#4a6080] text-[10px] uppercase tracking-[.22em] font-semibold mb-2">
-                      {isRental ? "MONTHLY RATE" : "LISTED PRICE"}
-                    </p>
-                    <div className="font-sans text-2xl md:text-3xl font-bold text-amber-400 leading-tight tracking-tight break-words"
-                      style={{ textShadow: "0 0 60px rgba(201,168,76,0.3)" }}>
-                      {formatPrice(Number(property.price), property.category)}
-                    </div>
-                    <div className="flex flex-wrap items-center gap-3 mt-3">
-                      {isRental && (
-                        <span className="text-[#3a5070] text-xs">per month</span>
-                      )}
-                      {!isRental && (property.areaSqFt || property.area_sqft) && (
-                        <span className="text-[#3a5070] text-xs">
-                          ≈ PKR {Math.round(Number(property.price) / (property.areaSqFt || property.area_sqft)).toLocaleString()} / sq. ft.
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap items-center justify-between gap-2 mt-2 pt-2 border-t border-[#262c35]">
-                    {(property.isVerified ?? property.is_verified) && (
-                      <div className="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-2.5 py-1">
-                        <ShieldCheck className="h-3.5 w-3.5 text-emerald-400 flex-shrink-0" />
-                        <div>
-                          <p className="text-emerald-400 text-xs font-semibold">Sovereign Verified</p>
-                          <p className="sr-only">Price authenticated</p>
-                        </div>
-                      </div>
-                    )}
-                    {isRental && !isAvailable && (
-                      <div className="flex items-center gap-2 bg-rose-500/10 border border-rose-500/25 rounded-xl px-3 py-2">
-                        <BanIcon className="h-4 w-4 text-rose-400 flex-shrink-0" />
-                        <span className="text-rose-300 text-xs font-semibold">Currently Rented</span>
-                      </div>
-                    )}
-                    <div className="text-xs text-gray-400 font-mono whitespace-nowrap">ID: #{String(property.id).padStart(5, "0")}</div>
-                  </div>
+              <div className="flex items-center justify-between gap-3 mb-2">
+                <div className="font-sans text-2xl font-bold text-amber-400 leading-tight break-words">
+                  {formatPrice(Number(property.price), property.category)}
                 </div>
+                <span className="shrink-0 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-mono text-gray-400">
+                  ID #{String(property.id).padStart(5, "0")}
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-xs text-gray-400">
+                  {isRental ? "Monthly rate" : `PKR ${Math.round(Number(property.price) / Number(property.areaSqFt || property.area_sqft || 1)).toLocaleString()} / sq. ft.`}
+                </span>
+                {(property.isVerified ?? property.is_verified) && (
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-400 whitespace-nowrap">
+                    <ShieldCheck className="h-3.5 w-3.5" /> Verified Listing
+                  </span>
+                )}
               </div>
             </motion.div>
 
-            {/* ── Institutional transaction terminal ── */}
-            <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.5 }} className="rounded-2xl border border-[#262c35] bg-[#14171d] p-4 mb-4 space-y-2.5" style={{ background: "linear-gradient(135deg, rgba(201,168,76,.09), rgba(10,22,40,.92))" }}>
-              <div className="flex items-center justify-between gap-3 mb-3">
-                <div><p className="text-white text-sm font-bold">Asset Actions</p><p className="text-[#6a7f99] text-[10px] mt-1">Settlement desk · Asset #{String(property.id).padStart(5, "0")}</p></div>
-                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2 py-1 text-[10px] font-bold text-emerald-300"><ShieldCheck className="h-3 w-3" /> Verified</span>
-              </div>
-              <div className="flex flex-col gap-2">
-                <button onClick={() => setActionSheet("buy")} className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-amber-400 px-3 py-3 text-sm font-bold text-black hover:bg-amber-500 active:scale-[.98] transition-all"><ShoppingCart className="h-4 w-4" /> Buy Asset</button>
-                <button onClick={() => setActionSheet("fractional")} className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-[#323a48] bg-[#1e232d] px-3 py-3 text-sm font-semibold text-white hover:bg-[#282e3d] active:scale-[.98] transition-all"><Coins className="h-4 w-4" /> Buy Fractional Units</button>
-                <button onClick={() => setActionSheet("offer")} className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-gray-700 bg-transparent px-3 py-2.5 text-sm font-medium text-gray-300 hover:bg-white/5 active:scale-[.98] transition-all"><Gavel className="h-4 w-4" /> Submit Offer</button>
-              </div>
+            {/* ── PURCHASE OPTIONS ── */}
+            <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.5 }} className="rounded-2xl border border-[#232936] bg-[#12161f] p-4 mb-5 space-y-2.5">
+              <h2 className="text-base font-bold text-white mb-1">Purchase Options</h2>
+              <button onClick={() => setActionSheet("buy")} className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-amber-400 px-3 py-3 text-sm font-bold text-black hover:bg-amber-500 active:scale-[.98] transition-all"><ShoppingCart className="h-4 w-4" /> Buy Property</button>
+              <button onClick={() => setActionSheet("fractional")} className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-[#2a3347] bg-[#1c2230] px-3 py-3 text-sm font-semibold text-white hover:bg-[#282e3d] active:scale-[.98] transition-all"><Coins className="h-4 w-4" /> Invest Fractionally <span className="text-[11px] text-gray-400">(From PKR 10,000)</span></button>
+              <button onClick={() => setActionSheet("offer")} className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-transparent py-2 text-xs font-medium text-gray-300 hover:bg-white/5 hover:text-white active:scale-[.98] transition-all"><Gavel className="h-3.5 w-3.5" /> Make an Offer / Negotiate</button>
             </motion.div>
 
             {/* ── Specs grid — glassmorphic ── */}
             {specItems.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12, duration: 0.5 }}
-                className="relative overflow-hidden rounded-2xl border border-[#262c35] bg-[#14171d] p-4 sm:p-5"
-                style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(14,26,46,0.9) 100%)", backdropFilter: "blur(12px)" }}
+                className="rounded-2xl border border-[#232936] bg-[#12161f] p-4 mb-5"
               >
-                <div className="absolute inset-0 rounded-2xl"
-                  style={{ background: "linear-gradient(135deg, rgba(201,168,76,0.05) 0%, transparent 55%)" }} />
-                <h3 className="font-sans text-base font-bold text-white mb-4 relative flex items-center gap-2">
-                  <div className="h-5 w-1 rounded-full bg-gradient-to-b from-[#C9A84C] to-[#e8c060]" />
-                  Asset Overview
-                </h3>
-                <div className={`grid grid-cols-3 sm:grid-cols-${Math.min(specItems.length, 5)} gap-3 relative`}>
+                <h3 className="text-base font-bold text-white mb-3">Property Highlights</h3>
+                <div className="grid grid-cols-3 gap-2.5">
                   {specItems.map(s => (
-                    <SpecPill key={s.label} icon={s.icon} label={s.label} value={s.value} />
+                    <div key={s.label} className="min-h-[76px] rounded-xl border border-[#232936] bg-[#171e29] p-3 text-center flex flex-col items-center justify-center gap-1">
+                      <s.icon className="h-4 w-4 text-amber-400" />
+                      <span className="text-xs font-semibold text-white leading-tight">{s.value}</span>
+                      <span className="text-[10px] uppercase tracking-wide text-gray-500">{s.label}</span>
+                    </div>
                   ))}
                 </div>
               </motion.div>
@@ -744,25 +705,15 @@ export default function PropertyDetail() {
             {/* ── Luxury Features ── */}
             <motion.div
               initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16, duration: 0.5 }}
-              className="rounded-2xl border border-[#262c35] bg-[#14171d] p-4 sm:p-5"
-              style={{ background: "linear-gradient(160deg, #0b1828 0%, #060d16 100%)" }}
+              className="rounded-2xl border border-[#232936] bg-[#12161f] p-4 mb-5"
             >
-              <h3 className="font-sans text-base font-bold text-white mb-4 flex items-center gap-2">
-                <div className="h-5 w-1 rounded-full bg-gradient-to-b from-[#C9A84C] to-[#e8c060]" />
-                Asset Features
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {luxuryFeatures.map((feat, i) => (
-                  <motion.div key={feat}
-                    initial={{ opacity: 0, x: -8 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.18 + i * 0.05 }}
-                    className="flex items-center gap-2.5 text-xs text-[#8aa4c0]">
-                    <div className="w-4 h-4 rounded-full bg-[#C9A84C]/15 border border-[#C9A84C]/30 flex items-center justify-center flex-shrink-0">
-                      <CheckCircle2 className="w-2.5 h-2.5 text-[#C9A84C]" />
-                    </div>
-                    {feat}
-                  </motion.div>
+              <h3 className="text-base font-bold text-white mb-3">Amenities</h3>
+              <div className="space-y-2.5 text-xs text-gray-300">
+                {luxuryFeatures.map((feat) => (
+                  <div key={feat} className="flex items-center gap-2.5">
+                    <span className="text-emerald-400 font-bold">✓</span>
+                    <span>{feat}</span>
+                  </div>
                 ))}
               </div>
             </motion.div>
@@ -770,12 +721,11 @@ export default function PropertyDetail() {
             {/* ── Description ── */}
             <motion.div
               initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.5 }}
-              className="rounded-2xl border border-[#262c35] bg-[#14171d] p-4 sm:p-5"
-              style={{ background: "linear-gradient(160deg, #0c1c2e 0%, #060d16 100%)" }}
+              className="rounded-2xl border border-[#232936] bg-[#12161f] p-4 mb-5"
             >
               <h3 className="font-sans text-lg font-bold text-white mb-4 flex items-center gap-2">
-                <div className="h-5 w-1 rounded-full bg-gradient-to-b from-[#C9A84C] to-[#e8c060]" />
-                Asset Description
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                About this property
               </h3>
               <p className="text-[#6a7f99] text-sm leading-[1.85] whitespace-pre-line">{property.description}</p>
 
