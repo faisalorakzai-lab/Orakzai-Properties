@@ -7,7 +7,7 @@ import {
   Maximize2, Home, Building2, Layers, MapPin, Calendar,
   Tag, CheckCircle2, Sofa, Users, Clock, BanIcon,
   Wifi, Car, Shield, Zap, Wind, Droplets, TreePine, Dumbbell,
-  Grid3X3, Image,
+  Grid3X3, Image, Navigation, CalendarDays, ShoppingCart, Coins, Gavel, ExternalLink, Send,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { supabase } from "@/lib/supabase";
@@ -27,6 +27,26 @@ const MARKETPLACE_FALLBACKS: Record<number, Record<string, any>> = {
   105: { id: 105, category: "buy", type: "house", title: "Marina Heights Residence", city: "Dubai", location: "Dubai Marina, Dubai", price: 2800000, price_label: "AED 2.8M", images: ["https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1600&q=88"], beds: 3, baths: 3, area_sqft: 2200, description: "A refined Dubai Marina residence with sea views, resort-grade amenities, and strong international rental demand.", owner_name: "Emaar Properties", owner_phone: "", is_verified: true, is_available: true, tag: "12.4% ROI" },
   106: { id: 106, category: "buy", type: "plot", title: "DHA Phase 9 Commercial Plot", city: "Lahore", location: "DHA Phase 9, Lahore", price: 42000000, price_label: "PKR 4.2 Cr", images: ["https://images.unsplash.com/photo-1448630360428-65456885c650?w=1600&q=88"], beds: 0, baths: 0, area_sqft: 1800, description: "A limited commercial plot positioned for long-term frontage, development flexibility, and strategic DHA Phase 9 exposure.", owner_name: "DHA Authorized Dealer", owner_phone: "", is_verified: true, is_available: true, tag: "Limited Inventory" },
 };
+
+const GALLERY_FILLERS = [
+  "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=1600&q=88",
+  "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=1600&q=88",
+  "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1600&q=88",
+];
+
+function safeDate(value: unknown) {
+  const date = value ? new Date(String(value)) : null;
+  return date && !Number.isNaN(date.getTime())
+    ? date.toLocaleDateString("en-US", { day: "2-digit", month: "short", year: "numeric" })
+    : "Recently listed";
+}
+
+function safeArea(source: Record<string, any>) {
+  if (source.area) return String(source.area);
+  const location = String(source.location ?? "");
+  const fromLocation = location.split(",")[0]?.trim();
+  return fromLocation || "Prime location";
+}
 
 const CAT_STYLE: Record<string, { pill: string; glow: string; name: string; accent: string }> = {
   buy:  { pill: "bg-emerald-500/15 text-emerald-300 border-emerald-500/35", glow: "shadow-emerald-500/20", name: "For Sale",   accent: "#22c55e" },
@@ -392,6 +412,11 @@ export default function PropertyDetail() {
   const id = Number(params.id);
   const { saved, toggle: toggleSave } = useSaved(id);
   const [saveFlash, setSaveFlash] = useState(false);
+  const [actionSheet, setActionSheet] = useState<"buy" | "fractional" | "offer" | "tour" | null>(null);
+  const [fractionPercent, setFractionPercent] = useState(1);
+  const [offerAmount, setOfferAmount] = useState("");
+  const [tourDate, setTourDate] = useState("");
+  const [tourTime, setTourTime] = useState("10:00");
 
   const [property, setProperty] = useState<Record<string, any> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -408,7 +433,11 @@ export default function PropertyDetail() {
         if (source) {
           setProperty({
             ...source,
-            areaSqFt: source.area_sqft ?? source.areaSqFt ?? 0,
+            city: source.city ?? source.location?.split(",").pop()?.trim() ?? "Lahore",
+            area: safeArea(source),
+            createdAt: source.created_at ?? source.createdAt ?? new Date().toISOString(),
+            images: Array.from(new Set([...(Array.isArray(source.images) ? source.images : []), ...GALLERY_FILLERS])).slice(0, 5),
+            areaSqFt: source.area_sqft ?? source.areaSqFt ?? source.areaSqft ?? 0,
             isVerified: source.is_verified ?? source.isVerified ?? false,
             isAvailable: source.is_available ?? source.isAvailable ?? true,
             whatsappNumber: source.whatsapp_number || source.whatsappNumber || source.owner_phone || source.ownerPhone,
@@ -433,11 +462,20 @@ export default function PropertyDetail() {
   const catStyle = CAT_STYLE[property?.category ?? ""] ?? CAT_STYLE.buy;
   const TypeIcon = TYPE_ICON[property?.type ?? ""] ?? Home;
   const ownerRating = (property?.owner_rating ?? property?.ownerRating) ? Number(property.owner_rating ?? property.ownerRating) : 4.8;
+  const propertyArea = property?.area || safeArea(property ?? {});
+  const propertyLocation = `${propertyArea}, ${property?.city || "Lahore"}`;
+  const fullPrice = Number(property?.price ?? 0);
+  const fractionalMinimum = Math.max(10000, Math.round(fullPrice * 0.001));
+  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(propertyLocation)}`;
 
   const handleSave = () => {
     toggleSave();
     setSaveFlash(true);
     setTimeout(() => setSaveFlash(false), 800);
+  };
+
+  const handleDirectChat = () => {
+    window.location.href = `${basePath}/inbox/1?propertyId=${id}&property=${encodeURIComponent(property?.title ?? "")}`;
   };
 
   const handleShare = async () => {
@@ -594,7 +632,7 @@ export default function PropertyDetail() {
               </h1>
               <div className="flex items-center gap-1.5 text-[#4a6080] text-sm">
                 <MapPin className="h-3.5 w-3.5 text-[#C9A84C]/60 flex-shrink-0" />
-                <span>{property.area ? `${property.area}, ` : ""}{property.city}</span>
+                <span>{propertyArea}, {property.city || "Lahore"}</span>
               </div>
             </motion.div>
 
@@ -650,6 +688,19 @@ export default function PropertyDetail() {
                     <div className="text-[11px] text-[#2a3a50] font-mono">ID #{String(property.id).padStart(5, "0")}</div>
                   </div>
                 </div>
+              </div>
+            </motion.div>
+
+            {/* ── Institutional transaction terminal ── */}
+            <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.5 }} className="rounded-2xl border border-[#C9A84C]/25 p-4" style={{ background: "linear-gradient(135deg, rgba(201,168,76,.09), rgba(10,22,40,.92))" }}>
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <div><p className="text-white text-sm font-bold">Secure this asset</p><p className="text-[#6a7f99] text-[10px] mt-1">Institutional settlement desk · ID #{String(property.id).padStart(5, "0")}</p></div>
+                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2 py-1 text-[10px] font-bold text-emerald-300"><ShieldCheck className="h-3 w-3" /> Verified</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <button onClick={() => setActionSheet("buy")} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#C9A84C] px-3 py-3 text-xs font-extrabold text-[#040b14] hover:bg-[#e8c060] active:scale-[.98] transition-all"><ShoppingCart className="h-4 w-4" /> Buy Full Property</button>
+                <button onClick={() => setActionSheet("fractional")} className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#C9A84C]/35 bg-[#C9A84C]/10 px-3 py-3 text-xs font-bold text-[#e8c060] hover:bg-[#C9A84C]/20 active:scale-[.98] transition-all"><Coins className="h-4 w-4" /> Fractional Shares</button>
+                <button onClick={() => setActionSheet("offer")} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-xs font-bold text-[#c8d8e8] hover:border-[#C9A84C]/35 active:scale-[.98] transition-all"><Gavel className="h-4 w-4" /> Make an Offer</button>
               </div>
             </motion.div>
 
@@ -724,7 +775,7 @@ export default function PropertyDetail() {
                     { label: "Type",        value: (property.type ?? "").charAt(0).toUpperCase() + (property.type ?? "").slice(1) },
                     { label: "City",        value: property.city },
                     { label: "Area",        value: property.area || "N/A" },
-                    { label: "Listed",      value: new Date(property.createdAt).toLocaleDateString("en-PK", { year: "numeric", month: "long", day: "numeric" }) },
+                    { label: "Listed",      value: safeDate(property.created_at ?? property.createdAt) },
                     { label: "Property ID", value: `#${String(property.id).padStart(5, "0")}` },
                   ].map(row => (
                     <div key={row.label} className="flex items-center justify-between py-1.5 border-b border-white/[0.04]">
@@ -744,8 +795,13 @@ export default function PropertyDetail() {
                 <div className="h-5 w-1 rounded-full bg-gradient-to-b from-[#C9A84C] to-[#e8c060]" />
                 Location
               </h3>
-              <MapBlock city={property.city} area={property.area} latitude={(property as any).latitude} longitude={(property as any).longitude} />
-              <p className="text-[#2a3a50] text-[10px] text-center mt-2">Approximate location shown for privacy</p>
+              <MapBlock city={property.city || "Lahore"} area={propertyArea} latitude={(property as any).latitude} longitude={(property as any).longitude} />
+              <div className="flex items-center justify-between gap-3 mt-3">
+                <p className="text-[#2a3a50] text-[10px]">Approximate location shown for privacy</p>
+                <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-xl border border-[#C9A84C]/25 bg-[#C9A84C]/8 px-3 py-2 text-[10px] font-bold text-[#C9A84C] hover:bg-[#C9A84C]/15 transition-colors">
+                  <Navigation className="h-3.5 w-3.5" /> Directions <ExternalLink className="h-3 w-3" />
+                </a>
+              </div>
             </motion.div>
           </div>
 
@@ -814,6 +870,12 @@ export default function PropertyDetail() {
                     </span>
                   </div>
 
+                  <div className="grid grid-cols-3 gap-2 mb-4">
+                    <button onClick={handleDirectChat} className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#C9A84C]/25 bg-[#C9A84C]/8 py-2.5 text-[10px] font-bold text-[#e8c060] hover:bg-[#C9A84C]/15 transition-colors"><MessageCircle className="h-3.5 w-3.5" /> Chat</button>
+                    <a href={`tel:${property.owner_phone ?? property.ownerPhone ?? ""}`} className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/5 py-2.5 text-[10px] font-bold text-[#c8d8e8] hover:border-[#C9A84C]/30 transition-colors"><Phone className="h-3.5 w-3.5" /> Call</a>
+                    <button onClick={() => setActionSheet("tour")} className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/5 py-2.5 text-[10px] font-bold text-[#c8d8e8] hover:border-[#C9A84C]/30 transition-colors"><CalendarDays className="h-3.5 w-3.5" /> Tour</button>
+                  </div>
+
                   {/* rented notice */}
                   {isRental && !isAvailable && (
                     <div className="flex items-start gap-2 bg-rose-900/20 border border-rose-500/25 rounded-xl px-3 py-2.5 mb-3">
@@ -876,7 +938,7 @@ export default function PropertyDetail() {
                 </h4>
                 {[
                   { label: "Property ID",  value: `#${String(property.id).padStart(5, "0")}` },
-                  { label: "Listed On",    value: new Date(property.created_at ?? property.createdAt).toLocaleDateString("en-PK", { month: "short", day: "numeric", year: "numeric" }) },
+                  { label: "Listed On",    value: safeDate(property.created_at ?? property.createdAt) },
                   { label: "Status",       value: catStyle.name, badge: true, color: catStyle.pill },
                   ...((property.is_verified ?? property.isVerified) ? [{ label: "Verification", value: "Sovereign Verified", verified: true }] : []),
                 ].map(row => (
@@ -1017,6 +1079,20 @@ export default function PropertyDetail() {
           </div>
         </div>
       </motion.div>
+
+      <AnimatePresence>
+        {actionSheet && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[180] flex items-end sm:items-center justify-center bg-black/70 p-4 backdrop-blur-sm" onClick={() => setActionSheet(null)}>
+            <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 30, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-3xl border border-[#C9A84C]/30 bg-[#0b1725] p-5 shadow-2xl shadow-black/60">
+              <div className="flex items-start justify-between gap-4 mb-5"><div><p className="text-[#C9A84C] text-[10px] font-bold uppercase tracking-[.18em]">Sovereign settlement desk</p><h3 className="text-white text-lg font-bold mt-1">{actionSheet === "buy" ? "Buy Full Property" : actionSheet === "fractional" ? "Buy Fractional Shares" : actionSheet === "offer" ? "Make an Offer" : "Schedule Site Tour"}</h3><p className="text-[#6a7f99] text-xs mt-1 line-clamp-1">{property.title}</p></div><button onClick={() => setActionSheet(null)} className="h-9 w-9 rounded-xl border border-white/10 bg-white/5 text-[#94a3b8] flex items-center justify-center"><X className="h-4 w-4" /></button></div>
+              {actionSheet === "buy" && <div className="space-y-4"><div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/8 p-4"><p className="text-[#6a7f99] text-[10px] uppercase tracking-wider">Settlement amount</p><p className="text-emerald-300 text-2xl font-bold font-mono mt-1">{formatPrice(fullPrice, property.category)}</p><p className="text-[#6a7f99] text-xs mt-2">A consultant will contact you to complete KYC, escrow, and title verification.</p></div><button onClick={() => { setActionSheet(null); handleDirectChat(); }} className="w-full rounded-xl bg-[#C9A84C] py-3.5 text-sm font-extrabold text-[#040b14] inline-flex items-center justify-center gap-2"><Send className="h-4 w-4" /> Start purchase with consultant</button></div>}
+              {actionSheet === "fractional" && <div className="space-y-4"><div className="flex items-center justify-between"><span className="text-[#94a3b8] text-xs">Ownership allocation</span><strong className="text-[#e8c060] text-sm">{fractionPercent}%</strong></div><input type="range" min="1" max="100" value={fractionPercent} onChange={(e) => setFractionPercent(Number(e.target.value))} className="w-full accent-[#C9A84C]" /><div className="rounded-2xl border border-[#C9A84C]/20 bg-[#C9A84C]/8 p-4"><p className="text-[#6a7f99] text-[10px] uppercase tracking-wider">Estimated token allocation</p><p className="text-[#e8c060] text-2xl font-bold font-mono mt-1">{formatPrice(Math.round(fullPrice * fractionPercent / 100), property.category)}</p><p className="text-[#6a7f99] text-xs mt-1">Minimum entry from PKR {fractionalMinimum.toLocaleString()}</p></div><button onClick={() => { setActionSheet(null); handleDirectChat(); }} className="w-full rounded-xl border border-[#C9A84C]/35 bg-[#C9A84C]/12 py-3.5 text-sm font-extrabold text-[#e8c060] inline-flex items-center justify-center gap-2"><Coins className="h-4 w-4" /> Reserve fractional allocation</button></div>}
+              {actionSheet === "offer" && <div className="space-y-4"><label className="block text-[#94a3b8] text-xs">Your offer amount<input value={offerAmount} onChange={(e) => setOfferAmount(e.target.value)} inputMode="decimal" placeholder="Enter amount in PKR" className="mt-2 w-full rounded-xl border border-white/10 bg-[#06101c] px-4 py-3 text-white outline-none focus:border-[#C9A84C]/60" /></label><button onClick={() => { setActionSheet(null); handleDirectChat(); }} disabled={!offerAmount} className="w-full rounded-xl bg-[#C9A84C] py-3.5 text-sm font-extrabold text-[#040b14] disabled:opacity-40 inline-flex items-center justify-center gap-2"><Gavel className="h-4 w-4" /> Submit offer to consultant</button></div>}
+              {actionSheet === "tour" && <div className="space-y-4"><div className="grid grid-cols-2 gap-3"><label className="text-[#94a3b8] text-xs">Date<input type="date" value={tourDate} onChange={(e) => setTourDate(e.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#06101c] px-3 py-3 text-white outline-none focus:border-[#C9A84C]/60" /></label><label className="text-[#94a3b8] text-xs">Time<input type="time" value={tourTime} onChange={(e) => setTourTime(e.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-[#06101c] px-3 py-3 text-white outline-none focus:border-[#C9A84C]/60" /></label></div><button onClick={() => { setActionSheet(null); handleDirectChat(); }} disabled={!tourDate} className="w-full rounded-xl bg-[#C9A84C] py-3.5 text-sm font-extrabold text-[#040b14] disabled:opacity-40 inline-flex items-center justify-center gap-2"><CalendarDays className="h-4 w-4" /> Request this tour slot</button></div>}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
