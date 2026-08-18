@@ -571,7 +571,7 @@ export default function PropertyDetail() {
   ];
 
   return (
-    <div className="min-h-screen font-sans text-foreground" style={{ background: "linear-gradient(180deg, #040b14 0%, #06101c 100%)" }}>
+    <div className="min-h-screen font-sans text-foreground [&_h1]:font-sans [&_h2]:font-sans [&_h3]:font-sans [&_h4]:font-sans [&_h5]:font-sans [&_h6]:font-sans" style={{ background: "linear-gradient(180deg, #040b14 0%, #06101c 100%)" }}>
       {/* ── Ambient glows ── */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <div className="absolute top-60 right-1/3 w-[500px] h-[500px] rounded-full bg-[#C9A84C]/[0.03] blur-[120px]" />
@@ -614,7 +614,7 @@ export default function PropertyDetail() {
       </div>
 
       {/* ══ Main Content ══ */}
-      <div className="relative z-10 max-w-5xl mx-auto px-4 py-5 pb-32 sm:pt-7">
+      <div className="relative z-10 max-w-5xl mx-auto px-4 py-5 pb-44 sm:pt-7">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-7">
 
           {/* ════════════════ LEFT COLUMN (2/3) ════════════════ */}
@@ -677,7 +677,7 @@ export default function PropertyDetail() {
 
             {/* ── PURCHASE OPTIONS ── */}
             <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.5 }} className="rounded-2xl border border-[#232936] bg-[#12161f] p-4 mb-5 space-y-2.5">
-              <h2 className="text-base font-bold text-white mb-1">Purchase Options</h2>
+              <h2 className="text-base font-sans font-bold text-white mb-3 tracking-tight">Purchase Options</h2>
               <button onClick={() => setActionSheet("buy")} className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-amber-400 px-3 py-3 text-sm font-bold text-black hover:bg-amber-500 active:scale-[.98] transition-all"><ShoppingCart className="h-4 w-4" /> Buy Property</button>
               <button onClick={() => setActionSheet("fractional")} className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-[#2a3347] bg-[#1c2230] px-3 py-3 text-sm font-semibold text-white hover:bg-[#282e3d] active:scale-[.98] transition-all"><Coins className="h-4 w-4" /> Invest Fractionally <span className="text-[11px] text-gray-400">(From PKR 10,000)</span></button>
               <button onClick={() => setActionSheet("offer")} className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-transparent py-2 text-xs font-medium text-gray-300 hover:bg-white/5 hover:text-white active:scale-[.98] transition-all"><Gavel className="h-3.5 w-3.5" /> Make an Offer / Negotiate</button>
@@ -689,7 +689,7 @@ export default function PropertyDetail() {
                 initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12, duration: 0.5 }}
                 className="rounded-2xl border border-[#232936] bg-[#12161f] p-4 mb-5"
               >
-                <h3 className="text-base font-bold text-white mb-3">Property Highlights</h3>
+                <h3 className="text-base font-sans font-bold text-white mb-4 tracking-tight">Property Highlights</h3>
                 <div className="grid grid-cols-3 gap-2.5">
                   {specItems.map(s => (
                     <div key={s.label} className="min-h-[76px] rounded-xl border border-[#232936] bg-[#171e29] p-3 text-center flex flex-col items-center justify-center gap-1">
@@ -707,7 +707,7 @@ export default function PropertyDetail() {
               initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16, duration: 0.5 }}
               className="rounded-2xl border border-[#232936] bg-[#12161f] p-4 mb-5"
             >
-              <h3 className="text-base font-bold text-white mb-3">Amenities</h3>
+              <h3 className="text-base font-sans font-bold text-white mb-4 tracking-tight">Amenities</h3>
               <div className="space-y-2.5 text-xs text-gray-300">
                 {luxuryFeatures.map((feat) => (
                   <div key={feat} className="flex items-center gap-2.5">
