@@ -447,8 +447,24 @@ export default function PropertyDetail() {
             rentalDuration: source.rental_duration || source.rentalDuration,
           });
         }
-        setIsLoading(false);
-      });
+      })
+      .catch(() => {
+        const fallback = MARKETPLACE_FALLBACKS[id];
+        if (fallback) {
+          setProperty({
+            ...fallback,
+            city: fallback.city ?? "Lahore",
+            area: safeArea(fallback),
+            createdAt: fallback.createdAt ?? new Date().toISOString(),
+            images: Array.from(new Set([...(Array.isArray(fallback.images) ? fallback.images : []), ...GALLERY_FILLERS])).slice(0, 5),
+            areaSqFt: fallback.area_sqft ?? fallback.areaSqFt ?? 0,
+            isVerified: fallback.is_verified ?? fallback.isVerified ?? false,
+            isAvailable: fallback.is_available ?? fallback.isAvailable ?? true,
+            ownerRating: fallback.owner_rating ?? fallback.ownerRating ?? 4.8,
+          });
+        }
+      })
+      .finally(() => setIsLoading(false));
   }, [id]);
 
   const isRental    = property?.category === "rent";
