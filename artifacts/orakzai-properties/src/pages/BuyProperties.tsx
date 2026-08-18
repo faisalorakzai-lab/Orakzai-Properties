@@ -93,8 +93,10 @@ export default function BuyProperties() {
       </header>
 
       <main style={{ maxWidth: 760, margin: "0 auto", padding: "12px 14px 0" }}>
-        <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 9, scrollbarWidth: "none" }}>
+        <div style={{ position: "relative", zIndex: 75, paddingBottom: 8 }}>
           <CityFilter value={city} open={cityOpen} search={citySearch} options={matchingCities} onToggle={() => setCityOpen((open) => !open)} onSearch={setCitySearch} onChange={(value) => { setCity(value); setCityOpen(false); setCitySearch(""); }} />
+        </div>
+        <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 9, scrollbarWidth: "none" }}>
           <FilterSelect label={type} options={TYPES} onChange={setType} />
           <button onClick={() => setPriceOpen((v) => !v)} style={pillButton}><Filter size={13} /> Price Range</button>
           <button onClick={() => setView(view === "list" ? "map" : "list")} style={{ ...pillButton, color: GOLD, borderColor: `${GOLD}55` }}>{view === "list" ? <Map size={14} /> : <List size={14} />} {view === "list" ? "Map View" : "List View"}</button>
@@ -117,7 +119,7 @@ function FilterSelect({ label, options, onChange }: { label: string; options: st
 
 function CityFilter({ value, open, search, options, onToggle, onSearch, onChange }: { value: string; open: boolean; search: string; options: string[]; onToggle: () => void; onSearch: (value: string) => void; onChange: (value: string) => void }) {
   return <div style={{ position: "relative", flexShrink: 0 }}>
-    <button onClick={onToggle} style={{ ...pillButton, minWidth: 132, justifyContent: "space-between", cursor: "pointer" }}><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{value}</span><ChevronDown size={12} color={DIM} /></button>
+    <button onClick={onToggle} style={{ ...pillButton, minWidth: 160, justifyContent: "space-between", cursor: "pointer", borderColor: open ? `${GOLD}88` : LINE, color: open ? GOLD : "#f5f7fa" }}><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{value}</span><ChevronDown size={12} color={open ? GOLD : DIM} /></button>
     {open && <div style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, zIndex: 70, width: 265, maxWidth: "calc(100vw - 28px)", padding: 10, background: "#171d26", border: `1px solid ${GOLD}55`, borderRadius: 16, boxShadow: "0 18px 45px rgba(0,0,0,.5)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 10px", background: PANEL, border: `1px solid ${LINE}`, borderRadius: 11 }}><Search size={14} color={DIM} /><input autoFocus value={search} onChange={(e) => onSearch(e.target.value)} placeholder="Search city or country..." style={{ ...inputStyle, fontSize: 11 }} /></div>
       <div style={{ maxHeight: 260, overflowY: "auto", marginTop: 7 }}>
