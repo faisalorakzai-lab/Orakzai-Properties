@@ -84,7 +84,7 @@ import { useProfilePhoto } from "@/hooks/useProfilePhoto";
     { icon: TrendingUp, label: "Invest Hub",    color: "#a78bfa", bg: "rgba(167,139,250,0.18)", kycRequired: false, href: "/market/invest" },
     { icon: Layers,     label: "Fractional",    color: "#ec4899", bg: "rgba(236,72,153,0.18)",  kycRequired: false, href: "/market/fractional" },
     { icon: HardHat,    label: "Construction",  color: "#f97316", bg: "rgba(249,115,22,0.18)",  kycRequired: false, href: "/market/construction" },
-    { icon: Star,       label: "Luxury Est.",   color: GOLD,      bg: "rgba(201,168,76,0.12)",  kycRequired: false, marketCat: "Luxury" },
+    { icon: Landmark,   label: "Megaprojects",  color: GOLD,      bg: "rgba(201,168,76,0.12)",  kycRequired: false, href: "/market/megaprojects" },
     { icon: Grid3x3,    label: "More",          color: "#3b82f6", bg: "rgba(59,130,246,0.18)",  kycRequired: false, href: "/market/services-directory" },
   ];
 

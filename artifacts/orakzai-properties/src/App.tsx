@@ -67,6 +67,7 @@ import RentMarket from "@/pages/RentMarket";
 import MarketInvest from "@/pages/MarketInvest";
 import MarketFractional from "@/pages/MarketFractional";
 import MarketConstruction from "@/pages/MarketConstruction";
+import MarketMegaprojects from "@/pages/MarketMegaprojects";
 import Charity from "@/pages/Charity";
 import Announcements from "@/pages/Announcements";
 import Learn from "@/pages/Learn";
@@ -269,6 +270,7 @@ function AppContent() {
               <Route path="/market/invest" component={MarketInvest} />
               <Route path="/market/fractional" component={MarketFractional} />
               <Route path="/market/construction" component={MarketConstruction} />
+              <Route path="/market/megaprojects" component={MarketMegaprojects} />
               <Route path="/market" component={Marketplace} />
               <Route path="/market/properties/:id" component={PropertyDetail} />
               <Route path="/market/properties" component={BuyProperties} />
