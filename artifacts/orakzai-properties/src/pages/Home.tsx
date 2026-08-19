@@ -82,7 +82,7 @@ import { useProfilePhoto } from "@/hooks/useProfilePhoto";
     { icon: DollarSign, label: "Sell Asset",    color: GOLD,      bg: "rgba(201,168,76,0.18)",  kycRequired: false, href: "/market/sell", marketCat: "Sell" },
     { icon: KeyRound,   label: "Rent Market",   color: "#06b6d4", bg: "rgba(6,182,212,0.18)",   kycRequired: false, marketCat: "Rent", href: "/market/rent" },
     { icon: TrendingUp, label: "Invest Hub",    color: "#a78bfa", bg: "rgba(167,139,250,0.18)", kycRequired: false, href: "/market/invest" },
-    { icon: Layers,     label: "Fractional",    color: "#ec4899", bg: "rgba(236,72,153,0.18)",  kycRequired: true,  href: "/invest" },
+    { icon: Layers,     label: "Fractional",    color: "#ec4899", bg: "rgba(236,72,153,0.18)",  kycRequired: false, href: "/market/fractional" },
     { icon: HardHat,    label: "Construction",  color: "#f97316", bg: "rgba(249,115,22,0.18)",  kycRequired: false, marketCat: "Construction" },
     { icon: Star,       label: "Luxury Est.",   color: GOLD,      bg: "rgba(201,168,76,0.12)",  kycRequired: false, marketCat: "Luxury" },
     { icon: Grid3x3,    label: "More",          color: "#3b82f6", bg: "rgba(59,130,246,0.18)",  kycRequired: false, href: "/market/services-directory" },

@@ -65,6 +65,7 @@ import SellAssetWizard from "@/pages/SellAssetWizard";
 import BuyProperties from "@/pages/BuyProperties";
 import RentMarket from "@/pages/RentMarket";
 import MarketInvest from "@/pages/MarketInvest";
+import MarketFractional from "@/pages/MarketFractional";
 import Charity from "@/pages/Charity";
 import Announcements from "@/pages/Announcements";
 import Learn from "@/pages/Learn";
@@ -265,6 +266,7 @@ function AppContent() {
               <Route path="/market/sell" component={SellAssetWizard} />
               <Route path="/market/rent" component={RentMarket} />
               <Route path="/market/invest" component={MarketInvest} />
+              <Route path="/market/fractional" component={MarketFractional} />
               <Route path="/market" component={Marketplace} />
               <Route path="/market/properties/:id" component={PropertyDetail} />
               <Route path="/market/properties" component={BuyProperties} />
