@@ -61,6 +61,7 @@ import AirdropHub from "@/pages/AirdropHub";
 import AffiliateProgram from "@/pages/AffiliateProgram";
 import Marketplace from "@/pages/Marketplace";
 import MarketServicesDirectory from "@/pages/MarketServicesDirectory";
+import SellAssetWizard from "@/pages/SellAssetWizard";
 import BuyProperties from "@/pages/BuyProperties";
 import Charity from "@/pages/Charity";
 import Announcements from "@/pages/Announcements";
@@ -259,6 +260,8 @@ function AppContent() {
               <Route path="/airdrop-hub" component={AirdropHub} />
               <Route path="/affiliate-program" component={AffiliateProgram} />
               <Route path="/market/services-directory" component={MarketServicesDirectory} />
+              <Route path="/market/sell" component={SellAssetWizard} />
+              <Route path="/market" component={Marketplace} />
               <Route path="/market/properties/:id" component={PropertyDetail} />
               <Route path="/market/properties" component={BuyProperties} />
               <Route path="/marketplace" component={Marketplace} />

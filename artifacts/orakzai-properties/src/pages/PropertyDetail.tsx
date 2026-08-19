@@ -534,7 +534,7 @@ export default function PropertyDetail() {
           <p className="text-[#4a6080] text-sm mb-6">This listing may have been removed or is unavailable.</p>
           <Link href={`${basePath}/browse`}>
             <button className="bg-gradient-to-r from-[#C9A84C] to-[#e8c060] hover:opacity-90 text-[#040b14] font-bold px-6 py-3 rounded-xl transition-opacity">
-              Back to Marketplace
+              Back to market
             </button>
           </Link>
         </div>
@@ -571,480 +571,108 @@ export default function PropertyDetail() {
   ];
 
   return (
-    <div className="min-h-screen font-sans text-foreground [&_h1]:font-sans [&_h2]:font-sans [&_h3]:font-sans [&_h4]:font-sans [&_h5]:font-sans [&_h6]:font-sans" style={{ background: "linear-gradient(180deg, #040b14 0%, #06101c 100%)" }}>
-      {/* ── Ambient glows ── */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute top-60 right-1/3 w-[500px] h-[500px] rounded-full bg-[#C9A84C]/[0.03] blur-[120px]" />
-        <div className="absolute bottom-1/3 left-0 w-80 h-80 rounded-full bg-[#1e3a8a]/[0.05] blur-[100px]" />
-      </div>
+    <div className="min-h-screen bg-[#0b0e11] font-sans text-white pb-64">
+      <Navbar hideMobileMenu />
 
-      <Navbar />
-
-      {/* ══ Gallery ══ */}
-      <div className="pt-14">
-        <Gallery images={property.images ?? []} title={property.title} />
-      </div>
-
-      {/* ══ Sticky sub-header: Back + Save + Share ══ */}
-      <div className="sticky top-14 z-50 flex items-center justify-between px-4 py-2.5
-        bg-[#040b14]/88 backdrop-blur-xl border-b border-[#C9A84C]/12">
-        <Link href={`${basePath}/browse`}>
-          <button className="flex items-center gap-2.5 text-[#C9A84C] hover:text-white text-sm font-semibold transition-colors group">
-            <div className="h-8 w-8 rounded-xl bg-[#C9A84C]/10 border border-[#C9A84C]/25 flex items-center justify-center group-hover:bg-[#C9A84C]/20 transition-colors">
-              <ArrowLeft className="h-4 w-4" />
-            </div>
-            <span className="hidden sm:block">Back to Marketplace</span>
-          </button>
-        </Link>
-        <div className="flex items-center gap-1">
-          <span className="text-[#3a5070] text-[10px] font-medium mr-2 hidden sm:block">{(property.title ?? "").slice(0, 40)}{(property.title ?? "").length > 40 ? "…" : ""}</span>
-          <motion.button
-            onClick={handleSave}
-            whileTap={{ scale: 0.82 }}
-            className={`h-9 w-9 rounded-xl border flex items-center justify-center transition-all duration-200 ${
-              saved ? "bg-rose-500/15 border-rose-500/40 text-rose-400 shadow-lg shadow-rose-500/10" : "bg-white/5 border-white/10 text-[#6a7f99] hover:border-[#C9A84C]/40 hover:text-[#C9A84C]"
-            }`}>
-            <Heart className={`h-4 w-4 ${saved ? "fill-rose-400" : ""}`} />
-          </motion.button>
-          <button onClick={handleShare}
-            className="h-9 w-9 rounded-xl bg-white/5 border border-white/10 text-[#6a7f99] hover:border-[#C9A84C]/40 hover:text-[#C9A84C] flex items-center justify-center transition-all">
-            <Share2 className="h-4 w-4" />
-          </button>
+      <main className="mx-auto w-full max-w-md px-4 pt-2 sm:px-5">
+        <div className="mb-3 flex items-center justify-between">
+          <Link href={`${basePath}/browse`}>
+            <button className="inline-flex items-center gap-2 rounded-lg px-1 py-2 text-xs font-semibold text-[#9aa4b2] transition hover:text-white">
+              <ArrowLeft className="h-4 w-4" /> Back to market
+            </button>
+          </Link>
+          <div className="flex items-center gap-1.5">
+            <button onClick={handleSave} className={`rounded-lg border p-2 transition ${saved ? "border-rose-500/40 bg-rose-500/10 text-rose-400" : "border-white/10 bg-white/[0.03] text-[#8c98a8] hover:text-white"}`} aria-label="Save asset">
+              <Heart className={`h-4 w-4 ${saved ? "fill-rose-400" : ""}`} />
+            </button>
+            <button onClick={handleShare} className="rounded-lg border border-white/10 bg-white/[0.03] p-2 text-[#8c98a8] transition hover:text-white" aria-label="Share asset">
+              <Share2 className="h-4 w-4" />
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* ══ Main Content ══ */}
-      <div className="relative z-10 max-w-5xl mx-auto px-4 py-5 pb-44 sm:pt-7">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-7">
+        <section className="overflow-visible rounded-none border-0 bg-transparent shadow-none">
+          <div className="relative h-56 overflow-hidden rounded-2xl border border-[#252b34] bg-[#12161c] sm:h-72">
+            <img src={(property.images ?? [])[0] || GALLERY_FILLERS[0]} alt={property.title} className="h-full w-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#12161c] via-transparent to-black/10" />
+            <div className="absolute bottom-3 left-3 flex items-center gap-2">
+              <span className="rounded-md border border-emerald-400/25 bg-emerald-400/10 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-emerald-400">Verified asset</span>
+              <span className="rounded-md border border-white/15 bg-black/35 px-2 py-1 text-[10px] font-medium text-white/80">{property.type || "Property"}</span>
+            </div>
+            <div className="absolute bottom-3 right-3 rounded-md border border-white/15 bg-black/45 px-2 py-1 text-[10px] font-mono text-white/80">1 / {(property.images ?? []).length || 1}</div>
+          </div>
 
-          {/* ════════════════ LEFT COLUMN (2/3) ════════════════ */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="grid gap-3.5 p-0 sm:p-0">
+            <div className="rounded-2xl border border-[#252b34] bg-[#12161c] p-4">
+              <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#697585]">Real estate asset</p>
+              <h1 className="text-xl font-semibold leading-tight tracking-tight text-white sm:text-2xl">{property.title}</h1>
+              <p className="mt-1.5 flex items-center gap-1.5 text-xs text-[#8c98a8]"><MapPin className="h-3.5 w-3.5 text-[#f0b90b]" />{propertyArea}, {property.city || "Lahore"}</p>
+            </div>
 
-            {/* ── Title block ── */}
-            <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-              <div className="flex flex-wrap items-center gap-2 mb-3">
-                <span className={`text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full border ${catStyle.pill}`}>
-                  {catStyle.name}
-                </span>
-                <span className="flex items-center gap-1.5 text-[11px] bg-white/5 border border-white/10 text-[#6a7f99] px-2.5 py-1 rounded-full capitalize">
-                  <TypeIcon className="h-3 w-3" /> {property.type}
-                </span>
-                {(property.is_verified ?? property.isVerified) && (
-                  <span className="flex items-center gap-1.5 text-[11px] bg-[#C9A84C]/10 border border-[#C9A84C]/35 text-[#C9A84C] px-2.5 py-1 rounded-full font-bold">
-                    <ShieldCheck className="h-3.5 w-3.5" /> Sovereign Verified
-                  </span>
-                )}
-                {!isAvailable && isRental && (
-                  <span className="flex items-center gap-1.5 text-[11px] bg-rose-500/10 border border-rose-500/30 text-rose-400 px-2.5 py-1 rounded-full font-semibold">
-                    <BanIcon className="h-3 w-3" /> Rented Out
-                  </span>
-                )}
-              </div>
-
-              <h1 className="font-sans text-xl md:text-2xl font-bold text-white leading-tight mb-1">
-                {property.title}
-              </h1>
-              <div className="flex items-center gap-1.5 text-[#4a6080] text-sm">
-                <MapPin className="h-3.5 w-3.5 text-[#C9A84C]/60 flex-shrink-0" />
-                <span>{propertyArea}, {property.city || "Lahore"}</span>
-              </div>
-            </motion.div>
-
-            {/* ── INSTITUTIONAL PRICE CARD ── */}
-            <motion.div
-              initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08, duration: 0.5 }}
-              className="rounded-2xl border border-[#232936] bg-[#12161f] p-4 mb-5"
-            >
-              <div className="flex items-center justify-between gap-3 mb-2">
-                <div className="font-sans text-2xl font-bold text-amber-400 leading-tight break-words">
-                  {formatPrice(Number(property.price), property.category)}
-                </div>
-                <span className="shrink-0 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-mono text-gray-400">
-                  ID #{String(property.id).padStart(5, "0")}
-                </span>
-              </div>
+            <div className="rounded-xl border border-[#2a313b] bg-[#0f1318] p-4">
               <div className="flex items-center justify-between gap-3">
-                <span className="text-xs text-gray-400">
-                  {isRental ? "Monthly rate" : `PKR ${Math.round(Number(property.price) / Number(property.areaSqFt || property.area_sqft || 1)).toLocaleString()} / sq. ft.`}
-                </span>
-                {(property.isVerified ?? property.is_verified) && (
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-400 whitespace-nowrap">
-                    <ShieldCheck className="h-3.5 w-3.5" /> Verified Listing
-                  </span>
-                )}
+                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#697585]">Current valuation</p>
+                <span className="shrink-0 rounded-md border border-white/10 bg-white/[0.04] px-2 py-1 text-[10px] font-mono text-[#8c98a8]">#{String(property.id).padStart(5, "0")}</span>
               </div>
-            </motion.div>
-
-            {/* ── PURCHASE OPTIONS ── */}
-            <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.5 }} className="rounded-2xl border border-[#232936] bg-[#12161f] p-4 mb-5 space-y-2.5">
-              <h2 className="text-base font-sans font-bold text-white mb-3 tracking-tight">Purchase Options</h2>
-              <button onClick={() => setActionSheet("buy")} className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-amber-400 px-3 py-3 text-sm font-bold text-black hover:bg-amber-500 active:scale-[.98] transition-all"><ShoppingCart className="h-4 w-4" /> Buy Property</button>
-              <button onClick={() => setActionSheet("fractional")} className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-[#2a3347] bg-[#1c2230] px-3 py-3 text-sm font-semibold text-white hover:bg-[#282e3d] active:scale-[.98] transition-all"><Coins className="h-4 w-4" /> Invest Fractionally <span className="text-[11px] text-gray-400">(From PKR 10,000)</span></button>
-              <button onClick={() => setActionSheet("offer")} className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-transparent py-2 text-xs font-medium text-gray-300 hover:bg-white/5 hover:text-white active:scale-[.98] transition-all"><Gavel className="h-3.5 w-3.5" /> Make an Offer / Negotiate</button>
-            </motion.div>
-
-            {/* ── Specs grid — glassmorphic ── */}
-            {specItems.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12, duration: 0.5 }}
-                className="rounded-2xl border border-[#232936] bg-[#12161f] p-4 mb-5"
-              >
-                <h3 className="text-base font-sans font-bold text-white mb-4 tracking-tight">Property Highlights</h3>
-                <div className="grid grid-cols-3 gap-2.5">
-                  {specItems.map(s => (
-                    <div key={s.label} className="min-h-[76px] rounded-xl border border-[#232936] bg-[#171e29] p-3 text-center flex flex-col items-center justify-center gap-1">
-                      <s.icon className="h-4 w-4 text-amber-400" />
-                      <span className="text-xs font-semibold text-white leading-tight">{s.value}</span>
-                      <span className="text-[10px] uppercase tracking-wide text-gray-500">{s.label}</span>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-
-            {/* ── Luxury Features ── */}
-            <motion.div
-              initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16, duration: 0.5 }}
-              className="rounded-2xl border border-[#232936] bg-[#12161f] p-4 mb-5"
-            >
-              <h3 className="text-base font-sans font-bold text-white mb-4 tracking-tight">Amenities</h3>
-              <div className="space-y-2.5 text-xs text-gray-300">
-                {luxuryFeatures.map((feat) => (
-                  <div key={feat} className="flex items-center gap-2.5">
-                    <span className="text-emerald-400 font-bold">✓</span>
-                    <span>{feat}</span>
-                  </div>
-                ))}
+              <p className="mt-2 text-2xl font-bold leading-none tracking-tight text-[#f0b90b]">{formatPrice(Number(property.price), property.category)}</p>
+              <div className="mt-3 grid gap-2 border-t border-white/[0.06] pt-3 text-[11px] text-[#8c98a8]">
+                <span>{isRental ? "Monthly lease rate" : `PKR ${Math.round(Number(property.price) / Number(property.areaSqFt || property.area_sqft || 1)).toLocaleString()} per sq. ft.`}</span>
+                <span className="inline-flex items-center gap-1 text-emerald-400"><ShieldCheck className="h-3.5 w-3.5" /> Verified listing</span>
               </div>
-            </motion.div>
+            </div>
 
-            {/* ── Description ── */}
-            <motion.div
-              initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.5 }}
-              className="rounded-2xl border border-[#232936] bg-[#12161f] p-4 mb-5"
-            >
-              <h3 className="font-sans text-lg font-bold text-white mb-4 flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                About this property
-              </h3>
-              <p className="text-[#6a7f99] text-sm leading-[1.85] whitespace-pre-line">{property.description}</p>
-
-              {/* ── Details table ── */}
-              <div className="mt-6 pt-5 border-t border-white/6">
-                <h4 className="font-sans text-sm font-bold text-[#94a3b8] mb-3 flex items-center gap-2">
-                  <div className="h-3.5 w-0.5 rounded-full bg-[#C9A84C]/60" />
-                  Asset Metadata
-                </h4>
-                <div className="grid grid-cols-2 gap-x-8 gap-y-2.5">
-                  {[
-                    { label: "Category",    value: catStyle.name },
-                    { label: "Type",        value: (property.type ?? "").charAt(0).toUpperCase() + (property.type ?? "").slice(1) },
-                    { label: "City",        value: property.city },
-                    { label: "Area",        value: property.area || "N/A" },
-                    { label: "Listed On",   value: safeDate(property.created_at ?? property.createdAt) },
-                    { label: "Asset ID", value: `#${String(property.id).padStart(5, "0")}` },
-                  ].map(row => (
-                    <div key={row.label} className="flex items-center justify-between py-1.5 border-b border-white/[0.04]">
-                      <span className="text-[#2a3a50] text-[10px] uppercase tracking-wider">{row.label}</span>
-                      <span className="text-[#c8d8e8] text-xs font-medium">{row.value}</span>
-                    </div>
-                  ))}
-                </div>
+            <section className="rounded-xl border border-[#2a313b] bg-[#12161c] p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-white">Investment options</h2>
+                <span className="text-[10px] uppercase tracking-[0.14em] text-[#697585]">Exchange desk</span>
               </div>
-            </motion.div>
+              <div className="grid gap-2.5">
+                <button onClick={() => setActionSheet("buy")} className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#f0b90b] text-sm font-bold text-black transition hover:bg-[#f8c62d] active:scale-[0.99]"><ShoppingCart className="h-4 w-4" /> Buy Property</button>
+                <button onClick={() => setActionSheet("fractional")} className="flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-[#39424e] bg-[#1b222b] text-sm font-semibold text-white transition hover:border-[#f0b90b]/50"><Coins className="h-4 w-4 text-[#f0b90b]" /> Invest Fractionally <span className="text-[10px] text-[#8c98a8]">from PKR 10,000</span></button>
+                <button onClick={() => setActionSheet("offer")} className="h-9 w-full rounded-lg text-xs font-medium text-[#9aa4b2] transition hover:bg-white/[0.04] hover:text-white">Make an Offer / Negotiate</button>
+              </div>
+            </section>
 
-            {/* ── Map ── */}
-            <motion.div
-              initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24, duration: 0.5 }}
-            >
-              <h3 className="font-sans text-lg font-bold text-white mb-3 flex items-center gap-2">
-                <div className="h-5 w-1 rounded-full bg-gradient-to-b from-[#C9A84C] to-[#e8c060]" />
-                Location
-              </h3>
+            <section className="rounded-2xl border border-[#252b34] bg-[#12161c] p-4">
+              <div className="mb-3 flex items-center justify-between gap-3"><h2 className="text-sm font-semibold text-white">Asset overview</h2><span className="shrink-0 text-[10px] uppercase tracking-[0.14em] text-[#697585]">Key metrics</span></div>
+              <div className="grid grid-cols-3 gap-2.5">
+                {specItems.map((item) => <div key={item.label} className="min-h-[66px] rounded-xl border border-[#252b34] bg-[#12161c] p-2.5 text-center"><item.icon className="mx-auto mb-1.5 h-4 w-4 text-[#f0b90b]" /><p className="text-xs font-semibold leading-tight text-white">{item.value}</p><p className="mt-1 text-[9px] uppercase tracking-wide text-[#697585]">{item.label}</p></div>)}
+              </div>
+            </section>
+
+            <section className="rounded-2xl border border-[#252b34] bg-[#12161c] p-4">
+              <div className="mb-3 flex items-center justify-between"><h2 className="text-sm font-semibold text-white">Key features</h2><span className="text-[10px] uppercase tracking-[0.14em] text-[#697585]">Verified</span></div>
+              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">{luxuryFeatures.map((feature) => <div key={feature} className="flex items-center gap-2 text-xs text-[#c2cbd6]"><CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />{feature}</div>)}</div>
+            </section>
+
+            <section className="rounded-2xl border border-[#252b34] bg-[#12161c] p-4">
+              <div className="mb-3 flex items-center justify-between"><h2 className="text-sm font-semibold text-white">Asset description</h2><span className="text-[10px] uppercase tracking-[0.14em] text-[#697585]">Overview</span></div>
+              <p className="text-xs leading-6 text-[#9aa4b2]">{property.description}</p>
+            </section>
+
+            <section className="rounded-2xl border border-[#252b34] bg-[#12161c] p-4">
+              <div className="mb-3 flex items-center justify-between"><h2 className="text-sm font-semibold text-white">Verified operator</h2><span className="text-xs font-semibold text-[#f0b90b]">{ownerRating.toFixed(1)} / 5.0</span></div>
+              <div className="flex items-center gap-3 rounded-lg border border-[#252b34] bg-[#0f1318] p-3"><div className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#f0b90b]/25 bg-[#f0b90b]/10 text-lg font-bold text-[#f0b90b]">{((property.owner_name ?? property.ownerName) ?? "O")[0].toUpperCase()}</div><div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold text-white">{property.owner_name ?? property.ownerName ?? "Orakzai Agent"}</p><p className="mt-0.5 text-[11px] text-[#697585]">Identity verified · response under 1 hour</p></div></div>
+              <div className="mt-2 grid grid-cols-3 gap-2"><button onClick={handleDirectChat} className="rounded-lg border border-[#39424e] bg-[#1b222b] py-2 text-[11px] font-semibold text-white"><MessageCircle className="mx-auto mb-1 h-3.5 w-3.5 text-[#f0b90b]" />Chat</button><a href={`tel:${property.owner_phone ?? property.ownerPhone ?? ""}`} className="rounded-lg border border-[#39424e] bg-[#1b222b] py-2 text-center text-[11px] font-semibold text-white"><Phone className="mx-auto mb-1 h-3.5 w-3.5 text-[#f0b90b]" />Call</a><button onClick={() => setActionSheet("tour")} className="rounded-lg border border-[#39424e] bg-[#1b222b] py-2 text-[11px] font-semibold text-white"><CalendarDays className="mx-auto mb-1 h-3.5 w-3.5 text-[#f0b90b]" />Tour</button></div>
+            </section>
+
+            <section className="rounded-2xl border border-[#252b34] bg-[#12161c] p-4">
+              <h2 className="mb-3 text-sm font-semibold text-white">Asset details</h2>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">{[{label:"Asset class",value:isRental?"Rental property":"Real estate"},{label:"Type",value:property.type||"Property"},{label:"City",value:property.city||"Lahore"},{label:"Area",value:propertyArea},{label:"Listed",value:safeDate(property.created_at??property.createdAt)},{label:"Reference",value:`#${String(property.id).padStart(5,"0")}`}].map((row)=><div key={row.label} className="flex items-center justify-between border-b border-white/[0.04] py-1.5"><span className="text-[#697585]">{row.label}</span><span className="font-medium text-[#d8dee7]">{row.value}</span></div>)}</div>
+            </section>
+
+            <section className="rounded-2xl border border-[#252b34] bg-[#12161c] p-4">
+              <h2 className="mb-3 text-sm font-semibold text-white">Location</h2>
               <MapBlock city={property.city || "Lahore"} area={propertyArea} latitude={(property as any).latitude} longitude={(property as any).longitude} />
-              <div className="flex items-center justify-between gap-3 mt-3">
-                <p className="text-[#2a3a50] text-[10px]">Approximate location shown for privacy</p>
-                <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-xl border border-[#C9A84C]/25 bg-[#C9A84C]/8 px-3 py-2 text-[10px] font-bold text-[#C9A84C] hover:bg-[#C9A84C]/15 transition-colors">
-                  <Navigation className="h-3.5 w-3.5" /> Open Maps <ExternalLink className="h-3 w-3" />
-                </a>
-              </div>
-            </motion.div>
+              <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-[#39424e] bg-[#1b222b] py-2.5 text-xs font-semibold text-white"><Navigation className="h-3.5 w-3.5 text-[#f0b90b]" /> Open maps</a>
+            </section>
           </div>
+        </section>
+      </main>
 
-          {/* ════════════════ RIGHT COLUMN (1/3) ════════════════ */}
-          <div>
-            <div className="sticky top-28 space-y-4">
-
-              {/* ── Agent / Owner Card ── */}
-              <motion.div
-                initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.5 }}
-                className="rounded-2xl border border-[#C9A84C]/25 overflow-hidden"
-                style={{ background: "linear-gradient(160deg, #0d1e30 0%, #060d16 100%)" }}
-              >
-                <div className="h-px w-full bg-gradient-to-r from-transparent via-[#C9A84C] to-transparent" />
-                <div className="p-5">
-                  <p className="text-[#3a5070] text-[9px] font-bold uppercase tracking-[.22em] mb-4">VERIFIED COUNTERPARTY</p>
-
-                  {/* Avatar + Trust Ring */}
-                  <div className="flex items-center gap-3 mb-4">
-                    {(property.owner_avatar ?? property.ownerAvatar) ? (
-                      <div className="relative flex-shrink-0">
-                        <img src={property.owner_avatar ?? property.ownerAvatar} alt={(property.owner_name ?? property.ownerName) ?? "Agent"}
-                          className="h-14 w-14 rounded-2xl object-cover border-2 border-[#C9A84C]/30" />
-                      </div>
-                    ) : (
-                      <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#C9A84C]/20 to-[#C9A84C]/5 border border-[#C9A84C]/30 flex items-center justify-center flex-shrink-0">
-                        <span className="text-[#C9A84C] font-sans text-xl font-bold">
-                          {((property.owner_name ?? property.ownerName) ?? "O")[0].toUpperCase()}
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="text-white font-semibold text-sm truncate">{property.owner_name ?? property.ownerName ?? "Orakzai Agent"}</div>
-                      <div className="text-[#3a5070] text-xs mt-0.5">Verified Counterparty</div>
-                    </div>
-                    <TrustRing rating={ownerRating} />
-                  </div>
-
-                  {/* Stars + trust label */}
-                  <div className="flex items-center gap-2 mb-3">
-                    <Stars rating={ownerRating} />
-                    <span className="text-[#C9A84C] text-xs font-bold">{ownerRating.toFixed(1)}</span>
-                    <span className="text-[#2a3a50] text-[10px]">Exchange Trust Score</span>
-                  </div>
-
-                  {/* stat pills */}
-                  <div className="grid grid-cols-2 gap-2 mb-4">
-                    {[
-                      { label: "Response", value: "< 1hr" },
-                      { label: "Listings", value: "12+" },
-                    ].map(({ label, value }) => (
-                      <div key={label} className="rounded-xl bg-white/[0.03] border border-white/6 px-3 py-2 text-center">
-                        <p className="text-white text-sm font-bold">{value}</p>
-                        <p className="text-[#3a5070] text-[9px] uppercase tracking-wider mt-0.5">{label}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* verified badges */}
-                  <div className="flex flex-wrap gap-1.5 mb-4">
-                    <span className="flex items-center gap-1 text-[9px] bg-[#C9A84C]/8 border border-[#C9A84C]/20 text-[#C9A84C] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">
-                      <CheckCircle2 className="h-2.5 w-2.5" /> KYC Verified
-                    </span>
-                    <span className="flex items-center gap-1 text-[9px] bg-emerald-500/8 border border-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">
-                      <ShieldCheck className="h-2.5 w-2.5" /> Trusted Counterparty
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2 mb-4">
-                    <button onClick={handleDirectChat} className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#C9A84C]/25 bg-[#C9A84C]/8 py-2.5 text-[10px] font-bold text-[#e8c060] hover:bg-[#C9A84C]/15 transition-colors"><MessageCircle className="h-3.5 w-3.5" /> Chat</button>
-                    <a href={`tel:${property.owner_phone ?? property.ownerPhone ?? ""}`} className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/5 py-2.5 text-[10px] font-bold text-[#c8d8e8] hover:border-[#C9A84C]/30 transition-colors"><Phone className="h-3.5 w-3.5" /> Call</a>
-                    <button onClick={() => setActionSheet("tour")} className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/5 py-2.5 text-[10px] font-bold text-[#c8d8e8] hover:border-[#C9A84C]/30 transition-colors"><CalendarDays className="h-3.5 w-3.5" /> Tour</button>
-                  </div>
-
-                  {/* rented notice */}
-                  {isRental && !isAvailable && (
-                    <div className="flex items-start gap-2 bg-rose-900/20 border border-rose-500/25 rounded-xl px-3 py-2.5 mb-3">
-                      <BanIcon className="h-4 w-4 text-rose-400 flex-shrink-0 mt-0.5" />
-                      <span className="text-rose-300 text-xs leading-relaxed">This property has already been rented and is no longer accepting inquiries.</span>
-                    </div>
-                  )}
-
-                  {/* CTA Buttons */}
-                  <div className="space-y-2.5">
-                    {waLink && (isRental ? isAvailable : true) && (
-                      <a href={waLink} target="_blank" rel="noopener noreferrer"
-                        onClick={() => {
-                          if (isRental) {
-                            import("@/pages/MyProperties").then(m => {
-                              m.recordRentalInquiry({ id: property.id, title: property.title, price: Number(property.price), city: property.city });
-                            });
-                          }
-                        }}>
-                        <button className="w-full flex items-center justify-center gap-2.5 h-12 rounded-xl bg-[#25D366] hover:bg-[#20c55a] text-white font-bold text-sm shadow-lg shadow-[#25D366]/20 transition-all">
-                          <MessageCircle className="h-4.5 w-4.5" />
-                          {isRental ? "Request Rental Quote" : "Contact Counterparty"}
-                        </button>
-                      </a>
-                    )}
-                    {(property.owner_phone ?? property.ownerPhone) && (
-                      <a href={`tel:${property.owner_phone ?? property.ownerPhone}`}>
-                        <button className="w-full flex items-center justify-center gap-2.5 h-11 rounded-xl border border-white/10 bg-white/5 text-[#e8edf5] hover:border-[#C9A84C]/40 hover:bg-[#C9A84C]/5 font-semibold text-sm transition-all">
-                          <Phone className="h-4 w-4 text-[#C9A84C]" />
-                          {property.owner_phone ?? property.ownerPhone}
-                        </button>
-                      </a>
-                    )}
-                    {isRental && !isAvailable && (
-                      <button disabled className="w-full flex items-center justify-center gap-2 h-11 rounded-xl border border-rose-500/20 bg-rose-900/10 text-rose-400/60 font-semibold text-sm cursor-not-allowed">
-                        <BanIcon className="h-4 w-4" /> Unavailable
-                      </button>
-                    )}
-                  </div>
-
-                  {/* pre-fill preview */}
-                  {waLink && isAvailable && (
-                    <div className="mt-3 rounded-xl bg-[#C9A84C]/5 border border-[#C9A84C]/12 p-3">
-                      <p className="text-[#3a5070] text-[10px] mb-1.5">Pre-filled WhatsApp message:</p>
-                      <p className="text-[11px] text-[#C9A84C]/80 italic leading-relaxed line-clamp-3">"{waText}"</p>
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-
-              {/* ── Property Details card ── */}
-              <motion.div
-                initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.26, duration: 0.5 }}
-                className="rounded-2xl border border-white/6 p-4 space-y-2.5"
-                style={{ background: "linear-gradient(160deg, #0c1c2e 0%, #060d16 100%)" }}
-              >
-                <h4 className="font-sans text-xs font-bold text-[#94a3b8] uppercase tracking-wider flex items-center gap-2">
-                  <div className="h-3 w-0.5 rounded-full bg-[#C9A84C]/60" />
-                  Asset Snapshot
-                </h4>
-                {[
-                  { label: "Asset ID",  value: `#${String(property.id).padStart(5, "0")}` },
-                  { label: "Listed On",    value: safeDate(property.created_at ?? property.createdAt) },
-                  { label: "Market Status", value: catStyle.name, badge: true, color: catStyle.pill },
-                  ...((property.is_verified ?? property.isVerified) ? [{ label: "Verification", value: "Sovereign Verified", verified: true }] : []),
-                ].map(row => (
-                  <div key={row.label} className="flex justify-between items-center py-1.5 border-b border-white/[0.04] last:border-0">
-                    <span className="text-[#3a5070] text-[10px] uppercase tracking-wider">{row.label}</span>
-                    {(row as any).verified ? (
-                      <span className="text-[#C9A84C] text-xs font-bold flex items-center gap-1">
-                        <ShieldCheck className="h-3 w-3" /> {row.value}
-                      </span>
-                    ) : (row as any).badge ? (
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${row.color}`}>{row.value}</span>
-                    ) : (
-                      <span className="text-[#c8d8e8] text-xs font-medium font-mono">{row.value}</span>
-                    )}
-                  </div>
-                ))}
-              </motion.div>
-
-              {/* ── Verification & Custody seal ── */}
-              {(property.isVerified ?? property.is_verified) && (
-                <motion.div
-                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}
-                  className="rounded-2xl border border-[#C9A84C]/20 px-4 py-3 flex items-start gap-3"
-                  style={{ background: "linear-gradient(135deg, #0a1408, #060d16)" }}
-                >
-                  <ShieldCheck className="h-5 w-5 text-[#C9A84C] mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-[#C9A84C] text-xs font-bold">Verification & Custody</p>
-                    <p className="text-[#3a5070] text-[10px] leading-relaxed mt-0.5">
-                      Pricing and documentation are independently verified by the OkzByte compliance team.
-                    </p>
-                  </div>
-                </motion.div>
-              )}
-            </div>
-          </div>
-        </div>
+      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-[#2a313b] bg-[#0b0e11]/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-md items-center gap-2"><button onClick={handleSave} className="rounded-lg border border-[#39424e] bg-[#1b222b] p-3 text-[#9aa4b2]"><Heart className={`h-4 w-4 ${saved ? "fill-rose-400 text-rose-400" : ""}`} /></button>{waLink ? <a href={waLink} target="_blank" rel="noopener noreferrer" className="flex h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-[#f0b90b] text-sm font-bold text-black"><MessageCircle className="h-4 w-4" /> Contact operator</a> : <button onClick={handleDirectChat} className="flex h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-[#f0b90b] text-sm font-bold text-black"><MessageCircle className="h-4 w-4" /> Contact operator</button>}<button onClick={handleShare} className="rounded-lg border border-[#39424e] bg-[#1b222b] p-3 text-[#9aa4b2]"><Share2 className="h-4 w-4" /></button></div>
       </div>
-
-      {/* ══════════════════════════════════════════════════════════════
-          FLOATING ACTION BAR — sticky bottom
-      ══════════════════════════════════════════════════════════════ */}
-      <motion.div
-        initial={{ y: 100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.55, type: "spring", stiffness: 240, damping: 22 }}
-        className="fixed bottom-0 left-0 right-0 z-50 px-4"
-        style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
-      >
-        <div className="max-w-xl mx-auto">
-          <div className="relative rounded-2xl overflow-hidden border border-[#C9A84C]/30 shadow-2xl shadow-black/70"
-            style={{ background: "linear-gradient(135deg, rgba(8,14,24,0.97) 0%, rgba(4,11,20,0.98) 100%)" }}>
-
-            {/* gold shimmer line */}
-            <div className="h-px bg-gradient-to-r from-transparent via-[#C9A84C]/80 to-transparent" />
-
-            <div className="flex items-center gap-2 px-3 py-3">
-
-              {/* CALL — icon button */}
-              {(property.owner_phone ?? property.ownerPhone) ? (
-                <a href={`tel:${property.owner_phone ?? property.ownerPhone}`} className="flex-shrink-0">
-                  <motion.div whileTap={{ scale: 0.9 }}
-                    className="flex flex-col items-center gap-1 w-14 py-1.5 rounded-xl hover:bg-white/5 transition-colors group cursor-pointer">
-                    <div className="h-9 w-9 rounded-xl bg-[#C9A84C]/10 border border-[#C9A84C]/25 flex items-center justify-center group-hover:bg-[#C9A84C]/20 transition-colors">
-                      <Phone className="h-4 w-4 text-[#C9A84C]" />
-                    </div>
-                    <span className="text-[9px] font-semibold text-[#6a7f99] group-hover:text-[#C9A84C] transition-colors uppercase tracking-wide">Call</span>
-                  </motion.div>
-                </a>
-              ) : (
-                <div className="flex-shrink-0 flex flex-col items-center gap-1 w-14 py-1.5 opacity-25 cursor-not-allowed">
-                  <div className="h-9 w-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
-                    <Phone className="h-4 w-4 text-[#4a6080]" />
-                  </div>
-                  <span className="text-[9px] font-semibold text-[#3a5070] uppercase tracking-wide">Call</span>
-                </div>
-              )}
-
-              {/* WHATSAPP — primary hero CTA */}
-              {waLink && (isRental ? isAvailable : true) ? (
-                <a href={waLink} target="_blank" rel="noopener noreferrer" className="flex-1"
-                  onClick={() => {
-                    if (isRental) {
-                      import("@/pages/MyProperties").then(m => {
-                        m.recordRentalInquiry({ id: property.id, title: property.title, price: Number(property.price), city: property.city });
-                      });
-                    }
-                  }}>
-                  <motion.button whileTap={{ scale: 0.97 }}
-                    className="w-full flex items-center justify-center gap-2 h-12 rounded-xl font-bold text-sm transition-all shadow-lg shadow-[#25D366]/20"
-                    style={{ background: "linear-gradient(135deg, #128C7E, #25D366)" }}>
-                    <MessageCircle className="h-4 w-4" />
-                    <span className="text-white">{isRental ? "Request to Rent" : "WhatsApp Agent"}</span>
-                  </motion.button>
-                </a>
-              ) : isRental && !isAvailable ? (
-                <div className="flex-1">
-                  <div className="w-full flex items-center justify-center gap-2 h-12 rounded-xl font-bold text-sm border border-rose-500/20 bg-rose-900/10 text-rose-400/60 cursor-not-allowed">
-                    <BanIcon className="h-4 w-4" />
-                    <span>Property Rented</span>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex-1">
-                  <div className="w-full flex items-center justify-center gap-2 h-12 rounded-xl font-bold text-sm bg-white/5 border border-white/10 text-[#4a6080] cursor-not-allowed">
-                    <MessageCircle className="h-4 w-4" />
-                    <span>No Contact Info</span>
-                  </div>
-                </div>
-              )}
-
-              {/* SAVE — icon button */}
-              <motion.button onClick={handleSave} whileTap={{ scale: 0.85 }}
-                className="flex-shrink-0 flex flex-col items-center gap-1 w-14 py-1.5 rounded-xl hover:bg-white/5 transition-colors group">
-                <AnimatePresence mode="wait">
-                  <motion.div key={saved ? "saved" : "unsaved"}
-                    initial={{ scale: 0.5 }} animate={{ scale: 1 }} exit={{ scale: 0.5 }}
-                    className={`h-9 w-9 rounded-xl border flex items-center justify-center transition-all ${
-                      saved ? "bg-rose-500/15 border-rose-500/40" : "bg-white/5 border-white/10 group-hover:bg-rose-500/10 group-hover:border-rose-500/30"
-                    }`}>
-                    <Heart className={`h-4 w-4 transition-colors ${saved ? "text-rose-400 fill-rose-400" : "text-[#4a6080] group-hover:text-rose-400"}`} />
-                  </motion.div>
-                </AnimatePresence>
-                <span className={`text-[9px] font-semibold uppercase tracking-wide transition-colors ${saved ? "text-rose-400" : "text-[#6a7f99] group-hover:text-rose-400"}`}>
-                  {saved ? "Saved" : "Save"}
-                </span>
-              </motion.button>
-
-              {/* SHARE — icon button */}
-              <motion.button onClick={handleShare} whileTap={{ scale: 0.9 }}
-                className="flex-shrink-0 flex flex-col items-center gap-1 w-14 py-1.5 rounded-xl hover:bg-white/5 transition-colors group">
-                <div className="h-9 w-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-[#C9A84C]/10 group-hover:border-[#C9A84C]/30 transition-all">
-                  <Share2 className="h-4 w-4 text-[#4a6080] group-hover:text-[#C9A84C] transition-colors" />
-                </div>
-                <span className="text-[9px] font-semibold text-[#6a7f99] group-hover:text-[#C9A84C] transition-colors uppercase tracking-wide">Share</span>
-              </motion.button>
-            </div>
-          </div>
-        </div>
-      </motion.div>
 
       <AnimatePresence>
         {actionSheet && (

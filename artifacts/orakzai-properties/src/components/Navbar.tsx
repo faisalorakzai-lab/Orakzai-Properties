@@ -8,7 +8,7 @@ import NotificationBell from "@/components/NotificationBell";
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 const logoShield = `${basePath}/logo-shield.png`;
 
-export default function Navbar() {
+export default function Navbar({ hideMobileMenu = false }: { hideMobileMenu?: boolean }) {
   const [open, setOpen] = useState(false);
   const [location] = useLocation();
   const { signOut } = useClerk();
@@ -56,9 +56,9 @@ export default function Navbar() {
             </Show>
           </div>
 
-          <button className="md:hidden text-[#6a7f99] hover:text-white" onClick={() => setOpen(!open)}>
+          {!hideMobileMenu && <button className="md:hidden flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] text-[#6a7f99] hover:text-white" onClick={() => setOpen(!open)} aria-label="Open navigation menu">
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
+          </button>}
         </div>
       </div>
 
