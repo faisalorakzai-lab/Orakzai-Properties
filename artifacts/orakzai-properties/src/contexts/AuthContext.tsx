@@ -13,6 +13,8 @@ import {
   type User,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import { ensureSupabaseSession, supabase } from "@/lib/supabase";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 export interface CompatUser {
   id: string;
@@ -51,6 +53,8 @@ interface AuthContextValue {
   isSignedIn: boolean;
   signOut: () => Promise<void>;
   _listeners: Set<(user: User | null) => void>;
+  supabaseUser: SupabaseUser | null;
+  isSupabaseReady: boolean;
 }
 
 const AuthCtx = createContext<AuthContextValue | null>(null);
@@ -58,6 +62,8 @@ const AuthCtx = createContext<AuthContextValue | null>(null);
 export function FirebaseAuthProvider({ children }: { children: ReactNode }) {
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
+  const [isSupabaseReady, setIsSupabaseReady] = useState(false);
   const listenersRef = useRef<Set<(user: User | null) => void>>(new Set());
 
   useEffect(() => {
@@ -69,8 +75,25 @@ export function FirebaseAuthProvider({ children }: { children: ReactNode }) {
     return unsub;
   }, []);
 
+  useEffect(() => {
+    let active = true;
+    setIsSupabaseReady(false);
+    if (!firebaseUser) {
+      setSupabaseUser(null);
+      setIsSupabaseReady(true);
+      return () => { active = false; };
+    }
+    void ensureSupabaseSession()
+      .then((sessionUser) => { if (active) setSupabaseUser(sessionUser); })
+      .catch((error) => { console.error("Supabase session bootstrap failed:", error); if (active) setSupabaseUser(null); })
+      .finally(() => { if (active) setIsSupabaseReady(true); });
+    return () => { active = false; };
+  }, [firebaseUser]);
+
   const signOut = useCallback(async () => {
     await firebaseSignOut(auth);
+    await supabase.auth.signOut();
+    setSupabaseUser(null);
   }, []);
 
   return (
@@ -82,6 +105,8 @@ export function FirebaseAuthProvider({ children }: { children: ReactNode }) {
         isSignedIn: !!firebaseUser,
         signOut,
         _listeners: listenersRef.current,
+        supabaseUser,
+        isSupabaseReady,
       }}
     >
       {children}
@@ -96,8 +121,8 @@ function useAuthCtx() {
 }
 
 export function useUser() {
-  const { user, isLoaded, isSignedIn } = useAuthCtx();
-  return { user, isLoaded, isSignedIn };
+  const { user, isLoaded, isSignedIn, supabaseUser, isSupabaseReady } = useAuthCtx();
+  return { user, isLoaded, isSignedIn, supabaseUser, isSupabaseReady };
 }
 
 export function useClerk() {

@@ -1,5 +1,6 @@
--- Run this migration in the linked Supabase project's SQL editor.
--- The client intentionally fails closed if these tables are not installed.
+-- OkzByte lawyer consultation chat migration
+-- Run this script in the linked Supabase project's SQL Editor.
+-- The public directory keeps lawyer IDs in context; user ownership is enforced by auth.uid().
 
 create extension if not exists pgcrypto;
 
@@ -45,9 +46,84 @@ alter table public.chat_threads enable row level security;
 alter table public.chat_messages enable row level security;
 alter table public.legal_briefs enable row level security;
 
--- The existing Clerk identity is passed as text. These policies are intentionally
--- conservative and should be adapted to the project's server-side auth bridge.
--- No public anonymous insert/select policy is created here.
+-- Recreate only this feature's policies so the script is safe to re-run.
+drop policy if exists chat_threads_select_own on public.chat_threads;
+drop policy if exists chat_threads_insert_own on public.chat_threads;
+drop policy if exists chat_threads_update_own on public.chat_threads;
+drop policy if exists chat_messages_select_own_thread on public.chat_messages;
+drop policy if exists chat_messages_insert_own_thread on public.chat_messages;
+drop policy if exists chat_messages_update_own on public.chat_messages;
+drop policy if exists chat_messages_delete_own on public.chat_messages;
+drop policy if exists legal_briefs_select_own on public.legal_briefs;
+drop policy if exists legal_briefs_insert_own on public.legal_briefs;
+drop policy if exists legal_briefs_update_own on public.legal_briefs;
 
-comment on table public.chat_threads is 'Real user-to-counsel consultation threads; participant_b is a verified directory record key until counsel onboarding supplies a user account.';
+create policy chat_threads_select_own on public.chat_threads
+  for select to authenticated
+  using (participant_a = auth.uid()::text or participant_b = auth.uid()::text);
+
+create policy chat_threads_insert_own on public.chat_threads
+  for insert to authenticated
+  with check (participant_a = auth.uid()::text or participant_b = auth.uid()::text);
+
+create policy chat_threads_update_own on public.chat_threads
+  for update to authenticated
+  using (participant_a = auth.uid()::text or participant_b = auth.uid()::text)
+  with check (participant_a = auth.uid()::text or participant_b = auth.uid()::text);
+
+create policy chat_messages_select_own_thread on public.chat_messages
+  for select to authenticated
+  using (exists (
+    select 1 from public.chat_threads t
+    where t.id = chat_messages.thread_id
+      and (t.participant_a = auth.uid()::text or t.participant_b = auth.uid()::text)
+  ));
+
+create policy chat_messages_insert_own_thread on public.chat_messages
+  for insert to authenticated
+  with check (
+    sender_id = auth.uid()::text
+    and exists (
+      select 1 from public.chat_threads t
+      where t.id = chat_messages.thread_id
+        and (t.participant_a = auth.uid()::text or t.participant_b = auth.uid()::text)
+    )
+  );
+
+create policy chat_messages_update_own on public.chat_messages
+  for update to authenticated
+  using (sender_id = auth.uid()::text)
+  with check (sender_id = auth.uid()::text);
+
+create policy chat_messages_delete_own on public.chat_messages
+  for delete to authenticated
+  using (sender_id = auth.uid()::text);
+
+create policy legal_briefs_select_own on public.legal_briefs
+  for select to authenticated
+  using (user_id = auth.uid()::text);
+
+create policy legal_briefs_insert_own on public.legal_briefs
+  for insert to authenticated
+  with check (user_id = auth.uid()::text);
+
+create policy legal_briefs_update_own on public.legal_briefs
+  for update to authenticated
+  using (user_id = auth.uid()::text)
+  with check (user_id = auth.uid()::text);
+
+-- Enable Postgres Changes for the realtime chat room, without failing on re-runs.
+do $$
+begin
+  if exists (select 1 from pg_publication where pubname = 'supabase_realtime') then
+    if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'chat_threads') then
+      execute 'alter publication supabase_realtime add table public.chat_threads';
+    end if;
+    if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'chat_messages') then
+      execute 'alter publication supabase_realtime add table public.chat_messages';
+    end if;
+  end if;
+end $$;
+
+comment on table public.chat_threads is 'Real user-to-counsel consultation threads. participant_a is the Supabase auth user; participant_b is a verified directory record key until counsel onboarding supplies an account.';
 comment on table public.legal_briefs is 'User-submitted property legal briefs for manual counsel matching.';

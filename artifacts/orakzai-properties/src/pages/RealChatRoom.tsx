@@ -63,7 +63,7 @@ function errorText(error: unknown) {
 export default function RealChatRoom() {
   const [location, setLocation] = useLocation();
   const params = useParams<{ id?: string }>();
-  const { user } = useUser();
+  const { user, supabaseUser, isSupabaseReady } = useUser();
   const search = typeof window !== "undefined"
     ? window.location.search.replace(/^\?/, "")
     : (location.includes("?") ? location.slice(location.indexOf("?") + 1) : "");
@@ -81,7 +81,7 @@ export default function RealChatRoom() {
   const [error, setError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const currentUserId = user?.id || "";
+  const currentUserId = supabaseUser?.id || "";
 
   const contact = lawyerForThread(thread, currentUserId) ?? requestedLawyer;
   const contactName = contact?.name ?? thread?.participant_b_name ?? "Legal Counsel";
@@ -134,7 +134,7 @@ export default function RealChatRoom() {
   };
 
   useEffect(() => {
-    if (!currentUserId) return;
+    if (!isSupabaseReady || !currentUserId) return;
     let active = true;
     let channel: ReturnType<typeof supabase.channel> | null = null;
     const load = async () => {
@@ -162,7 +162,7 @@ export default function RealChatRoom() {
       active = false;
       if (channel) void supabase.removeChannel(channel);
     };
-  }, [currentUserId, requestedThreadId, requestedLawyerId]);
+  }, [currentUserId, isSupabaseReady, requestedThreadId, requestedLawyerId]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -204,7 +204,7 @@ export default function RealChatRoom() {
     }
   };
 
-  if (loading) return <main style={{ minHeight: "100dvh", display: "grid", placeItems: "center", background: BG, color: MUTED, fontFamily: "'Plus Jakarta Sans',sans-serif" }}>Opening secure consultation…</main>;
+  if (!isSupabaseReady || loading) return <main style={{ minHeight: "100dvh", display: "grid", placeItems: "center", background: BG, color: MUTED, fontFamily: "'Plus Jakarta Sans',sans-serif" }}>Opening secure consultation…</main>;
   if (error) return <main style={{ minHeight: "100dvh", background: BG, color: "#f5f5f5", padding: 20, fontFamily: "'Plus Jakarta Sans',sans-serif" }}><button onClick={() => setLocation("/services/lawyers")} style={{ background: "transparent", border: 0, color: GOLD, padding: 0, fontSize: 14 }}>← Back to lawyers</button><div style={{ maxWidth: 560, margin: "26vh auto 0", textAlign: "center", padding: 22, border: `1px solid ${BORDER}`, borderRadius: 18, background: CARD }}><MessageCircle size={40} color={GOLD} /><h1 style={{ fontSize: 22, margin: "14px 0 8px" }}>Live chat is not connected yet</h1><p style={{ color: MUTED, lineHeight: 1.65, fontSize: 13, margin: 0 }}>{error}</p><p style={{ color: MUTED, lineHeight: 1.65, fontSize: 12, margin: "12px 0 0" }}>The app did not create a fake conversation. Install the supplied Supabase chat migration and configure its auth policies, then retry this consultation.</p></div></main>;
 
   return <main style={{ height: "100dvh", overflow: "hidden", display: "flex", flexDirection: "column", background: BG, color: "#f5f5f5", fontFamily: "'Plus Jakarta Sans',sans-serif" }}>

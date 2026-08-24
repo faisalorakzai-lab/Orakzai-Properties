@@ -1,230 +1,114 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Search, X, Check, CheckCheck, Edit, Filter,
-  MessageCircle,
-} from "lucide-react";
+import { Search, X, Edit, MessageCircle, RefreshCw, ShieldCheck } from "lucide-react";
+import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
+import { useUser } from "@/contexts/AuthContext";
+import { LAWYERS } from "./PropertyLawyers";
 
-/* ── Theme ─────────────────────────────────────────────── */
-const BG        = "#040b14";
-const CARD_BG   = "#070f1c";
-const GOLD      = "#C9A84C";
-const BORDER    = "rgba(255,255,255,0.07)";
+const BG = "#040b14";
+const CARD_BG = "#070f1c";
+const GOLD = "#C9A84C";
+const BORDER = "rgba(255,255,255,0.07)";
 const BORDER_GOLD = "rgba(201,168,76,0.22)";
-const basePath  = (import.meta.env.BASE_URL as string).replace(/\/$/, "");
-
-/* ── Mock Data ──────────────────────────────────────────── */
-export interface ChatMeta {
-  id: string;
-  name: string;
-  subtitle: string;           // property / role label
-  avatar: string;
-  avatarColor: string;
-  lastMsg: string;
-  time: string;
-  unread: number;
-  online: boolean;
-  category: "buyer" | "agent" | "service";
-  verified: boolean;
-}
-
-export const CHATS: ChatMeta[] = [
-  {
-    id: "1", name: "Faisal Orakzai", subtitle: "3.75 Marla House – Islamabad",
-    avatar: "FO", avatarColor: "#C9A84C",
-    lastMsg: "Is the property still available? I'd like to schedule a visit.",
-    time: "9:15 AM", unread: 3, online: true, category: "buyer", verified: true,
-  },
-  {
-    id: "2", name: "Usman Malik", subtitle: "DHA Phase 6 – 1 Kanal Bungalow",
-    avatar: "UM", avatarColor: "#10b981",
-    lastMsg: "I can arrange a viewing this Saturday. Let me know.",
-    time: "Yesterday", unread: 0, online: false, category: "agent", verified: true,
-  },
-  {
-    id: "3", name: "Sara Ahmed", subtitle: "Bahria Town – 5 Marla Plot",
-    avatar: "SA", avatarColor: "#a78bfa",
-    lastMsg: "The token has been transferred. Please check your wallet.",
-    time: "Yesterday", unread: 1, online: true, category: "buyer", verified: false,
-  },
-  {
-    id: "4", name: "Pak Realty Group", subtitle: "Commercial Office – Gulberg",
-    avatar: "PR", avatarColor: "#3b82f6",
-    lastMsg: "Our team will send you the documents by tomorrow.",
-    time: "Mon", unread: 0, online: false, category: "agent", verified: true,
-  },
-  {
-    id: "5", name: "BuildPro Services", subtitle: "Grey Structure – DHA Phase 8",
-    avatar: "BP", avatarColor: "#f97316",
-    lastMsg: "Construction update: 70% complete. Photos attached.",
-    time: "Mon", unread: 2, online: true, category: "service", verified: false,
-  },
-  {
-    id: "6", name: "Ahmed Raza", subtitle: "Dubai Marina – 3 Bed Apt",
-    avatar: "AR", avatarColor: "#ec4899",
-    lastMsg: "Price is negotiable. Can we discuss on a call?",
-    time: "Sun", unread: 0, online: false, category: "buyer", verified: false,
-  },
-  {
-    id: "7", name: "Orakzai Properties", subtitle: "Agent Coordinator",
-    avatar: "OP", avatarColor: GOLD,
-    lastMsg: "Your property listing has been approved. ✅",
-    time: "Sat", unread: 0, online: true, category: "agent", verified: true,
-  },
-];
-
-const FILTERS = ["All", "Unread", "Buyers", "Agents", "Services"] as const;
+const FILTERS = ["All", "Open", "Closed"] as const;
 type Filter = typeof FILTERS[number];
 
-function matchesFilter(chat: ChatMeta, filter: Filter): boolean {
-  if (filter === "All") return true;
-  if (filter === "Unread") return chat.unread > 0;
-  if (filter === "Buyers")   return chat.category === "buyer";
-  if (filter === "Agents")   return chat.category === "agent";
-  if (filter === "Services") return chat.category === "service";
-  return true;
+type ThreadRow = {
+  id: string;
+  participant_a: string;
+  participant_b: string;
+  participant_a_name?: string | null;
+  participant_b_name?: string | null;
+  subject?: string | null;
+  context?: Record<string, unknown> | null;
+  status?: "open" | "closed" | string;
+  created_at: string;
+};
+
+type MessageRow = { thread_id: string; body: string; created_at: string; sender_id: string };
+type LiveChatMeta = ThreadRow & { lawyerName: string; subtitle: string; lastMsg: string; lastAt: string; mine: boolean };
+
+/** Compatibility shape for the legacy route; the real Inbox never populates this with fabricated data. */
+export interface ChatMeta {
+  id: string; name: string; subtitle: string; avatar: string; avatarColor: string;
+  lastMsg: string; time: string; unread: number; online: boolean;
+  category: "buyer" | "agent" | "service"; verified: boolean;
+}
+export const CHATS: ChatMeta[] = [];
+
+function formatTime(value: string) {
+  const date = new Date(value);
+  const now = new Date();
+  if (date.toDateString() === now.toDateString()) return date.toLocaleTimeString("en-PK", { hour: "numeric", minute: "2-digit" });
+  return date.toLocaleDateString("en-PK", { month: "short", day: "numeric" });
+}
+
+function initials(name: string) {
+  return name.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join("").toUpperCase() || "LC";
+}
+
+function lawyerForThread(thread: ThreadRow) {
+  const lawyerId = thread.context && typeof thread.context.lawyer_id === "string" ? thread.context.lawyer_id : "";
+  return LAWYERS.find(item => item.id === lawyerId) ?? null;
 }
 
 export default function Inbox() {
   const [, setLocation] = useLocation();
-  const [search, setSearch]   = useState("");
-  const [filter, setFilter]   = useState<Filter>("All");
+  const { supabaseUser, isSupabaseReady } = useUser();
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<Filter>("All");
+  const [threads, setThreads] = useState<LiveChatMeta[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filtered = CHATS.filter(c =>
-    matchesFilter(c, filter) &&
-    (c.name.toLowerCase().includes(search.toLowerCase()) ||
-     c.subtitle.toLowerCase().includes(search.toLowerCase()) ||
-     c.lastMsg.toLowerCase().includes(search.toLowerCase()))
-  );
+  const loadThreads = async () => {
+    if (!isSupabaseReady || !supabaseUser?.id) { setThreads([]); setLoading(false); return; }
+    setLoading(true);
+    const { data, error } = await supabase.from("chat_threads").select("*").order("updated_at", { ascending: false }).order("created_at", { ascending: false });
+    if (error) { toast.error(`Inbox could not load: ${error.message}`); setThreads([]); setLoading(false); return; }
+    const rows = (data ?? []) as ThreadRow[];
+    if (!rows.length) { setThreads([]); setLoading(false); return; }
+    const ids = rows.map(row => row.id);
+    const { data: messages, error: messageError } = await supabase.from("chat_messages").select("thread_id, body, created_at, sender_id").in("thread_id", ids).order("created_at", { ascending: false });
+    if (messageError) { toast.error(`Inbox messages could not load: ${messageError.message}`); setThreads([]); setLoading(false); return; }
+    const latest = new Map<string, MessageRow>();
+    for (const message of (messages ?? []) as MessageRow[]) if (!latest.has(message.thread_id)) latest.set(message.thread_id, message);
+    setThreads(rows.map(thread => {
+      const lawyer = lawyerForThread(thread);
+      const last = latest.get(thread.id);
+      return { ...thread, lawyerName: lawyer?.name ?? thread.participant_b_name ?? "Legal Counsel", subtitle: lawyer?.offices ?? thread.subject ?? "Property legal consultation", lastMsg: last?.body ?? "Consultation opened securely.", lastAt: last?.created_at ?? thread.created_at, mine: last?.sender_id === supabaseUser.id };
+    }));
+    setLoading(false);
+  };
 
-  const totalUnread = CHATS.reduce((s, c) => s + c.unread, 0);
+  useEffect(() => { void loadThreads(); }, [isSupabaseReady, supabaseUser?.id]);
 
-  return (
-    <div style={{ minHeight: "100dvh", background: BG, display: "flex", flexDirection: "column", fontFamily: "'Plus Jakarta Sans',sans-serif" }}>
+  useEffect(() => {
+    if (!supabaseUser?.id) return;
+    const channel = supabase.channel(`inbox-threads-${supabaseUser.id}`).on("postgres_changes", { event: "*", schema: "public", table: "chat_threads" }, () => { void loadThreads(); }).on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages" }, () => { void loadThreads(); }).subscribe();
+    return () => { void supabase.removeChannel(channel); };
+  }, [supabaseUser?.id, isSupabaseReady]);
 
-      {/* ── Header ── */}
-      <div style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(4,11,20,0.96)", backdropFilter: "blur(20px)", borderBottom: `1px solid ${BORDER_GOLD}` }}>
-        <div style={{ maxWidth: 600, margin: "0 auto", padding: "16px 20px 12px" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <MessageCircle size={22} color={GOLD} />
-              <span style={{ fontSize: 20, fontWeight: 900, color: "#F5F5F5" }}>Chats</span>
-              {totalUnread > 0 && (
-                <span style={{ background: GOLD, color: "#040b14", fontSize: 11, fontWeight: 800, borderRadius: 20, padding: "1px 7px" }}>
-                  {totalUnread}
-                </span>
-              )}
-            </div>
-            <motion.button whileTap={{ scale: 0.9 }}
-              style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(201,168,76,0.1)", border: `1px solid ${BORDER_GOLD}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-              <Edit size={15} color={GOLD} />
-            </motion.button>
-          </div>
+  const filtered = useMemo(() => threads.filter(thread => {
+    const matchesFilter = filter === "All" || thread.status === filter.toLowerCase();
+    const haystack = `${thread.lawyerName} ${thread.subtitle} ${thread.lastMsg}`.toLowerCase();
+    return matchesFilter && haystack.includes(search.trim().toLowerCase());
+  }), [threads, filter, search]);
 
-          {/* Search */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(255,255,255,0.05)", border: `1px solid ${BORDER}`, borderRadius: 12, padding: "0 14px", height: 42, marginBottom: 12 }}>
-            <Search size={15} color="#8B93A7" />
-            <input
-              value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="Search chats, names, properties…"
-              style={{ flex: 1, background: "none", border: "none", outline: "none", color: "#F5F5F5", fontSize: 13, fontFamily: "'Plus Jakarta Sans',sans-serif" }}
-            />
-            {search && (
-              <motion.button initial={{ scale: 0 }} animate={{ scale: 1 }} onClick={() => setSearch("")}
-                style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}>
-                <X size={13} color="#8B93A7" />
-              </motion.button>
-            )}
-          </div>
+  const totalOpen = threads.filter(thread => thread.status !== "closed").length;
 
-          {/* Filter Pills */}
-          <div style={{ display: "flex", gap: 6, overflowX: "auto", scrollbarWidth: "none" as const }}>
-            {FILTERS.map(f => {
-              const active = filter === f;
-              return (
-                <motion.button key={f} whileTap={{ scale: 0.95 }} onClick={() => setFilter(f)}
-                  style={{ flexShrink: 0, padding: "5px 14px", borderRadius: 20, fontSize: 12, fontWeight: active ? 700 : 500, cursor: "pointer",
-                    background: active ? GOLD : "rgba(255,255,255,0.05)",
-                    border: active ? "none" : `1px solid ${BORDER}`,
-                    color: active ? "#040b14" : "#8B93A7",
-                    boxShadow: active ? `0 2px 10px rgba(201,168,76,0.3)` : "none",
-                  }}>
-                  {f}
-                </motion.button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* ── Chat List ── */}
-      <div style={{ flex: 1, overflowY: "auto", maxWidth: 600, margin: "0 auto", width: "100%", paddingBottom: 90 }}>
-        <AnimatePresence>
-          {filtered.length === 0 ? (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 20px", gap: 12 }}>
-              <MessageCircle size={48} color="rgba(201,168,76,0.25)" />
-              <span style={{ color: "#8B93A7", fontSize: 14 }}>No chats found</span>
-            </motion.div>
-          ) : filtered.map((chat, i) => (
-            <motion.div key={chat.id}
-              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: -20 }}
-              transition={{ delay: i * 0.04 }}
-              whileTap={{ scale: 0.985, backgroundColor: "rgba(201,168,76,0.04)" }}
-              onClick={() => setLocation(`${basePath}/inbox/${chat.id}`)}
-              style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 20px", borderBottom: `1px solid ${BORDER}`, cursor: "pointer",
-                background: chat.unread > 0 ? "rgba(201,168,76,0.02)" : "transparent" }}>
-
-              {/* Avatar */}
-              <div style={{ position: "relative", flexShrink: 0 }}>
-                <div style={{ width: 50, height: 50, borderRadius: "50%", background: `${chat.avatarColor}22`, border: `2px solid ${chat.avatarColor}55`,
-                  display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, color: chat.avatarColor }}>
-                  {chat.avatar}
-                </div>
-                {chat.online && (
-                  <div style={{ position: "absolute", bottom: 1, right: 1, width: 12, height: 12, borderRadius: "50%", background: "#10b981", border: "2px solid #040b14" }} />
-                )}
-              </div>
-
-              {/* Content */}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                    <span style={{ fontSize: 14, fontWeight: chat.unread > 0 ? 800 : 600, color: "#F5F5F5", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
-                      {chat.name}
-                    </span>
-                    {chat.verified && (
-                      <span style={{ fontSize: 9, background: "rgba(201,168,76,0.15)", color: GOLD, borderRadius: 4, padding: "1px 5px", fontWeight: 700 }}>✓ Verified</span>
-                    )}
-                  </div>
-                  <span style={{ fontSize: 11, color: chat.unread > 0 ? GOLD : "#8B93A7", fontWeight: chat.unread > 0 ? 700 : 400, flexShrink: 0, marginLeft: 6 }}>
-                    {chat.time}
-                  </span>
-                </div>
-                <div style={{ fontSize: 11, color: "#8B93A7", marginBottom: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
-                  🏠 {chat.subtitle}
-                </div>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 4, flex: 1, minWidth: 0 }}>
-                    {chat.unread === 0 && <CheckCheck size={13} color="#10b981" style={{ flexShrink: 0 }} />}
-                    <span style={{ fontSize: 13, color: chat.unread > 0 ? "#EAECEF" : "#8B93A7", fontWeight: chat.unread > 0 ? 600 : 400,
-                      overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
-                      {chat.lastMsg}
-                    </span>
-                  </div>
-                  {chat.unread > 0 && (
-                    <span style={{ flexShrink: 0, marginLeft: 8, minWidth: 20, height: 20, borderRadius: 20, background: GOLD,
-                      color: "#040b14", fontSize: 11, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 5px" }}>
-                      {chat.unread}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
+  return <div style={{ minHeight: "100dvh", background: BG, display: "flex", flexDirection: "column", fontFamily: "'Plus Jakarta Sans',sans-serif" }}>
+    <div style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(4,11,20,0.96)", backdropFilter: "blur(20px)", borderBottom: `1px solid ${BORDER_GOLD}` }}>
+      <div style={{ maxWidth: 620, margin: "0 auto", padding: "16px 20px 12px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}><div style={{ display: "flex", alignItems: "center", gap: 10 }}><MessageCircle size={22} color={GOLD} /><span style={{ fontSize: 20, fontWeight: 900, color: "#F5F5F5" }}>Inbox</span>{totalOpen > 0 && <span style={{ background: GOLD, color: BG, fontSize: 11, fontWeight: 800, borderRadius: 20, padding: "1px 7px" }}>{totalOpen}</span>}</div><div style={{ display: "flex", gap: 6 }}><motion.button whileTap={{ scale: 0.9 }} aria-label="Refresh inbox" onClick={() => void loadThreads()} style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,255,255,0.05)", border: `1px solid ${BORDER}`, display: "grid", placeItems: "center", color: GOLD }}><RefreshCw size={15} /></motion.button><motion.button whileTap={{ scale: 0.9 }} aria-label="New message" onClick={() => setLocation("/services/lawyers")} style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(201,168,76,0.1)", border: `1px solid ${BORDER_GOLD}`, display: "grid", placeItems: "center", color: GOLD }}><Edit size={15} /></motion.button></div></div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(255,255,255,0.05)", border: `1px solid ${BORDER}`, borderRadius: 12, padding: "0 14px", height: 42, marginBottom: 12 }}><Search size={15} color="#8B93A7" /><input value={search} onChange={event => setSearch(event.target.value)} placeholder="Search consultations…" style={{ flex: 1, background: "none", border: "none", outline: "none", color: "#F5F5F5", fontSize: 13, fontFamily: "inherit" }} />{search && <button onClick={() => setSearch("")} aria-label="Clear search" style={{ background: "none", border: "none", padding: 0 }}><X size={13} color="#8B93A7" /></button>}</div>
+        <div style={{ display: "flex", gap: 6, overflowX: "auto", scrollbarWidth: "none" as const }}>{FILTERS.map(item => { const active = filter === item; return <motion.button key={item} whileTap={{ scale: 0.95 }} onClick={() => setFilter(item)} style={{ flexShrink: 0, padding: "5px 14px", borderRadius: 20, fontSize: 12, fontWeight: active ? 700 : 500, cursor: "pointer", background: active ? GOLD : "rgba(255,255,255,0.05)", border: active ? "none" : `1px solid ${BORDER}`, color: active ? BG : "#8B93A7" }}>{item}</motion.button>; })}</div>
       </div>
     </div>
-  );
+    <div style={{ flex: 1, overflowY: "auto", maxWidth: 620, margin: "0 auto", width: "100%", paddingBottom: 90 }}>
+      {loading ? <div style={{ padding: 80, textAlign: "center", color: "#8B93A7", fontSize: 13 }}>Loading secure conversations…</div> : <AnimatePresence>{filtered.length === 0 ? <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 20px", gap: 12 }}><MessageCircle size={48} color="rgba(201,168,76,0.25)" /><span style={{ color: "#8B93A7", fontSize: 14 }}>{threads.length ? "No consultations match your search" : "No live consultations yet"}</span><span style={{ color: "#596273", fontSize: 11, textAlign: "center", maxWidth: 280 }}>{threads.length ? "Try another search or filter." : "Choose a source-linked lawyer to open a secure consultation."}</span></motion.div> : filtered.map((chat, index) => <motion.div key={chat.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ delay: index * 0.04 }} whileTap={{ scale: 0.985 }} onClick={() => setLocation(`/inbox?thread_id=${encodeURIComponent(chat.id)}`)} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 20px", borderBottom: `1px solid ${BORDER}`, cursor: "pointer", background: "rgba(201,168,76,0.02)" }}><div style={{ position: "relative", flexShrink: 0 }}><div style={{ width: 50, height: 50, borderRadius: "50%", background: `${GOLD}22`, border: `2px solid ${GOLD}55`, display: "grid", placeItems: "center", fontSize: 14, fontWeight: 800, color: GOLD }}>{initials(chat.lawyerName)}</div><div style={{ position: "absolute", bottom: 1, right: 1, width: 12, height: 12, borderRadius: "50%", background: "#10b981", border: `2px solid ${BG}` }} /></div><div style={{ flex: 1, minWidth: 0 }}><div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 3 }}><div style={{ display: "flex", alignItems: "center", gap: 5, minWidth: 0 }}><span style={{ fontSize: 14, fontWeight: 750, color: "#F5F5F5", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{chat.lawyerName}</span><ShieldCheck size={13} color={GOLD} /></div><span style={{ fontSize: 11, color: GOLD, flexShrink: 0 }}>{formatTime(chat.lastAt)}</span></div><div style={{ fontSize: 11, color: "#8B93A7", marginBottom: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>⚖ {chat.subtitle}</div><div style={{ fontSize: 13, color: "#EAECEF", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{chat.mine ? "You: " : ""}{chat.lastMsg}</div></div></motion.div>)}</AnimatePresence>}
+    </div>
+  </div>;
 }
+
