@@ -11,12 +11,8 @@ import Navbar from "@/components/Navbar";
 import PropertyCard from "@/components/PropertyCard";
 import { useListProperties } from "@workspace/api-client-react";
 import { Link } from "wouter";
+import GlobalCityPicker from "@/components/GlobalCityPicker";
 
-const CITY_GROUPS: Record<string, string[]> = {
-  Pakistan: ["Lahore", "Islamabad", "Karachi", "Rawalpindi", "Peshawar", "Faisalabad", "Multan", "Quetta", "Gujranwala", "Sialkot", "Bahawalpur", "Sargodha", "Hyderabad", "Sukkur", "Mardan", "Abbottabad", "Sahiwal", "Sheikhupura", "Mirpur AJK", "Muzaffarabad"],
-  India: ["Mumbai", "Delhi", "Bangalore", "Chennai", "Hyderabad", "Pune", "Kolkata", "Ahmedabad", "Jaipur", "Surat", "Lucknow", "Kanpur", "Nagpur", "Coimbatore", "Indore", "Bhopal", "Chandigarh", "Ludhiana", "Amritsar", "Gurgaon", "Noida", "Kochi", "Srinagar"],
-  UAE: ["Dubai", "Abu Dhabi", "Sharjah", "Ajman", "Ras Al Khaimah", "Fujairah", "Al Ain"],
-};
 const TYPES     = [
   { value: "house",      label: "Residential", icon: HomeIcon  },
   { value: "commercial", label: "Commercial",  icon: Building2 },
@@ -243,21 +239,7 @@ export default function Browse() {
                       <div className="text-[#4a6080] text-[10px] font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5">
                         <MapPin className="h-3 w-3" /> City
                       </div>
-                      <select
-                        value={city}
-                        onChange={e => setCity(e.target.value)}
-                        className="w-full bg-[#070e1a] border border-[#1e3a5f] text-[#f1f5f9] rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#C9A84C]/60 appearance-none cursor-pointer"
-                        data-testid="filter-city-select"
-                      >
-                        <option value="">All Cities</option>
-                        {Object.entries(CITY_GROUPS).map(([country, cities]) => (
-                          <optgroup key={country} label={`── ${country} ──`}>
-                            {cities.map(c => (
-                              <option key={c} value={c}>{c}</option>
-                            ))}
-                          </optgroup>
-                        ))}
-                      </select>
+                      <GlobalCityPicker value={city} allLabel="All Cities" placeholder="All Cities" onChange={(value) => setCity(value || "")} style={{ width: "100%" }} />
                       {city && (
                         <button onClick={() => setCity("")} className="mt-1.5 text-[10px] text-[#C9A84C]/60 hover:text-[#C9A84C] transition-colors">
                           ✕ Clear city filter

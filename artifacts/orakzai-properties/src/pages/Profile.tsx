@@ -14,6 +14,7 @@ import {
 import { useUser, Show } from "@/contexts/AuthContext";
 import { useKYCStatus } from "@/lib/useKYCStatus";
 import RegionSwitcher from "@/components/RegionSwitcher";
+import GlobalCityPicker from "@/components/GlobalCityPicker";
 
 /* ── Design tokens ─────────────────────────────────────────────────── */
 const T = {
@@ -288,7 +289,7 @@ function AppFormModal({ role, onClose }: { role: OnboardRole; onClose: () => voi
               <div style={{ display: "flex", flexDirection: "column", gap: 11, marginBottom: 20 }}>
                 {role.fields.map(f => (
                   <div key={f.name}>
-                    <input
+                    {["city", "serviceArea"].includes(f.name) ? <GlobalCityPicker value={vals[f.name] ?? ""} onChange={value => set(f.name, value)} placeholder={f.placeholder} style={{ width: "100%" }} /> : <input
                       type={f.type ?? "text"}
                       placeholder={f.placeholder}
                       value={vals[f.name] ?? ""}
@@ -304,7 +305,7 @@ function AppFormModal({ role, onClose }: { role: OnboardRole; onClose: () => voi
                       }}
                       onFocus={e => { (e.target as HTMLInputElement).style.borderColor = T.borderGold; }}
                       onBlur={e  => { (e.target as HTMLInputElement).style.borderColor = T.border; }}
-                    />
+                    />}
                   </div>
                 ))}
                 <textarea
