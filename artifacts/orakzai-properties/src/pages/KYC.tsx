@@ -692,7 +692,7 @@ function KYCStatusBanner({ status }: { status: KYCStatus }) {
 }
 
 export default function KYC() {
-  const { user } = useUser();
+  const { user, supabaseUser, isSupabaseReady } = useUser();
   const [, setLocation] = useLocation();
   const [step, setStep] = useState<Step>(0);
   const [submitted, setSubmitted] = useState(false);
@@ -719,17 +719,34 @@ export default function KYC() {
   };
 
   const handleSubmit = async () => {
-    if (!user) return;
+    if (!user) {
+      setSubmitError("Please sign in before submitting KYC.");
+      return;
+    }
+    if (!isSupabaseReady || !supabaseUser) {
+      setSubmitError("Secure verification session is still loading. Please wait a moment and try again.");
+      return;
+    }
+    const docFront = docData.docFront as File | undefined;
+    const docBack = docData.docBack as File | undefined;
+    const selfie = selfieData.selfie as File | undefined;
+    const addressDoc = addressData.addressDoc as File | undefined;
+    if (!docFront || (docData.docType !== "passport" && !docBack) || !selfie || !addressDoc) {
+      setSubmitError("Please upload all required identity, selfie, and address documents before submitting.");
+      return;
+    }
     setSubmitting(true);
     setSubmitError(null);
     try {
-      const email = user.email ?? "" ?? "";
+      const email = user.primaryEmailAddress?.emailAddress ?? "";
       const ok = await submitKYC(
         user.uid,
+        supabaseUser.id,
         email,
         personalData,
         docData.docType ?? "cnic",
-        addressData.addressDocType ?? ""
+        addressData.addressDocType ?? "",
+        { docFront, docBack, selfie, addressDoc },
       );
       if (ok) {
         setSubmitted(true);
@@ -738,7 +755,8 @@ export default function KYC() {
         setSubmitError("Failed to submit. Please check your connection and try again.");
       }
     } catch (err) {
-      setSubmitError("An unexpected error occurred. Please try again.");
+      const message = err instanceof Error ? err.message : "An unexpected error occurred. Please try again.";
+      setSubmitError(message);
     } finally {
       setSubmitting(false);
     }

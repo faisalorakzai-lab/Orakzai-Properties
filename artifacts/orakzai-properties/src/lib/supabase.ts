@@ -10,6 +10,7 @@ export type KYCStatus = "not_started" | "in_progress" | "pending_review" | "appr
 export interface Profile {
   id?: string;
   clerk_user_id: string;
+  supabase_user_id?: string;
   full_name?: string;
   email?: string;
   kyc_status: KYCStatus;
@@ -42,30 +43,77 @@ export async function getProfile(userId: string): Promise<Profile | null> {
 }
 
 export async function upsertProfile(profile: Partial<Profile> & { clerk_user_id: string }): Promise<Profile | null> {
+  const sessionUser = await getSupabaseSessionUser();
+  if (!sessionUser) {
+    console.error("upsertProfile: no authenticated Supabase session");
+    return null;
+  }
   const { data, error } = await supabase
     .from("profiles")
-    .upsert({ ...profile, updated_at: new Date().toISOString() }, { onConflict: "clerk_user_id" })
+    .upsert({ ...profile, supabase_user_id: profile.supabase_user_id ?? sessionUser.id, updated_at: new Date().toISOString() }, { onConflict: "clerk_user_id" })
     .select()
     .maybeSingle();
   if (error) { console.error("upsertProfile error:", error); return null; }
   return data as Profile | null;
 }
 
+export type KYCDocuments = {
+  docFront: File;
+  docBack?: File | null;
+  selfie: File;
+  addressDoc: File;
+};
+
+export async function uploadKYCDocument(file: File, supabaseUserId: string, kind: string): Promise<string> {
+  const safeName = file.name.toLowerCase().replace(/[^a-z0-9.\-_]+/g, "-");
+  const path = `${supabaseUserId}/${kind}-${crypto.randomUUID()}-${safeName}`;
+  const { error } = await supabase.storage.from("verification-documents").upload(path, file, {
+    cacheControl: "3600",
+    contentType: file.type || "application/octet-stream",
+    upsert: false,
+  });
+  if (error) throw new Error(`KYC document upload failed (${kind}): ${error.message}`);
+  return path;
+}
+
 export async function submitKYC(
-  userId: string, email: string, personalData: Record<string, string>,
-  docType: string, addressDocType: string
+  firebaseUserId: string,
+  supabaseUserId: string,
+  email: string,
+  personalData: Record<string, string>,
+  docType: string,
+  addressDocType: string,
+  documents: KYCDocuments,
 ): Promise<boolean> {
+  const documentUrls: Record<string, string> = {};
+  documentUrls.docFront = await uploadKYCDocument(documents.docFront, supabaseUserId, "id-front");
+  if (documents.docBack) documentUrls.docBack = await uploadKYCDocument(documents.docBack, supabaseUserId, "id-back");
+  documentUrls.selfie = await uploadKYCDocument(documents.selfie, supabaseUserId, "selfie");
+  documentUrls.addressDoc = await uploadKYCDocument(documents.addressDoc, supabaseUserId, "address-proof");
+
   const { error } = await supabase.from("profiles").upsert({
-    clerk_user_id: userId, email,
-    full_name: personalData.fullName, father_name: personalData.fatherName,
-    cnic: personalData.cnic, dob: personalData.dob, phone: personalData.phone,
-    address: personalData.address, city: personalData.city, country: personalData.country,
-    occupation: personalData.occupation, source_of_funds: personalData.sourceOfFunds,
-    doc_type: docType, address_doc_type: addressDocType,
-    kyc_status: "pending_review", kyc_submitted_at: new Date().toISOString(),
+    clerk_user_id: firebaseUserId,
+    supabase_user_id: supabaseUserId,
+    email,
+    full_name: personalData.fullName,
+    father_name: personalData.fatherName,
+    cnic: personalData.cnic,
+    dob: personalData.dob,
+    phone: personalData.phone,
+    address: personalData.address,
+    city: personalData.city,
+    country: personalData.country,
+    occupation: personalData.occupation,
+    source_of_funds: personalData.sourceOfFunds,
+    doc_type: docType,
+    address_doc_type: addressDocType,
+    document_urls: documentUrls,
+    kyc_status: "pending_review",
+    kyc_submitted_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   }, { onConflict: "clerk_user_id" });
-  return !error;
+  if (error) throw new Error(`KYC record submission failed: ${error.message}`);
+  return true;
 }
 
 export async function getAllProfiles(): Promise<Profile[]> {
