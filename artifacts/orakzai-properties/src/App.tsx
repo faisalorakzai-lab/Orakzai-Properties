@@ -226,8 +226,11 @@ function HideBottomNavOnAuthPages() {
   const [location] = useLocation();
   const { isSignedIn } = useUser();
   const hidden = ["/sign-in", "/sign-up", "/admin", "/p2p", "/help/how-to-withdraw", "/customer-service"].some((p) => location.startsWith(p));
-  // Hide bottom nav inside any open chat room so it doesn't overlap the input dock
-  const isChatRoom = location.startsWith("/inbox?") || /^\/inbox\/.+/.test(location);
+  // Hide bottom nav inside any open chat room so it doesn't overlap the input dock.
+  // Wouter exposes the pathname separately from the browser query string.
+  const chatQueryOpen = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("thread_id");
+  const chatLawyerOpen = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("lawyer_id");
+  const isChatRoom = location.startsWith("/inbox/") || chatQueryOpen || chatLawyerOpen;
   if (hidden || isChatRoom || !isSignedIn) return null;
   return <BottomNav />;
 }
