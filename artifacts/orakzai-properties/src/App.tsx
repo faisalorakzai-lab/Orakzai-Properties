@@ -67,7 +67,32 @@ import RentMarket from "@/pages/RentMarket";
 import MarketInvest from "@/pages/MarketInvest";
 import MarketFractional from "@/pages/MarketFractional";
 import MarketConstruction from "@/pages/MarketConstruction";
+import RawMaterials from "@/pages/RawMaterials";
+import TilesSanitary from "@/pages/TilesSanitary";
+import ElectricalLighting from "@/pages/ElectricalLighting";
+import ConstructionContractors from "@/pages/ConstructionContractors";
+import ArchitectsFloorPlanners from "@/pages/ArchitectsFloorPlanners";
+import InteriorDesigners from "@/pages/InteriorDesigners";
+import TurnkeyConstruction from "@/pages/TurnkeyConstruction";
+import SolarInstallers from "@/pages/SolarInstallers";
+import Plumbers from "@/pages/Plumbers";
+import Electricians from "@/pages/Electricians";
+import HVAC from "@/pages/HVAC";
+import Carpenters from "@/pages/Carpenters";
+import Masons from "@/pages/Masons";
+import ServiceCategoryLanding from "@/pages/ServiceCategoryLanding";
+import VerificationServicesDesk from "@/pages/VerificationServicesDesk";
+import Painters from "@/pages/Painters";
 import MarketMegaprojects from "@/pages/MarketMegaprojects";
+import MarketPlots from "@/pages/MarketPlots";
+import HotelStays from "@/pages/HotelStays";
+import VillaStays from "@/pages/VillaStays";
+import ShortTermApartments from "@/pages/ShortTermApartments";
+import EventStays from "@/pages/EventStays";
+import InstallmentProjects from "@/pages/InstallmentProjects";
+import OffPlanDevelopments from "@/pages/OffPlanDevelopments";
+import RwaVaults from "@/pages/RwaVaults";
+import DeveloperShowcases from "@/pages/DeveloperShowcases";
 import Charity from "@/pages/Charity";
 import Announcements from "@/pages/Announcements";
 import Learn from "@/pages/Learn";
@@ -252,6 +277,9 @@ function AppContent() {
               <Route path="/post-property" component={PostProperty} />
               <Route path="/my-properties" component={MyProperties} />
               <Route path="/invest" component={InvestPortal} />
+              <Route path="/invest/off-plan" component={OffPlanDevelopments} />
+              <Route path="/invest/rwa-vaults" component={RwaVaults} />
+              <Route path="/invest/developers" component={DeveloperShowcases} />
               <Route path="/invest/:id" component={InvestDetail} />
               <Route path="/portfolio" component={Portfolio} />
               <Route path="/rwa-staking" component={RwaStaking} />
@@ -265,12 +293,42 @@ function AppContent() {
               <Route path="/airdrop-hub" component={AirdropHub} />
               <Route path="/affiliate-program" component={AffiliateProgram} />
               <Route path="/market/services-directory" component={MarketServicesDirectory} />
+              <Route path="/market/services" component={MarketServicesDirectory} />
               <Route path="/market/sell" component={SellAssetWizard} />
               <Route path="/market/rent" component={RentMarket} />
               <Route path="/market/invest" component={MarketInvest} />
               <Route path="/market/fractional" component={MarketFractional} />
               <Route path="/market/construction" component={MarketConstruction} />
+              <Route path="/construction/raw-materials" component={RawMaterials} />
+              <Route path="/construction/tiles-sanitary" component={TilesSanitary} />
+              <Route path="/construction/electrical-lighting" component={ElectricalLighting} />
+              <Route path="/construction/contractors" component={ConstructionContractors} />
+              <Route path="/design/architects" component={ArchitectsFloorPlanners} />
+              <Route path="/design/interior" component={InteriorDesigners} />
+              <Route path="/design/turnkey" component={TurnkeyConstruction} />
+              <Route path="/design/solar" component={SolarInstallers} />
+              <Route path="/services/plumbers" component={Plumbers} />
+              <Route path="/services/electricians" component={Electricians} />
+              <Route path="/services/hvac" component={HVAC} />
+              <Route path="/services/carpenters" component={Carpenters} />
+              <Route path="/services/masons" component={Masons} />
+              <Route path="/services/verification" component={VerificationServicesDesk} />
+              <Route path="/services/valuation" component={ServiceCategoryLanding} />
+              <Route path="/services/lawyers" component={ServiceCategoryLanding} />
+              <Route path="/finance/home-loans" component={ServiceCategoryLanding} />
+              <Route path="/finance/insurance" component={ServiceCategoryLanding} />
+              <Route path="/services/movers" component={ServiceCategoryLanding} />
+              <Route path="/services/cleaning" component={ServiceCategoryLanding} />
+              <Route path="/services/security" component={ServiceCategoryLanding} />
+              <Route path="/construction/machinery" component={ServiceCategoryLanding} />
+              <Route path="/services/painters" component={Painters} />
               <Route path="/market/megaprojects" component={MarketMegaprojects} />
+              <Route path="/market/plots" component={MarketPlots} />
+              <Route path="/stays/hotels" component={HotelStays} />
+              <Route path="/stays/villas" component={VillaStays} />
+              <Route path="/stays/apartments" component={ShortTermApartments} />
+              <Route path="/stays/events" component={EventStays} />
+              <Route path="/invest/investments/installments" component={InstallmentProjects} />
               <Route path="/market" component={Marketplace} />
               <Route path="/market/properties/:id" component={PropertyDetail} />
               <Route path="/market/properties" component={BuyProperties} />
