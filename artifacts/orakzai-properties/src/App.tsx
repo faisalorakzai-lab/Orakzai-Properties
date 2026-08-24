@@ -37,6 +37,7 @@ import AdminPanel, { ADMIN_EMAIL } from "@/pages/AdminPanel";
 import TradingPortfolio from "@/pages/TradingPortfolio";
 import PriceAlerts from "@/pages/PriceAlerts";
 import Inbox from "@/pages/Inbox";
+import { InboxRoute } from "@/pages/RealChatRoom";
 import Services from "@/pages/Services";
 import ProfileCenter from "@/pages/ProfileCenter";
 import Launchpad from "@/pages/Launchpad";
@@ -387,7 +388,7 @@ function AppContent() {
               <Route path="/admin/kyc" component={AdminKYC} />
               <Route path="/trading-portfolio" component={TradingPortfolio} />
               <Route path="/price-alerts" component={PriceAlerts} />
-              <Route path="/inbox" component={Inbox} />
+              <Route path="/inbox" component={InboxRoute} />
               <Route path="/inbox/:id" component={ChatRoom} />
               <Route path="/services" component={Services} />
               <Route path="/launchpad" component={Launchpad} />
