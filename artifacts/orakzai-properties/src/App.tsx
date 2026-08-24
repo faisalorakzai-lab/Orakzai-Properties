@@ -316,7 +316,7 @@ function AppContent() {
               <Route path="/services/verification" component={VerificationServicesDesk} />
               <Route path="/services/valuation" component={ServiceCategoryLanding} />
               <Route path="/services/lawyers" component={PropertyLawyers} />
-              <Route path="/services/lawyers/:id" component={(params) => <LawyerProfilePage id={params.id} />} />
+              <Route path="/services/lawyers/:id">{(params) => <LawyerProfilePage id={params.id} />}</Route>
               <Route path="/finance/home-loans" component={ServiceCategoryLanding} />
               <Route path="/finance/insurance" component={ServiceCategoryLanding} />
               <Route path="/services/movers" component={ServiceCategoryLanding} />
