@@ -227,7 +227,7 @@ function HideBottomNavOnAuthPages() {
   const { isSignedIn } = useUser();
   const hidden = ["/sign-in", "/sign-up", "/admin", "/p2p", "/help/how-to-withdraw", "/customer-service"].some((p) => location.startsWith(p));
   // Hide bottom nav inside any open chat room so it doesn't overlap the input dock
-  const isChatRoom = /^\/inbox\/.+/.test(location);
+  const isChatRoom = location.startsWith("/inbox?") || /^\/inbox\/.+/.test(location);
   if (hidden || isChatRoom || !isSignedIn) return null;
   return <BottomNav />;
 }
