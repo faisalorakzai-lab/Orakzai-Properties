@@ -81,7 +81,7 @@ import HVAC from "@/pages/HVAC";
 import Carpenters from "@/pages/Carpenters";
 import Masons from "@/pages/Masons";
 import ServiceCategoryLanding from "@/pages/ServiceCategoryLanding";
-import PropertyLawyers from "@/pages/PropertyLawyers";
+import PropertyLawyers, { LawyerProfilePage } from "@/pages/PropertyLawyers";
 import VerificationServicesDesk from "@/pages/VerificationServicesDesk";
 import Painters from "@/pages/Painters";
 import MarketMegaprojects from "@/pages/MarketMegaprojects";
@@ -316,6 +316,7 @@ function AppContent() {
               <Route path="/services/verification" component={VerificationServicesDesk} />
               <Route path="/services/valuation" component={ServiceCategoryLanding} />
               <Route path="/services/lawyers" component={PropertyLawyers} />
+              <Route path="/services/lawyers/:id" component={(params) => <LawyerProfilePage id={params.id} />} />
               <Route path="/finance/home-loans" component={ServiceCategoryLanding} />
               <Route path="/finance/insurance" component={ServiceCategoryLanding} />
               <Route path="/services/movers" component={ServiceCategoryLanding} />
