@@ -9,6 +9,7 @@ type GlobalCityPickerProps = {
   allLabel?: string;
   placeholder?: string;
   style?: React.CSSProperties;
+  presentation?: "dropdown" | "sheet";
 };
 
 function normalize(value: string) {
@@ -49,7 +50,7 @@ function CitySuggestion({ initialCity, onSaved, onCancel }: { initialCity: strin
 
 const miniInput: React.CSSProperties = { boxSizing: "border-box", minWidth: 0, padding: "9px 10px", borderRadius: 9, border: "1px solid rgba(255,255,255,.10)", background: "#09111b", color: "#f5f7fa", outline: 0, fontSize: 11, fontFamily: "inherit" };
 
-export default function GlobalCityPicker({ value, onChange, allLabel = "All Cities", placeholder = "Search or select a city", style }: GlobalCityPickerProps) {
+export default function GlobalCityPicker({ value, onChange, allLabel = "All Cities", placeholder = "Search or select a city", style, presentation = "dropdown" }: GlobalCityPickerProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [suggesting, setSuggesting] = useState(false);
@@ -79,7 +80,8 @@ export default function GlobalCityPicker({ value, onChange, allLabel = "All Citi
   const useCustom = (text: string) => { onChange(text); close(); };
   return <div style={{ position: "relative", minWidth: 0, ...style }}>
     <button type="button" onClick={() => setOpen((current) => !current)} aria-expanded={open} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, boxSizing: "border-box", padding: "11px 12px", borderRadius: 10, border: `1px solid ${open ? "rgba(240,185,11,.65)" : "rgba(255,255,255,.10)"}`, background: "#182231", color: value ? "#f5f5f5" : "#929aa5", outline: 0, fontSize: 12, fontFamily: "inherit", textAlign: "left", cursor: "pointer" }}><span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{value || placeholder}</span><ChevronDown size={15} color={open ? "#f0b90b" : "#929aa5"} style={{ flexShrink: 0, transform: open ? "rotate(180deg)" : undefined }} /></button>
-    {open && <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, zIndex: 80, minWidth: 260, maxWidth: "min(430px, calc(100vw - 28px))", padding: 8, borderRadius: 14, border: "1px solid rgba(240,185,11,.38)", background: "#121b27", boxShadow: "0 18px 45px rgba(0,0,0,.58)" }}>
+    {open && presentation === "sheet" && <button type="button" aria-label="Close city selector" onClick={close} style={{ position: "fixed", inset: 0, zIndex: 999, border: 0, background: "rgba(0,0,0,.22)", cursor: "default" }} />}
+    {open && <div style={presentation === "sheet" ? { position: "fixed", left: 12, right: 12, bottom: "calc(76px + env(safe-area-inset-bottom))", zIndex: 1000, boxSizing: "border-box", maxHeight: "min(70vh, 520px)", padding: 8, borderRadius: 16, border: "1px solid rgba(240,185,11,.42)", background: "#121b27", boxShadow: "0 18px 55px rgba(0,0,0,.72)" } : { position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, zIndex: 80, minWidth: 260, maxWidth: "min(430px, calc(100vw - 28px))", padding: 8, borderRadius: 14, border: "1px solid rgba(240,185,11,.38)", background: "#121b27", boxShadow: "0 18px 45px rgba(0,0,0,.58)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 7, padding: "8px 9px", borderRadius: 10, border: "1px solid rgba(255,255,255,.10)", background: "#0b121d" }}><Search size={14} color="#929aa5" /><input autoFocus value={query} onChange={(event) => { setQuery(event.target.value); setSuggesting(false); }} placeholder="Search city, country, or region..." aria-label="Search city, country, or region" style={{ width: "100%", minWidth: 0, border: 0, outline: 0, background: "transparent", color: "#f5f7fa", fontSize: 11, fontFamily: "inherit" }} /><button type="button" onClick={() => { setQuery(""); setSuggesting(false); }} aria-label="Clear city search" style={{ display: "grid", placeItems: "center", padding: 4, border: 0, borderRadius: 6, background: "transparent", color: "#929aa5", cursor: "pointer" }}><X size={14} /></button></div>
       <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginTop: 7, color: "#929aa5", fontSize: 9 }}><span>{normalized ? `${filtered.length} matching cities` : `${GLOBAL_CITY_COUNT} cities available`}</span><button type="button" onClick={() => { setQuery(""); setSuggesting(false); }} style={{ padding: 0, border: 0, background: "transparent", color: "#c9a84c", fontSize: 9, cursor: "pointer" }}>Clear search</button></div>
       <div style={{ maxHeight: "min(52vh, 430px)", overflowY: "auto", marginTop: 6 }}>

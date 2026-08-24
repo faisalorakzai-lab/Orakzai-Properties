@@ -84,7 +84,7 @@ export default function BuyProperties() {
 
       <main style={{ maxWidth: 760, margin: "0 auto", padding: "12px 14px 0" }}>
         <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 9, scrollbarWidth: "none" }}>
-          <GlobalCityPicker value={city === "All Cities" ? "" : city} allLabel="All Cities" placeholder="All Cities" onChange={(value) => setCity(value || "All Cities")} style={{ minWidth: 160, flexShrink: 0 }} />
+          <GlobalCityPicker value={city === "All Cities" ? "" : city} allLabel="All Cities" placeholder="All Cities" onChange={(value) => setCity(value || "All Cities")} presentation="sheet" style={{ minWidth: 160, flexShrink: 0 }} />
           <FilterSelect label={type} options={TYPES} onChange={setType} />
           <button onClick={() => setFilterOpen((v) => !v)} style={pillButton}><Filter size={13} /> Advanced Filters</button>
           <button onClick={() => setView(view === "list" ? "map" : "list")} style={{ ...pillButton, color: GOLD, borderColor: `${GOLD}55` }}>{view === "list" ? <Map size={14} /> : <List size={14} />} {view === "list" ? "Map View" : "List View"}</button>
