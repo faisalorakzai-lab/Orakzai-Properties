@@ -148,9 +148,13 @@ export default function RealChatRoom() {
         const { data, error: messageError } = await supabase.from("chat_messages").select("*").eq("thread_id", currentThread.id).order("created_at", { ascending: true });
         if (messageError) throw messageError;
         if (active) setMessages(((data ?? []) as ChatRow[]).map(row => ({ ...row, mine: row.sender_id === currentUserId })));
-        channel = supabase.channel(`real-chat-${currentThread.id}`).on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages", filter: `thread_id=eq.${currentThread.id}` }, payload => {
+        const channelName = `real-chat-${currentThread.id}-${crypto.randomUUID()}`;
+        channel = supabase.channel(channelName).on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages", filter: `thread_id=eq.${currentThread.id}` }, payload => {
           if (payload.new && typeof payload.new === "object") appendMessage(payload.new as ChatRow);
-        }).subscribe();
+        });
+        channel.subscribe((status, statusError) => {
+          if (status === "CHANNEL_ERROR" && active) setError(statusError?.message || "Realtime consultation updates could not be started.");
+        });
       } catch (loadError) {
         if (active) setError(errorText(loadError));
       } finally {
@@ -162,7 +166,7 @@ export default function RealChatRoom() {
       active = false;
       if (channel) void supabase.removeChannel(channel);
     };
-  }, [currentUserId, isSupabaseReady, requestedThreadId, requestedLawyerId]);
+  }, [currentUserId, isSupabaseReady, requestedLawyerId]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -205,7 +209,7 @@ export default function RealChatRoom() {
   };
 
   if (!isSupabaseReady || loading) return <main style={{ minHeight: "100dvh", display: "grid", placeItems: "center", background: BG, color: MUTED, fontFamily: "'Plus Jakarta Sans',sans-serif" }}>Opening secure consultation…</main>;
-  if (error) return <main style={{ minHeight: "100dvh", background: BG, color: "#f5f5f5", padding: 20, fontFamily: "'Plus Jakarta Sans',sans-serif" }}><button onClick={() => setLocation("/services/lawyers")} style={{ background: "transparent", border: 0, color: GOLD, padding: 0, fontSize: 14 }}>← Back to lawyers</button><div style={{ maxWidth: 560, margin: "26vh auto 0", textAlign: "center", padding: 22, border: `1px solid ${BORDER}`, borderRadius: 18, background: CARD }}><MessageCircle size={40} color={GOLD} /><h1 style={{ fontSize: 22, margin: "14px 0 8px" }}>Live chat is not connected yet</h1><p style={{ color: MUTED, lineHeight: 1.65, fontSize: 13, margin: 0 }}>{error}</p><p style={{ color: MUTED, lineHeight: 1.65, fontSize: 12, margin: "12px 0 0" }}>The app did not create a fake conversation. Install the supplied Supabase chat migration and configure its auth policies, then retry this consultation.</p></div></main>;
+  if (error) return <main style={{ minHeight: "100dvh", background: BG, color: "#f5f5f5", padding: 20, fontFamily: "'Plus Jakarta Sans',sans-serif" }}><button onClick={() => setLocation("/services/lawyers")} style={{ background: "transparent", border: 0, color: GOLD, padding: 0, fontSize: 14 }}>← Back to lawyers</button><div style={{ maxWidth: 560, margin: "26vh auto 0", textAlign: "center", padding: 22, border: `1px solid ${BORDER}`, borderRadius: 18, background: CARD }}><MessageCircle size={40} color={GOLD} /><h1 style={{ fontSize: 22, margin: "14px 0 8px" }}>Live chat is not connected yet</h1><p style={{ color: MUTED, lineHeight: 1.65, fontSize: 13, margin: 0 }}>{error}</p><p style={{ color: MUTED, lineHeight: 1.65, fontSize: 12, margin: "12px 0 0" }}>The app did not create a fake conversation. The secure database session is active, but realtime updates are currently unavailable. You can retry the consultation after Realtime is enabled for the chat tables.</p></div></main>;
 
   return <main style={{ height: "100dvh", overflow: "hidden", display: "flex", flexDirection: "column", background: BG, color: "#f5f5f5", fontFamily: "'Plus Jakarta Sans',sans-serif" }}>
     <header style={{ flexShrink: 0, background: "rgba(4,11,20,.98)", borderBottom: `1px solid ${GOLD}38`, padding: "10px 14px", paddingTop: "calc(10px + env(safe-area-inset-top))", display: "flex", alignItems: "center", gap: 10, zIndex: 10 }}>
