@@ -1,11 +1,12 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
 import {
-  ArrowLeft, Search, X, Building2, KeyRound, Layers3, Crown, Globe2, Map,
+  ArrowLeft, Search, X, Building2, KeyRound, Layers3, TrendingUp, Map,
   Hotel, Palmtree, Home, PartyPopper, Calculator, Construction, Vault,
   Users, BrickWall, Gem, Lightbulb, HardHat, Ruler, Sofa, Wrench,
   SunMedium, Droplets, Zap, Snowflake, Paintbrush, Axe, LandPlot,
+  FileCheck2, SearchCheck, Scale, Landmark, ShieldCheck, Truck, Sparkles, Camera,
 } from "lucide-react";
 
 const GOLD = "#C9A84C";
@@ -14,14 +15,14 @@ const CARD_BG = "#04080F";
 const BORDER = "rgba(255,255,255,0.07)";
 const BORDER_GOLD = "rgba(201,168,76,0.25)";
 
-type ServiceItem = { label: string; icon: React.ElementType; color: string; bg: string };
+type ServiceItem = { label: string; icon: React.ElementType; color: string; bg: string; keywords?: string[] };
 type ServiceSection = { title: string; items: ServiceItem[] };
 
-const item = (label: string, icon: React.ElementType, color: string): ServiceItem => ({ label, icon, color, bg: `${color}20` });
+const item = (label: string, icon: React.ElementType, color: string, keywords: string[] = []): ServiceItem => ({ label, icon, color, bg: `${color}20`, keywords });
 
 const sections: ServiceSection[] = [
   { title: "Real Estate & Property Hub", items: [
-    item("Buy & Sell\nProperties", Building2, "#10b981"), item("Rent & Leases", KeyRound, "#06b6d4"), item("Fractional RWAs", Layers3, "#ec4899"), item("Luxury Estates", Crown, GOLD), item("International\nProperties", Globe2, "#3b82f6"), item("Land & Plots", Map, "#f97316"),
+    item("Buy & Sell\nProperties", Building2, "#10b981"), item("Rent & Leases", KeyRound, "#06b6d4"), item("Fractional RWAs", Layers3, "#ec4899"), item("Megaprojects", Building2, GOLD), item("Invest Hub", TrendingUp, "#3b82f6"), item("Land & Plots", Map, "#f97316"),
   ] },
   { title: "Hospitality & Stays (Bookings)", items: [
     item("Hotels & Resorts", Hotel, "#a78bfa"), item("Luxury Villas &\nVacation Stays", Palmtree, "#10b981"), item("Short-term\nApartments", Home, "#06b6d4"), item("Banquet & Event\nSpaces", PartyPopper, "#f97316"),
@@ -38,6 +39,23 @@ const sections: ServiceSection[] = [
   { title: "Skilled Trades & Local Services", items: [
     item("Plumbers", Droplets, "#06b6d4"), item("Electricians", Zap, GOLD), item("HVAC & AC\nTechnicians", Snowflake, "#8b5cf6"), item("Painters &\nPolishers", Paintbrush, "#ec4899"), item("Carpenters &\nWoodwork", Axe, "#f97316"), item("Masons &\nCivil Work", LandPlot, "#ef4444"),
   ] },
+  { title: "Legal, Verification & Valuation", items: [
+    item("Property\nVerification", FileCheck2, "#06b6d4", ["NOC check", "Land Dept verification", "registry audit", "title due diligence"]),
+    item("Valuation &\nSurvey", SearchCheck, "#a78bfa", ["bank valuation report", "plot boundary survey", "land measurement", "area verification"]),
+    item("Property\nLawyers", Scale, "#f59e0b", ["title deed drafting", "court clearance", "sale agreement", "legal consult"]),
+  ] },
+  { title: "Financing & Insurance", items: [
+    item("Home Loans &\nFinance", Landmark, "#22c55e", ["bank mortgage rates", "Islamic finance", "home finance application", "EMI calculator"]),
+    item("Property\nInsurance", ShieldCheck, "#38bdf8", ["home structure cover", "theft coverage", "fire coverage", "insurance quote"]),
+  ] },
+  { title: "Property Maintenance & Logistics", items: [
+    item("Movers &\nPackers", Truck, "#fb923c", ["inter-city relocation", "house shifting", "truck rental", "packing"]),
+    item("Cleaning & Pest\nControl", Sparkles, "#10b981", ["deep house wash", "termite treatment", "water tank cleaning", "pest control"]),
+    item("CCTV & Security\nSystems", Camera, "#ef4444", ["smart lock", "camera installation", "alarm setup", "access control"]),
+  ] },
+  { title: "Heavy Machinery & Fleet", items: [
+    item("Equipment\nRental", Construction, "#eab308", ["excavator", "crane", "concrete mixer", "dumper leasing", "heavy machinery"]),
+  ] },
 ];
 
 function ServiceGrid({ items, onNavigate }: { items: ServiceItem[]; onNavigate: (item: ServiceItem) => void }) {
@@ -53,12 +71,166 @@ function ServiceGrid({ items, onNavigate }: { items: ServiceItem[]; onNavigate: 
 }
 
 export default function MarketServicesDirectory() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
+  useEffect(() => {
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [location]);
   const [searchFocused, setSearchFocused] = useState(false);
   const query = searchQuery.toLowerCase().trim();
-  const filteredSections = useMemo(() => sections.map(section => ({ ...section, items: section.items.filter(service => !query || `${service.label} ${section.title}`.toLowerCase().includes(query)) })).filter(section => section.items.length > 0), [query]);
-  const handleNavigate = (service: ServiceItem) => setLocation(`/market?service=${encodeURIComponent(service.label.replace(/\n/g, " "))}`);
+  const filteredSections = useMemo(() => sections.map(section => ({ ...section, items: section.items.filter(service => !query || `${service.label} ${section.title} ${(service.keywords ?? []).join(" ")}`.toLowerCase().includes(query)) })).filter(section => section.items.length > 0), [query]);
+  const handleNavigate = (service: ServiceItem) => {
+    const label = service.label.replace(/\n/g, " ").trim();
+    if (label === "Buy & Sell Properties") {
+      setLocation("/market/properties?mode=buy-sell");
+      return;
+    }
+    if (label === "Rent & Leases") {
+      setLocation("/market/rent");
+      return;
+    }
+    if (label === "Fractional RWAs") {
+      setLocation("/market/fractional");
+      return;
+    }
+    if (label === "Megaprojects") {
+      setLocation("/market/megaprojects");
+      return;
+    }
+    if (label === "Invest Hub") {
+      setLocation("/market/invest");
+      return;
+    }
+    if (label === "Land & Plots") {
+      setLocation("/market/plots");
+      return;
+    }
+    if (label === "Cement, Steel & Bricks") {
+      setLocation("/construction/raw-materials");
+      return;
+    }
+    if (label === "Tiles, Sanitary & Marble") {
+      setLocation("/construction/tiles-sanitary");
+      return;
+    }
+    if (label === "Electrical & Lighting") {
+      setLocation("/construction/electrical-lighting");
+      return;
+    }
+    if (label === "Construction Contractors") {
+      setLocation("/construction/contractors");
+      return;
+    }
+    if (label === "Architects & Floor Planners") {
+      setLocation("/design/architects");
+      return;
+    }
+    if (label === "Interior Designers") {
+      setLocation("/design/interior");
+      return;
+    }
+    if (label === "Turnkey Construction") {
+      setLocation("/design/turnkey");
+      return;
+    }
+    if (label === "Solar Panel Installers") {
+      setLocation("/design/solar");
+      return;
+    }
+    if (label === "Plumbers") {
+      setLocation("/services/plumbers");
+      return;
+    }
+    if (label === "Electricians") {
+      setLocation("/services/electricians");
+      return;
+    }
+    if (label === "HVAC & AC Technicians") {
+      setLocation("/services/hvac");
+      return;
+    }
+    if (label === "Painters & Polishers") {
+      setLocation("/services/painters");
+      return;
+    }
+    if (label === "Carpenters & Woodwork") {
+      setLocation("/services/carpenters");
+      return;
+    }
+    if (label === "Masons & Civil Work") {
+      setLocation("/services/masons");
+      return;
+    }
+    if (label === "Property Verification") {
+      setLocation("/services/verification");
+      return;
+    }
+    if (label === "Valuation & Survey") {
+      setLocation("/services/valuation");
+      return;
+    }
+    if (label === "Property Lawyers") {
+      setLocation("/services/lawyers");
+      return;
+    }
+    if (label === "Home Loans & Finance") {
+      setLocation("/finance/home-loans");
+      return;
+    }
+    if (label === "Property Insurance") {
+      setLocation("/finance/insurance");
+      return;
+    }
+    if (label === "Movers & Packers") {
+      setLocation("/services/movers");
+      return;
+    }
+    if (label === "Cleaning & Pest Control") {
+      setLocation("/services/cleaning");
+      return;
+    }
+    if (label === "CCTV & Security Systems") {
+      setLocation("/services/security");
+      return;
+    }
+    if (label === "Equipment Rental") {
+      setLocation("/construction/machinery");
+      return;
+    }
+    if (label === "Hotels & Resorts") {
+      setLocation("/stays/hotels");
+      return;
+    }
+    if (label === "Luxury Villas & Vacation Stays") {
+      setLocation("/stays/villas");
+      return;
+    }
+    if (label === "Short-term Apartments") {
+      setLocation("/stays/apartments");
+      return;
+    }
+    if (label === "Banquet & Event Spaces") {
+      setLocation("/stays/events");
+      return;
+    }
+    if (label === "Installment Projects") {
+      setLocation("/invest/investments/installments");
+      return;
+    }
+    if (label === "Off-Plan Developments") {
+      setLocation("/invest/off-plan");
+      return;
+    }
+    if (label === "High-Yield RWA Vaults") {
+      setLocation("/invest/rwa-vaults");
+      return;
+    }
+    if (label === "Developer Showcases") {
+      setLocation("/invest/developers");
+      return;
+    }
+    setLocation(`/market?service=${encodeURIComponent(label)}`);
+  };
 
   return <div style={{ minHeight: "100dvh", width: "100%", background: BG, color: "#F5F5F5", fontFamily: "'Plus Jakarta Sans',sans-serif", paddingBottom: "calc(100px + env(safe-area-inset-bottom))", boxSizing: "border-box", overflowX: "hidden" }}>
     <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0, overflow: "hidden" }}><div style={{ position: "absolute", top: -100, right: "10%", width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle,rgba(201,168,76,0.06) 0%,transparent 70%)", filter: "blur(80px)" }} /></div>
