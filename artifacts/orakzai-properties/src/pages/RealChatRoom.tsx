@@ -64,7 +64,9 @@ export default function RealChatRoom() {
   const [location, setLocation] = useLocation();
   const params = useParams<{ id?: string }>();
   const { user } = useUser();
-  const search = location.includes("?") ? location.slice(location.indexOf("?") + 1) : "";
+  const search = typeof window !== "undefined"
+    ? window.location.search.replace(/^\?/, "")
+    : (location.includes("?") ? location.slice(location.indexOf("?") + 1) : "");
   const query = useMemo(() => new URLSearchParams(search), [search]);
   const requestedThreadId = query.get("thread_id") || params.id || "";
   const requestedLawyerId = query.get("lawyer_id") || "";
@@ -241,7 +243,8 @@ export default function RealChatRoom() {
 
 export function InboxRoute() {
   const [location] = useLocation();
-  const hasConsultation = location.includes("thread_id=") || location.includes("lawyer_id=");
+  const search = typeof window !== "undefined" ? window.location.search : "";
+  const hasConsultation = search.includes("thread_id=") || search.includes("lawyer_id=") || location.includes("thread_id=") || location.includes("lawyer_id=");
   return hasConsultation ? <RealChatRoom /> : <Inbox />;
 }
 
