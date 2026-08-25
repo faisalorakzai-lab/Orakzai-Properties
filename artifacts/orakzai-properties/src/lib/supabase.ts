@@ -116,18 +116,41 @@ export async function submitKYC(
   return true;
 }
 
+async function getFirebaseAdminToken(): Promise<string> {
+  const { auth } = await import("@/lib/firebase");
+  const currentUser = auth.currentUser;
+  if (!currentUser) throw new Error("Admin session is not available");
+  return currentUser.getIdToken(true);
+}
+
+export async function getAdminKYCProfiles(): Promise<Profile[]> {
+  const token = await getFirebaseAdminToken();
+  const response = await fetch("/api/admin/kyc", { headers: { Authorization: `Bearer ${token}` } });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(body.error || "Unable to load KYC submissions");
+  return (body.profiles ?? []) as Profile[];
+}
+
+export async function updateAdminKYCStatus(userId: string, status: KYCStatus, rejectionReason?: string): Promise<Profile | null> {
+  const token = await getFirebaseAdminToken();
+  const response = await fetch("/api/admin/kyc", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ clerk_user_id: userId, status, rejection_reason: rejectionReason }),
+  });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(body.error || "Unable to update KYC status");
+  return (body.profile ?? null) as Profile | null;
+}
+
 export async function getAllProfiles(): Promise<Profile[]> {
-  const { data, error } = await supabase.from("profiles").select("*").order("kyc_submitted_at", { ascending: false });
-  if (error) { console.error("getAllProfiles error:", error); return []; }
-  return (data ?? []) as Profile[];
+  try { return await getAdminKYCProfiles(); }
+  catch (error) { console.error("getAllProfiles error:", error); return []; }
 }
 
 export async function updateKYCStatus(userId: string, status: KYCStatus, rejectionReason?: string): Promise<boolean> {
-  const { error } = await supabase.from("profiles").update({
-    kyc_status: status, kyc_reviewed_at: new Date().toISOString(),
-    kyc_rejection_reason: rejectionReason ?? null, updated_at: new Date().toISOString(),
-  }).eq("clerk_user_id", userId);
-  return !error;
+  try { await updateAdminKYCStatus(userId, status, rejectionReason); return true; }
+  catch (error) { console.error("updateKYCStatus error:", error); return false; }
 }
 
 
