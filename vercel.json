@@ -3,10 +3,9 @@
   "installCommand": "pnpm install",
   "buildCommand": "cd artifacts/orakzai-properties && PORT=3000 BASE_PATH=/ pnpm build",
   "outputDirectory": "artifacts/orakzai-properties/dist/public",
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
