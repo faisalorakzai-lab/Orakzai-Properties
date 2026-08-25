@@ -2,5 +2,8 @@
   "installCommand": "npm install --include=dev --ignore-scripts --no-audit --no-fund",
   "buildCommand": "PORT=3000 BASE_PATH=/ npm run build",
   "outputDirectory": "dist/public",
-  "framework": "vite"
+  "framework": "vite",
+  "functions": {
+    "api/admin/kyc.ts": { "runtime": "nodejs20.x" }
+  }
 }

@@ -3,7 +3,11 @@
   "installCommand": "pnpm install",
   "buildCommand": "cd artifacts/orakzai-properties && PORT=3000 BASE_PATH=/ pnpm build",
   "outputDirectory": "artifacts/orakzai-properties/dist/public",
+  "functions": {
+    "api/admin/kyc.ts": { "runtime": "nodejs20.x" }
+  },
   "routes": [
+    { "src": "/api/admin/kyc(?:/)?", "dest": "/api/admin/kyc.ts" },
     { "src": "/api/(.*)", "dest": "/api/$1" },
     { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/index.html" }
