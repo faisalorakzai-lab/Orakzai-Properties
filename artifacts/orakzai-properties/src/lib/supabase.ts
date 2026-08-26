@@ -64,12 +64,41 @@ export type KYCDocuments = {
   addressDoc: File;
 };
 
+async function prepareKYCDocument(file: File): Promise<File> {
+  const maxBytes = 10 * 1024 * 1024;
+  if (!file || file.size === 0) throw new Error("Selected KYC document is empty.");
+  const type = file.type || (file.name.toLowerCase().endsWith(".png") ? "image/png" : file.name.toLowerCase().endsWith(".jpg") || file.name.toLowerCase().endsWith(".jpeg") ? "image/jpeg" : "application/pdf");
+  const allowed = ["image/jpeg", "image/png", "application/pdf"];
+  if (!allowed.includes(type)) throw new Error("KYC documents must be JPG, PNG, or PDF files.");
+
+  // Android camera apps often produce very large PNGs. Resize/compress images before upload.
+  if (type.startsWith("image/") && file.size > 2 * 1024 * 1024 && typeof document !== "undefined") {
+    const bitmap = await createImageBitmap(file);
+    const maxDimension = 1800;
+    const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("Unable to prepare the camera image for upload.");
+    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close();
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.84));
+    if (blob) file = new File([blob], file.name.replace(/\.(png|jpe?g)$/i, ".jpg"), { type: "image/jpeg" });
+  }
+  if (file.size > maxBytes) throw new Error(`${file.name} is larger than 10MB. Please choose a smaller document image.`);
+  return file;
+}
+
 export async function uploadKYCDocument(file: File, supabaseUserId: string, kind: string): Promise<string> {
-  const safeName = file.name.toLowerCase().replace(/[^a-z0-9.\-_]+/g, "-");
-  const path = `${supabaseUserId}/${kind}-${crypto.randomUUID()}-${safeName}`;
-  const { error } = await supabase.storage.from("verification-documents").upload(path, file, {
+  const prepared = await prepareKYCDocument(file);
+  const safeName = prepared.name.toLowerCase().replace(/[^a-z0-9.\-_]+/g, "-");
+  const randomId = typeof crypto !== "undefined" && typeof crypto.randomUUID === "function" ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const path = `${supabaseUserId}/${kind}-${randomId}-${safeName}`;
+  const uploadBody = await prepared.arrayBuffer();
+  const { error } = await supabase.storage.from("verification-documents").upload(path, uploadBody, {
     cacheControl: "3600",
-    contentType: file.type || "application/octet-stream",
+    contentType: prepared.type,
     upsert: false,
   });
   if (error) throw new Error(`KYC document upload failed (${kind}): ${error.message}`);
