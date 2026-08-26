@@ -62,6 +62,7 @@ import AirdropHub from "@/pages/AirdropHub";
 import AffiliateProgram from "@/pages/AffiliateProgram";
 import Marketplace from "@/pages/Marketplace";
 import MarketServicesDirectory from "@/pages/MarketServicesDirectory";
+import HomeLoansFinance from "@/pages/HomeLoansFinance";
 import SellAssetWizard from "@/pages/SellAssetWizard";
 import BuyProperties from "@/pages/BuyProperties";
 import RentMarket from "@/pages/RentMarket";
@@ -321,7 +322,7 @@ function AppContent() {
               <Route path="/services/valuation" component={ServiceCategoryLanding} />
               <Route path="/services/lawyers" component={PropertyLawyers} />
               <Route path="/services/lawyers/:id">{(params) => <LawyerProfilePage id={params.id} />}</Route>
-              <Route path="/finance/home-loans" component={ServiceCategoryLanding} />
+              <Route path="/finance/home-loans" component={HomeLoansFinance} />
               <Route path="/finance/insurance" component={ServiceCategoryLanding} />
               <Route path="/services/movers" component={ServiceCategoryLanding} />
               <Route path="/services/cleaning" component={ServiceCategoryLanding} />

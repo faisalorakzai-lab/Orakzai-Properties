@@ -248,3 +248,49 @@ export async function getSupabaseSessionUser() {
   if (error) return null;
   return data.user;
 }
+
+
+export type MortgageApplicationPayload = {
+  application_id: string;
+  user_id: string;
+  city: string;
+  employment_type: string;
+  monthly_income: number;
+  desired_loan_amount: number;
+  document_urls: string[];
+  status: "Under Review";
+};
+
+export async function uploadMortgageDocument(file: File, applicationId: string, kind: string): Promise<string> {
+  if (!file || file.size === 0) throw new Error("Selected finance document is empty.");
+  if (!["application/pdf", "image/jpeg", "image/png"].includes(file.type)) throw new Error("Finance documents must be PDF, JPG, or PNG files.");
+  if (file.size > 10 * 1024 * 1024) throw new Error(`${file.name} is larger than 10MB.`);
+  const user = await getSupabaseSessionUser();
+  if (!user) throw new Error("Your secure session is not ready. Please sign in again.");
+  const safeName = file.name.toLowerCase().replace(/[^a-z0-9.\-_]+/g, "-");
+  const path = `${user.id}/mortgage/${applicationId}/${kind}-${crypto.randomUUID()}-${safeName}`;
+  const body = await file.arrayBuffer();
+  const { error } = await supabase.storage.from("verification-documents").upload(path, body, { cacheControl: "3600", contentType: file.type, upsert: false });
+  if (error) throw new Error(`Finance document upload failed (${kind}): ${error.message}`);
+  return `storage://verification-documents/${path}`;
+}
+
+export async function createMortgageApplication(payload: MortgageApplicationPayload): Promise<MortgageApplicationPayload> {
+  const { error } = await supabase.from("mortgage_applications").insert(payload);
+  if (error) throw new Error(`Finance brief submission failed: ${error.message}`);
+  return payload;
+}
+
+export async function createFinanceAdvisorThread(applicationId: string, city: string): Promise<string | null> {
+  const user = await getSupabaseSessionUser();
+  if (!user) return null;
+  const threadId = crypto.randomUUID();
+  const advisorId = "00000000-0000-0000-0000-000000000001";
+  const { error } = await supabase.from("chat_threads").insert({ id: threadId, participant_a: user.id, participant_b: advisorId, subject: `Home finance brief · ${city}`, context: `mortgage_application:${applicationId}` });
+  if (error) {
+    console.warn("Finance advisor thread unavailable:", error.message);
+    return null;
+  }
+  await supabase.from("chat_messages").insert({ thread_id: threadId, sender_id: user.id, body: `Hello Finance Advisor, I submitted a home-finance brief for ${city}. Application ID: ${applicationId}.` });
+  return threadId;
+}
