@@ -183,19 +183,24 @@ export default function VerificationServicesDesk() {
       </header>
 
       <div className="relative mx-auto w-full max-w-2xl min-w-0 overflow-x-hidden px-3 pt-4 sm:px-4 sm:pt-5">
-        <section className="relative min-w-0 overflow-hidden rounded-3xl border border-[#21404b] bg-[#0d1924] p-5 sm:p-6">
-          <div className="relative">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.16em] text-cyan-300"><BadgeCheck size={15} /> Legal &amp; Due Diligence Desk</div>
-              <div className="flex items-center gap-1.5 text-[9px] font-semibold uppercase tracking-wider text-slate-500"><ShieldCheck size={12} className="text-cyan-400" /> Secure intake</div>
+        <section className="relative min-w-0 overflow-hidden rounded-[24px] border border-cyan-400/20 bg-[#0d1924] shadow-[0_18px_55px_rgba(0,0,0,.28)]">
+          <div className="relative h-44 overflow-hidden sm:h-52">
+            <img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1400&q=85" alt="Property document review desk" className="absolute inset-0 h-full w-full object-cover opacity-65" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0d1924] via-[#0d1924]/45 to-[#071018]/20" />
+            <div className="absolute inset-x-4 top-4 flex items-center justify-between gap-2 sm:inset-x-5">
+              <span className="inline-flex items-center gap-2 rounded-xl border border-cyan-300/25 bg-[#09131d]/85 px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-cyan-300"><BadgeCheck size={15} /> Verified Legal Desk</span>
+              <span className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-300/25 bg-[#09131d]/85 px-3 py-2 text-[9px] font-bold uppercase tracking-wider text-emerald-300"><ShieldCheck size={13} /> Secure Intake</span>
             </div>
-            <h1 className="mt-3 break-words text-[30px] font-medium leading-[1.08] tracking-[-0.035em] text-white sm:mt-4 sm:text-4xl">Property Verification</h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">Coordinate NOC checks, land department verification, registry audits, and document due diligence before you commit capital.</p>
-            <div className="mt-5 grid min-w-0 grid-cols-3 gap-2">
-              <Metric label="COVERAGE" value="NOC + Registry + Land Dept." accent="cyan" />
-              <Metric label="RESPONSE" value="Document review desk" accent="slate" />
-              <Metric label="STATUS" value="Verified desk" accent="emerald" />
+            <div className="absolute inset-x-4 bottom-4 sm:inset-x-5">
+              <div className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-200">Legal &amp; Due Diligence Desk</div>
+              <h1 className="mt-1 break-words text-[29px] font-black leading-[1.05] tracking-[-0.04em] text-white sm:text-4xl">Property Verification</h1>
+              <p className="mt-2 max-w-xl text-xs leading-5 text-slate-300 sm:text-sm">NOC checks, land records, registry audits, and document due diligence before you commit capital.</p>
             </div>
+          </div>
+          <div className="grid min-w-0 grid-cols-3 gap-px border-t border-white/10 bg-white/10">
+            <Metric label="COVERAGE" value="NOC + Registry + Land Dept." accent="cyan" />
+            <Metric label="RESPONSE" value="Document review desk" accent="slate" />
+            <Metric label="STATUS" value="Verified desk" accent="emerald" />
           </div>
         </section>
 
