@@ -225,7 +225,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 function HideBottomNavOnAuthPages() {
   const [location] = useLocation();
   const { isSignedIn } = useUser();
-  const hidden = ["/sign-in", "/sign-up", "/admin", "/p2p", "/help/how-to-withdraw", "/customer-service"].some((p) => location.startsWith(p));
+  const hidden = ["/sign-in", "/sign-up", "/admin", "/p2p", "/help/how-to-withdraw", "/customer-service", "/services/verification"].some((p) => location.startsWith(p));
   // Hide bottom nav inside any open chat room so it doesn't overlap the input dock.
   // Wouter exposes the pathname separately from the browser query string.
   const chatQueryOpen = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("thread_id");

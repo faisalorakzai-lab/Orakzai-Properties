@@ -171,7 +171,7 @@ export default function VerificationServicesDesk() {
   };
 
   return (
-    <main className="min-h-screen w-full min-w-0 overflow-x-hidden bg-[#030811] pb-[calc(104px+env(safe-area-inset-bottom))] font-sans text-slate-100">
+    <main className="min-h-screen w-full min-w-0 overflow-x-hidden bg-[#030811] pb-8 font-sans text-slate-100">
       <header className="sticky top-0 z-50 border-b border-[#1d2a35] bg-[#030811]">
         <div className="mx-auto flex h-16 w-full max-w-2xl min-w-0 items-center justify-between px-3 sm:px-4">
           <button onClick={() => navigate("/market/services")} aria-label="Back to Services" className="rounded-xl p-2 text-slate-200 transition hover:bg-white/10 hover:text-white active:scale-95">
