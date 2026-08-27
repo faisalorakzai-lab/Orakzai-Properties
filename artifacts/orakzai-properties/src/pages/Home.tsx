@@ -461,6 +461,7 @@ import { useProfilePhoto } from "@/hooks/useProfilePhoto";
     const [countdownActive, setCountdownActive] = useState(0);
     const [activeCarousel, setActiveCarousel] = useState(0);
     const carouselDragStart = useRef<number | null>(null);
+    const carouselDidDrag = useRef(false);
     const [listMode, setListMode] = useState<"card" | "row">("row");
     const [activeTypeFilter, setActiveTypeFilter] = useState("Spot");
     const [activeQuote, setActiveQuote] = useState("USDT");
@@ -1058,30 +1059,39 @@ import { useProfilePhoto } from "@/hooks/useProfilePhoto";
           </motion.div>
 
           {/* ── 3D PRIMARY CATEGORY CAROUSEL ── */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24 }} style={{ padding: "30px 0 0" }}>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24 }} className="w-full overflow-hidden flex flex-col items-center justify-center py-6 px-4 relative" style={{ paddingTop: 30 }}>
             {(() => {
               const activeCard = MARKET_CAROUSEL_CARDS[activeCarousel];
-              const moveCarousel = (direction: number) => setActiveCarousel((activeCarousel + direction + MARKET_CAROUSEL_CARDS.length) % MARKET_CAROUSEL_CARDS.length);
+              const moveCarousel = (direction: number) => setActiveCarousel(current => (current + direction + MARKET_CAROUSEL_CARDS.length) % MARKET_CAROUSEL_CARDS.length);
+              const finishPointer = (event: React.PointerEvent<HTMLDivElement>) => {
+                if (carouselDragStart.current === null) return;
+                const delta = event.clientX - carouselDragStart.current;
+                carouselDidDrag.current = Math.abs(delta) > 14;
+                if (Math.abs(delta) > 42) moveCarousel(delta < 0 ? 1 : -1);
+                carouselDragStart.current = null;
+              };
               return <>
-                <div style={{ position: "relative", minHeight: 390, overflow: "hidden", borderRadius: 24, isolation: "isolate" }} onPointerDown={event => { carouselDragStart.current = event.clientX; }} onPointerUp={event => { if (carouselDragStart.current === null) return; const delta = event.clientX - carouselDragStart.current; if (Math.abs(delta) > 42) moveCarousel(delta < 0 ? 1 : -1); carouselDragStart.current = null; }}>
-                  <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", pointerEvents: "none" }}><AnimatePresence mode="wait"><motion.div key={activeCard.background} initial={{ opacity: 0, scale: .96 }} animate={{ opacity: .13, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: .35 }} style={{ color: activeCard.color, fontSize: "clamp(58px,17vw,176px)", lineHeight: .85, fontWeight: 950, letterSpacing: "-.08em", whiteSpace: "nowrap" }}>{activeCard.background}</motion.div></AnimatePresence></div>
-                  <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at 50% 45%, ${activeCard.color}20, transparent 58%)`, pointerEvents: "none" }} />
-                  {MARKET_CAROUSEL_CARDS.map((card, index) => {
-                    let offset = index - activeCarousel;
-                    const total = MARKET_CAROUSEL_CARDS.length;
-                    if (offset > total / 2) offset -= total;
-                    if (offset < -total / 2) offset += total;
-                    if (Math.abs(offset) > 2) return null;
-                    const isActive = offset === 0;
-                    return <motion.button key={card.background} animate={{ x: `${offset * 73}%`, scale: isActive ? 1 : .78, opacity: isActive ? 1 : .48, rotateY: offset * -14, zIndex: isActive ? 5 : 2 }} transition={{ type: "spring", stiffness: 260, damping: 26 }} onClick={() => isActive ? setLocation(card.route) : setActiveCarousel(index)} style={{ position: "absolute", top: 18, left: "50%", width: "min(78vw, 360px)", height: 350, transform: "translateX(-50%)", padding: 0, overflow: "hidden", borderRadius: 28, border: `2px solid ${isActive ? card.color : "rgba(255,255,255,.12)"}`, background: "#07101b", boxShadow: isActive ? `0 22px 60px ${card.color}30, 0 0 0 1px ${card.color}22` : "0 14px 30px rgba(0,0,0,.45)", cursor: "pointer", transformStyle: "preserve-3d", textAlign: "left" }}>
-                      <img src={card.image} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} /><div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(4,8,15,.05) 5%,rgba(4,8,15,.2) 34%,rgba(4,8,15,.96) 100%)" }} />
-                      <div style={{ position: "absolute", top: 16, left: 16, right: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }}><div style={{ width: 45, height: 45, display: "grid", placeItems: "center", borderRadius: 14, background: `${card.color}38`, border: `1px solid ${card.color}99`, boxShadow: `0 0 24px ${card.color}44`, fontSize: 23 }}>{card.glyph}</div><span style={{ padding: "6px 9px", borderRadius: 20, background: "rgba(4,8,15,.72)", border: "1px solid rgba(255,255,255,.15)", color: "#fff", fontSize: 9, fontWeight: 850 }}>{index + 1} / 8</span></div>
-                      <div style={{ position: "absolute", left: 20, right: 20, bottom: 18 }}><div style={{ color: card.color, fontSize: 10, fontWeight: 900, letterSpacing: ".16em", textTransform: "uppercase" }}>{card.subtitle}</div><div style={{ marginTop: 6, color: "#fff", fontSize: 24, lineHeight: 1.04, fontWeight: 900, letterSpacing: "-.04em" }}>{card.tagline}</div><div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 15 }}><span style={{ padding: "9px 15px", borderRadius: 22, background: "#fff", color: "#07101b", fontSize: 11, fontWeight: 900 }}>{card.action}</span><ChevronRight size={17} color="#fff" /></div></div>
-                    </motion.button>;
-                  })}
+                <div className="w-full relative flex items-center justify-center" style={{ height: 448, touchAction: "pan-y", perspective: 1200, overflow: "visible" }} onPointerDown={event => { carouselDragStart.current = event.clientX; event.currentTarget.setPointerCapture?.(event.pointerId); }} onPointerUp={finishPointer} onPointerCancel={finishPointer}>
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 text-7xl font-black opacity-10 uppercase pointer-events-none z-0" style={{ color: activeCard.color, whiteSpace: "nowrap", fontSize: "clamp(64px, 18vw, 150px)", lineHeight: .85, letterSpacing: "-.08em" }}>{activeCard.background}</div>
+                  <div className="absolute inset-0 z-0 pointer-events-none" style={{ background: `radial-gradient(circle at 50% 43%, ${activeCard.color}24, transparent 56%)` }} />
+                  <div className="relative z-10 w-full h-full flex items-center justify-center" style={{ overflow: "visible" }}>
+                    {MARKET_CAROUSEL_CARDS.map((card, index) => {
+                      let offset = index - activeCarousel;
+                      const total = MARKET_CAROUSEL_CARDS.length;
+                      if (offset > total / 2) offset -= total;
+                      if (offset < -total / 2) offset += total;
+                      if (Math.abs(offset) > 2) return null;
+                      const isActive = offset === 0;
+                      return <motion.button key={card.background} className="w-[280px] h-[380px] sm:w-[320px] sm:h-[420px] rounded-[32px]" animate={{ x: offset * 215, scale: isActive ? 1 : .85, opacity: isActive ? 1 : .5, rotateY: offset * -7, filter: isActive ? "blur(0px)" : "blur(1px)", zIndex: isActive ? 10 : 0 }} transition={{ type: "spring", stiffness: 320, damping: 30, mass: .7 }} onClick={() => { if (carouselDidDrag.current) { carouselDidDrag.current = false; return; } if (isActive) setLocation(card.route); else setActiveCarousel(index); }} style={{ position: "absolute", top: "50%", left: "50%", margin: 0, transform: "translate(-50%, -50%)", padding: 0, overflow: "hidden", border: `2px solid ${isActive ? "#22d3ee" : "rgba(255,255,255,.13)"}`, background: "#07101b", boxShadow: isActive ? "0 10px 30px rgba(6,182,212,.3)" : "0 10px 28px rgba(0,0,0,.42)", cursor: "grab", transformStyle: "preserve-3d", textAlign: "left", flexShrink: 0 }}>
+                        <img src={card.image} alt="" draggable={false} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} /><div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(4,8,15,.08) 4%,rgba(4,8,15,.18) 35%,rgba(4,8,15,.97) 100%)" }} />
+                        <div style={{ position: "absolute", top: 18, left: 18, right: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}><div style={{ width: 46, height: 46, display: "grid", placeItems: "center", borderRadius: 15, background: `${card.color}38`, border: `1px solid ${card.color}99`, boxShadow: `0 0 24px ${card.color}44`, fontSize: 23 }}>{card.glyph}</div><span style={{ padding: "6px 9px", borderRadius: 20, background: "rgba(4,8,15,.72)", border: "1px solid rgba(255,255,255,.15)", color: "#fff", fontSize: 9, fontWeight: 850 }}>{index + 1} / 8</span></div>
+                        <div style={{ position: "absolute", left: 21, right: 21, bottom: 19 }}><div style={{ color: card.color, fontSize: 10, fontWeight: 900, letterSpacing: ".16em", textTransform: "uppercase" }}>{card.subtitle}</div><div style={{ marginTop: 7, color: "#fff", fontSize: 23, lineHeight: 1.06, fontWeight: 900, letterSpacing: "-.035em" }}>{card.tagline}</div><div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 16 }}><span style={{ padding: "10px 16px", borderRadius: 24, background: "#fff", color: "#07101b", fontSize: 11, fontWeight: 900, whiteSpace: "nowrap" }}>{card.action}</span><ChevronRight size={18} color="#fff" /></div></div>
+                      </motion.button>;
+                    })}
+                  </div>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, marginTop: 13 }}>{MARKET_CAROUSEL_CARDS.map((card, index) => <button aria-label={`Show ${card.background}`} key={card.background} onClick={() => setActiveCarousel(index)} style={{ width: index === activeCarousel ? 28 : 7, height: 7, border: 0, borderRadius: 20, padding: 0, background: index === activeCarousel ? activeCard.color : "rgba(255,255,255,.2)", boxShadow: index === activeCarousel ? `0 0 12px ${activeCard.color}` : "none", cursor: "pointer", transition: "all .25s" }} />)}</div>
-                <div style={{ display: "flex", justifyContent: "center", gap: 7, marginTop: 8, color: "#68788C", fontSize: 9, letterSpacing: ".1em", textTransform: "uppercase" }}>Swipe to explore <ArrowRight size={11} /></div>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, marginTop: 7 }}>{MARKET_CAROUSEL_CARDS.map((card, index) => <button aria-label={`Show ${card.background}`} key={card.background} onClick={() => setActiveCarousel(index)} style={{ width: index === activeCarousel ? 28 : 7, height: 7, border: 0, borderRadius: 20, padding: 0, background: index === activeCarousel ? activeCard.color : "rgba(255,255,255,.22)", boxShadow: index === activeCarousel ? `0 0 12px ${activeCard.color}` : "none", cursor: "pointer", transition: "all .25s" }} />)}</div>
+                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 7, marginTop: 9, color: "#7D8998", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase" }}>Swipe to explore <ArrowRight size={11} /></div>
               </>;
             })()}
           </motion.div>
