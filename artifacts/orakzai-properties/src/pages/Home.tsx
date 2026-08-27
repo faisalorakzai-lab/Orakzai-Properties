@@ -4,7 +4,7 @@ import { useProfilePhoto } from "@/hooks/useProfilePhoto";
   import { motion, AnimatePresence } from "framer-motion";
   import {
     Search, Bell, User, ChevronDown, Plus, LayoutList, Home as HomeIcon,
-    Building2, KeyRound, BarChart3, HardHat, MapPin, TrendingUp, TrendingDown,
+    Building2, KeyRound, BarChart3, HardHat, Wrench, MapPin, TrendingUp, TrendingDown,
     Heart, ArrowRight, ShieldCheck, Bed, Bath, Maximize2, X, Mic, Sparkles,
     Globe, Activity, DollarSign, Layers, Star, ChevronRight, Wallet,
     RefreshCw, Lock, Map, Brain, BarChart2, Users, Award, Target,
@@ -41,6 +41,19 @@ import { useProfilePhoto } from "@/hooks/useProfilePhoto";
   const MARKET_MODES = ["All", "Buy", "Sell", "Rent", "Booking", "Investment", "Installments", "Construction", "Fractional", "Luxury", "Commercial", "International"];
   const MARKET_CAT_PILLS = ["Buy", "Sell", "Rent", "Booking", "Investments"];
   const MARKET_TRENDING = ["DHA Lahore", "Bahria Town", "Dubai Marina", "Luxury villas", "Commercial plots", "Azan Smart City"];
+  const PROPERTY_TYPE_META: Record<string, { label: string; icon: string; color: string }> = {
+    buy: { label: "Family Home", icon: "🏠", color: "#10b981" }, investment: { label: "Commercial", icon: "💼", color: "#06b6d4" }, luxury: { label: "Luxury Villa", icon: "🏰", color: GOLD }, booking: { label: "Plots & Land", icon: "🗺️", color: "#f59e0b" }, international: { label: "Penthouse", icon: "🏙️", color: "#a78bfa" }, rent: { label: "Apartment", icon: "🏢", color: "#22d3ee" }, commercial: { label: "Commercial", icon: "💼", color: "#3b82f6" }, construction: { label: "Family Home", icon: "🏠", color: "#f97316" },
+  };
+  const PRIMARY_CATEGORY_HUBS = [
+    { glyph: "🏢", title: "Real Estate & Property Hub", subtext: "Buy, Rent, Sell, Apartments & Family Homes", tag: "Apartments · Villas · Plots", route: "/market/properties", color: "#10b981" },
+    { glyph: "🏨", title: "Hospitality & Stays (Bookings)", subtext: "Hotels, Luxury Suites, Daily & Short Stays", tag: "Book Stays · Vacation Rentals", route: "/stays/hotels", color: "#06b6d4" },
+    { glyph: "📊", title: "Investments & Projects", subtext: "Fractional Real Estate, Megaprojects & Tokenized Assets", tag: "High Yield · Global RWA", route: "/market/invest", color: "#a78bfa" },
+    { glyph: "🏗️", title: "Construction & Materials", subtext: "Cement, Steel, Tiles, Heavy Machinery & Bulk Materials", tag: "Suppliers · Wholesalers", route: "/market/construction", color: "#f97316" },
+    { glyph: "📐", title: "Design & Engineering", subtext: "Architects, Structural Engineers, Interior Designers", tag: "3D Maps · Blueprints", route: "/design/architects", color: "#3b82f6" },
+    { glyph: "🛠️", title: "Skilled Trades & Local Services", subtext: "Electricians, Plumbers, Contractors, Movers & Packers", tag: "Verified Pros", route: "/market/services", color: "#eab308" },
+    { glyph: "⚖️", title: "Legal, Verification & Valuation", subtext: "Title Deed Audits, NOC Checks, Advocates & Valuations", tag: "Property Lawyers", route: "/services/verification", color: "#ec4899" },
+    { glyph: "🏦", title: "Financing & Insurance", subtext: "Home Loans, Islamic Finance & Property Insurance", tag: "Mortgage Desk", route: "/finance/home-loans", color: GOLD },
+  ];
 
   const FEATURED_AGENTS = [
     { id:1, name:"OkzByte", type:"Registered Exchange", city:"Lahore", verified:true, rating:5.0, reviews:412, listings:120, avatar:"https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=200&q=80", badge:"Top Agency" },
@@ -161,6 +174,7 @@ import { useProfilePhoto } from "@/hooks/useProfilePhoto";
     const [, nav] = useLocation();
     const [hovered, setHovered] = useState(false);
     const isInvest = ["investment", "booking", "fractional"].includes(p.type);
+    const propertyType = PROPERTY_TYPE_META[p.type] ?? { label: "Property", icon: "🏠", color: GOLD };
     return (
       <motion.div onHoverStart={() => setHovered(true)} onHoverEnd={() => setHovered(false)}
         whileHover={{ y: -6, scale: 1.015 }} transition={{ type: "spring", stiffness: 300, damping: 25 }}
@@ -173,7 +187,7 @@ import { useProfilePhoto } from "@/hooks/useProfilePhoto";
           <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(7,11,20,0.05) 0%,rgba(7,11,20,0.95) 100%)" }} />
           <div style={{ position: "absolute", top: 12, left: 12, display: "flex", gap: 6 }}>
             <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 20, background: p.tagColor, color: "#040b14" }}>{p.tag}</span>
-            {p.tokenized && <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 20, background: "rgba(6,182,212,0.9)", color: "#fff" }}>⬡ Token</span>}
+            <span style={{ fontSize: 10, fontWeight: 850, padding: "5px 9px", borderRadius: 9, background: "rgba(4,8,15,.82)", border: `1px solid ${propertyType.color}80`, color: propertyType.color }}>{propertyType.icon} {propertyType.label}</span>{p.tokenized && <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 20, background: "rgba(6,182,212,0.9)", color: "#fff" }}>⬡ Token</span>}
           </div>
           <motion.button whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}
             onClick={e => { e.stopPropagation(); onSave(); }}
@@ -197,13 +211,12 @@ import { useProfilePhoto } from "@/hooks/useProfilePhoto";
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, fontSize: 10, color: "#8B93A7" }}>
             <span>by {p.developer}</span><span>{p.country}</span>
           </div>
-          {p.beds > 0 && (
-            <div style={{ display: "flex", gap: 12, marginBottom: 8 }}>
-              <span style={{ display: "flex", alignItems: "center", gap: 3, color: "#8B93A7", fontSize: 11 }}><Bed size={10} />{p.beds}</span>
-              <span style={{ display: "flex", alignItems: "center", gap: 3, color: "#8B93A7", fontSize: 11 }}><Bath size={10} />{p.baths}</span>
-              <span style={{ display: "flex", alignItems: "center", gap: 3, color: "#8B93A7", fontSize: 11 }}><Maximize2 size={10} />{(p.areaSqFt ?? 0).toLocaleString()} ft²</span>
-            </div>
-          )}
+          <div style={{ display: "flex", gap: 7, flexWrap: "wrap", alignItems: "center", marginBottom: 8, padding: "7px 8px", borderRadius: 10, background: "rgba(255,255,255,.035)", border: `1px solid ${BORDER}` }}>
+            {p.beds > 0 && <span style={{ display: "flex", alignItems: "center", gap: 3, color: "#C8D0DA", fontSize: 10 }}><Bed size={10} />{p.beds} Beds</span>}
+            {p.baths > 0 && <span style={{ display: "flex", alignItems: "center", gap: 3, color: "#C8D0DA", fontSize: 10 }}><Bath size={10} />{p.baths} Baths</span>}
+            {p.areaSqFt > 0 && <span style={{ display: "flex", alignItems: "center", gap: 3, color: "#C8D0DA", fontSize: 10 }}><Maximize2 size={10} />{p.areaSqFt.toLocaleString()} SqFt</span>}
+            <span style={{ color: propertyType.color, fontSize: 10, fontWeight: 850 }}>{propertyType.label}</span>
+          </div>
           {p.monthlyIncome && (
             <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
               <div style={{ flex: 1, background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: 8, padding: "5px 8px" }}>
@@ -1031,161 +1044,16 @@ import { useProfilePhoto } from "@/hooks/useProfilePhoto";
             })()}
           </motion.div>
 
-          {/* ── VERIFIED AGENTS & AGENCIES DIRECTORY ── */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }} style={{ padding: "28px 0 0" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 800, color: "#F5F5F5" }}>Verified Agents & Agencies</div>
-                <div style={{ fontSize: 10, color: "#8B93A7", textTransform: "uppercase" as const, letterSpacing: 0.8, marginTop: 1 }}>Trusted real estate professionals</div>
-              </div>
-              <motion.button whileTap={{ scale: 0.96 }} onClick={() => setLocation("/projects")}
-                style={{ display: "flex", alignItems: "center", gap: 3, background: "none", border: "none", cursor: "pointer", color: GOLD, fontSize: 12, fontWeight: 700 }}>
-                See all <ChevronRight size={13} />
-              </motion.button>
+          {/* ── PRIMARY CATEGORY HUBS ── */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24 }} style={{ padding: "28px 0 0" }}>
+            <div style={{ display: "flex", alignItems: "end", justifyContent: "space-between", gap: 10, marginBottom: 13 }}>
+              <div><div style={{ color: GOLD, fontSize: 10, fontWeight: 900, letterSpacing: ".14em" }}>PRIMARY MARKET CATEGORIES</div><h2 style={{ margin: "5px 0 0", fontSize: 18, color: "#F5F5F5" }}>Everything property, in one terminal</h2></div><span style={{ color: "#8B93A7", fontSize: 10 }}>8 hubs</span>
             </div>
-            <div style={{ display: "flex", gap: 12, overflowX: "auto", scrollbarWidth: "none" as const, paddingBottom: 4 }}>
-              {FEATURED_AGENTS.map((agent, i) => (
-                <motion.div key={agent.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.06 * i }}
-                  whileHover={{ y: -4 }} whileTap={{ scale: 0.97 }}
-                  onClick={() => setLocation("/projects")}
-                  style={{ flexShrink: 0, width: 175, background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 18, overflow: "hidden", cursor: "pointer" }}>
-                  {/* Header band */}
-                  <div style={{ height: 54, background: "linear-gradient(135deg,rgba(201,168,76,0.1),rgba(139,92,246,0.06))", borderBottom: `1px solid ${BORDER}`, position: "relative" }}>
-                    {agent.badge && (
-                      <div style={{ position: "absolute", top: 8, right: 8, fontSize: 8, fontWeight: 800, color: "#040b14", background: GOLD, padding: "2px 7px", borderRadius: 20 }}>{agent.badge}</div>
-                    )}
-                  </div>
-                  <div style={{ padding: "0 12px 14px" }}>
-                    {/* Avatar */}
-                    <div style={{ marginTop: -20, marginBottom: 8 }}>
-                      <div style={{ width: 40, height: 40, borderRadius: 12, overflow: "hidden", border: `2px solid ${GOLD}` }}>
-                        <img src={agent.avatar} alt={agent.name} style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                          onError={e => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80"; }} />
-                      </div>
-                    </div>
-                    <div style={{ fontSize: 12, fontWeight: 800, color: "#EAECEF", marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{agent.name}</div>
-                    <div style={{ fontSize: 9, color: "#8B93A7", marginBottom: 6 }}>{agent.type}</div>
-                    {/* Rating */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 6 }}>
-                      <Star size={9} color={GOLD} fill={GOLD} />
-                      <span style={{ fontSize: 11, fontWeight: 700, color: GOLD }}>{agent.rating}</span>
-                      <span style={{ fontSize: 10, color: "#8B93A7" }}>({agent.reviews})</span>
-                    </div>
-                    {/* Stats */}
-                    <div style={{ display: "flex", gap: 5, marginBottom: 10 }}>
-                      <div style={{ flex: 1, background: "rgba(201,168,76,0.06)", border: `1px solid rgba(201,168,76,0.15)`, borderRadius: 7, padding: "5px 6px", textAlign: "center" as const }}>
-                        <div style={{ fontSize: 12, fontWeight: 800, color: GOLD }}>{agent.listings}</div>
-                        <div style={{ fontSize: 8, color: "#8B93A7" }}>Listings</div>
-                      </div>
-                      <div style={{ flex: 1, background: "rgba(255,255,255,0.03)", border: `1px solid ${BORDER}`, borderRadius: 7, padding: "5px 6px", textAlign: "center" as const }}>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: "#EAECEF" }}>{agent.city}</div>
-                        <div style={{ fontSize: 8, color: "#8B93A7" }}>City</div>
-                      </div>
-                    </div>
-                    <motion.button whileTap={{ scale: 0.97 }}
-                      style={{ width: "100%", padding: "7px 0", borderRadius: 9, background: `linear-gradient(135deg,${GOLD},#8B6010)`, border: "none", color: "#040b14", fontSize: 10, fontWeight: 800, cursor: "pointer" }}>
-                      Contact Agent
-                    </motion.button>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* ══════════════════════════════════════════════════════════
-              GLOBAL MARKET PULSE
-          ══════════════════════════════════════════════════════════ */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} style={{ padding: "28px 0 0" }}>
-            <SectionHeader title="Global Market Pulse" subtitle="Live market intelligence" icon={<Activity size={14} color={GOLD} />} />
-            <div style={{ display: "flex", gap: 12, overflowX: "auto", scrollbarWidth: "none" as const, paddingBottom: 4 }}>
-              {MARKET_PULSE_DATA.map((m, i) => (
-                <motion.div key={m.city} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.08 * i }}
-                  whileHover={{ y: -4 }} style={{ flexShrink: 0, background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 18, padding: "16px 18px", minWidth: 195 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
-                    <div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        <span style={{ fontSize: 20 }}>{m.flag}</span>
-                        <span style={{ fontSize: 14, fontWeight: 800, color: "#F5F5F5" }}>{m.city}</span>
-                      </div>
-                      <div style={{ fontSize: 10, color: "#8B93A7", marginTop: 1 }}>{m.country}</div>
-                    </div>
-                    <motion.div animate={{ opacity: [1, 0.4, 1] }} transition={{ repeat: Infinity, duration: 2 }}
-                      style={{ width: 8, height: 8, borderRadius: "50%", background: m.up ? "#10b981" : "#ef4444" }} />
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-                    {m.up ? <TrendingUp size={14} color="#10b981" /> : <TrendingDown size={14} color="#ef4444" />}
-                    <span style={{ fontSize: 17, fontWeight: 900, color: m.up ? "#10b981" : "#ef4444" }}>{m.trend}</span>
-                    <span style={{ fontSize: 10, color: "#8B93A7" }}>YTD</span>
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-                    <div style={{ background: "rgba(201,168,76,0.08)", borderRadius: 8, padding: "6px 8px" }}>
-                      <div style={{ fontSize: 9, color: "#8B93A7", textTransform: "uppercase" as const }}>ROI</div>
-                      <div style={{ fontSize: 13, fontWeight: 800, color: GOLD }}>{m.roi}</div>
-                    </div>
-                    <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: "6px 8px" }}>
-                      <div style={{ fontSize: 9, color: "#8B93A7", textTransform: "uppercase" as const }}>Vol</div>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: "#F5F5F5" }}>{m.volume}</div>
-                    </div>
-                  </div>
-                  <div style={{ marginTop: 8, fontSize: 10, color: "#8B93A7" }}>{m.desc}</div>
-                  <div style={{ marginTop: 6, display: "inline-flex", padding: "2px 8px", borderRadius: 20, background: m.up ? "rgba(16,185,129,0.1)" : "rgba(239,68,68,0.1)", color: m.up ? "#10b981" : "#ef4444", fontSize: 10, fontWeight: 700 }}>{m.sentiment}</div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* GLOBAL INVESTMENT MAP */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.34 }} style={{ padding: "28px 0 0" }}>
-            <SectionHeader title="Global Investment Map" subtitle="Live property intelligence grid" icon={<Map size={14} color={GOLD} />} />
-            <MapSection properties={listings} />
-          </motion.div>
-
-          {/* INVESTMENT INTELLIGENCE */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.38 }} style={{ padding: "28px 0 0" }}>
-            <SectionHeader title="Investment Intelligence" subtitle="Real estate exchange panel" icon={<Target size={14} color={GOLD} />} />
-            <InvestmentPanel />
-          </motion.div>
-
-          {/* AI PROPERTY ADVISOR */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.42 }} style={{ padding: "28px 0 0" }}>
-            <SectionHeader title="AI Property Advisor" subtitle="Orakzai Intelligence Engine" icon={<Brain size={14} color={GOLD} />} />
-            <div style={{ background: CARD_BG, border: `1px solid ${BORDER_GOLD}`, borderRadius: 20, overflow: "hidden" }}>
-              <div style={{ background: "linear-gradient(135deg,rgba(201,168,76,0.08) 0%,rgba(0,0,0,0) 100%)", borderBottom: `1px solid ${BORDER}`, padding: "16px 20px", display: "flex", alignItems: "center", gap: 12 }}>
-                <motion.div animate={{ rotate: [0, 10, -10, 0] }} transition={{ repeat: Infinity, duration: 5 }}
-                  style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(201,168,76,0.12)", border: `1px solid ${BORDER_GOLD}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <Brain size={18} color={GOLD} />
-                </motion.div>
-                <div>
-                  <div style={{ fontWeight: 800, fontSize: 14, color: "#F5F5F5" }}>Orakzai AI</div>
-                  <div style={{ fontSize: 11, color: "#10b981" }}>Analyzing global markets in real-time</div>
-                </div>
-                <motion.div animate={{ opacity: [1, 0.4, 1] }} transition={{ repeat: Infinity, duration: 1.8 }}
-                  style={{ marginLeft: "auto", width: 8, height: 8, borderRadius: "50%", background: "#10b981" }} />
-              </div>
-              <AnimatePresence mode="wait">
-                <motion.div key={aiInsightIndex} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
-                  style={{ padding: "18px 20px", borderBottom: `1px solid ${BORDER}` }}>
-                  <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                    <div style={{ width: 34, height: 34, borderRadius: 10, background: `${currentInsight.color}18`, border: `1px solid ${currentInsight.color}33`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <currentInsight.icon size={15} color={currentInsight.color} />
-                    </div>
-                    <p style={{ margin: 0, color: "#A0AABA", fontSize: 13, lineHeight: 1.65 }}>{currentInsight.text}</p>
-                  </div>
-                </motion.div>
-              </AnimatePresence>
-              {AI_INSIGHTS.filter((_, i) => i !== aiInsightIndex).slice(0, 3).map((ins, i) => (
-                <div key={i} style={{ padding: "12px 20px", borderBottom: `1px solid ${BORDER}`, display: "flex", gap: 10, alignItems: "flex-start" }}>
-                  <ins.icon size={12} color="#8B93A7" style={{ marginTop: 3, flexShrink: 0 }} />
-                  <span style={{ color: "#8B93A7", fontSize: 12, lineHeight: 1.5 }}>{ins.text}</span>
-                </div>
-              ))}
-              <div style={{ padding: "14px 20px" }}>
-                <motion.button whileHover={{ scale: 1.01 }} onClick={() => setLocation("/invest")}
-                  style={{ width: "100%", padding: "12px", borderRadius: 12, background: "rgba(201,168,76,0.08)", border: `1px solid ${BORDER_GOLD}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-                  <Sparkles size={14} color={GOLD} />
-                  <span style={{ color: GOLD, fontWeight: 700, fontSize: 13 }}>Get Personalized Investment Analysis</span>
-                </motion.button>
-              </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 10 }}>
+              {PRIMARY_CATEGORY_HUBS.map((hub, i) => <motion.button key={hub.title} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.04 * i }} whileHover={{ y: -3, borderColor: `${hub.color}80`, boxShadow: `0 0 20px ${hub.color}22` }} whileTap={{ scale: 0.98 }} onClick={() => setLocation(hub.route)} style={{ minWidth: 0, minHeight: 154, padding: 13, borderRadius: 16, border: `1px solid ${BORDER}`, background: "rgba(15,23,36,.82)", backdropFilter: "blur(14px)", color: "#F5F5F5", textAlign: "left", cursor: "pointer", transition: "all .25s" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}><div style={{ width: 38, height: 38, display: "grid", placeItems: "center", borderRadius: 12, background: `${hub.color}18`, border: `1px solid ${hub.color}45`, color: hub.color, boxShadow: `0 0 18px ${hub.color}16`, fontSize: 19 }}>{hub.glyph}</div><ChevronRight size={15} color={hub.color} /></div>
+                <div style={{ marginTop: 11, fontSize: 12, lineHeight: 1.25, fontWeight: 850 }}>{hub.title}</div><div style={{ marginTop: 6, color: "#9CA8B8", fontSize: 9.5, lineHeight: 1.4 }}>{hub.subtext}</div><div style={{ display: "inline-flex", marginTop: 9, padding: "5px 7px", borderRadius: 7, background: `${hub.color}12`, color: hub.color, fontSize: 8.5, fontWeight: 800 }}>{hub.tag}</div>
+              </motion.button>)}
             </div>
           </motion.div>
 
