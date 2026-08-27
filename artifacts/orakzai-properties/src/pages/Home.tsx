@@ -1058,40 +1058,54 @@ import { useProfilePhoto } from "@/hooks/useProfilePhoto";
             })()}
           </motion.div>
 
-          {/* ── CLEAN 3D PRIMARY CATEGORY CAROUSEL ── */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24 }} className="w-full max-w-md mx-auto relative px-0 py-6 overflow-hidden flex flex-col items-center" style={{ paddingTop: 30, paddingBottom: 34 }}>
+          {/* ── EXACT THREE-LAYER PRIMARY CAROUSEL ── */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24 }} className="relative w-full max-w-md mx-auto py-12 px-0 flex flex-col items-center justify-center overflow-hidden" style={{ paddingBottom: 42 }}>
             {(() => {
-              const activeCard = MARKET_CAROUSEL_CARDS[activeCarousel];
-              const moveCarousel = (direction: number) => setActiveCarousel(current => (current + direction + MARKET_CAROUSEL_CARDS.length) % MARKET_CAROUSEL_CARDS.length);
-              const finishPointer = (event: React.PointerEvent<HTMLDivElement>) => {
+              const activeItem = MARKET_CAROUSEL_CARDS[activeCarousel];
+              const goTo = (direction: number) => setActiveCarousel(current => (current + direction + MARKET_CAROUSEL_CARDS.length) % MARKET_CAROUSEL_CARDS.length);
+              const finishSwipe = (event: React.PointerEvent<HTMLDivElement>) => {
                 if (carouselDragStart.current === null) return;
                 const delta = event.clientX - carouselDragStart.current;
-                carouselDidDrag.current = Math.abs(delta) > 14;
-                if (Math.abs(delta) > 42) moveCarousel(delta < 0 ? 1 : -1);
+                carouselDidDrag.current = Math.abs(delta) > 12;
+                if (Math.abs(delta) > 42) goTo(delta < 0 ? 1 : -1);
                 carouselDragStart.current = null;
               };
-              return <div className="w-full relative flex flex-col items-center justify-center" style={{ touchAction: "pan-y" }}>
-                <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-7xl font-black text-white/10 uppercase tracking-tighter pointer-events-none z-0 select-none" style={{ color: activeCard.color, whiteSpace: "nowrap", fontSize: "clamp(64px, 18vw, 150px)", lineHeight: .85 }}>{activeCard.background}</div>
-                <div className="absolute top-0 left-0 right-0 bottom-20 z-0 pointer-events-none" style={{ background: `radial-gradient(circle at 50% 40%, ${activeCard.color}22, transparent 58%)` }} />
-                <div className="w-full flex justify-center items-center z-10 relative" style={{ height: 420, perspective: 1200, overflow: "visible" }} onPointerDown={event => { carouselDragStart.current = event.clientX; event.currentTarget.setPointerCapture?.(event.pointerId); }} onPointerUp={finishPointer} onPointerCancel={finishPointer}>
-                  <div className="relative w-full h-full flex items-center justify-center" style={{ overflow: "visible" }}>
-                    {MARKET_CAROUSEL_CARDS.map((card, index) => {
-                      let offset = index - activeCarousel;
+              return <>
+                {/* LAYER 0: BACKGROUND TYPOGRAPHY */}
+                <div className="absolute top-2 left-1/2 -translate-x-1/2 z-0 pointer-events-none select-none text-center w-full">
+                  <p className="text-xs font-medium text-slate-400 lowercase tracking-widest mb-1">{activeItem.subtitle}</p>
+                  <h1 className="text-8xl font-black text-white/10 uppercase tracking-tighter leading-none" style={{ color: activeItem.color, fontSize: "clamp(70px, 19vw, 150px)", whiteSpace: "nowrap" }}>{activeItem.background}</h1>
+                </div>
+
+                {/* LAYER 1: CENTERED SWIPER/COVERFLOW STAGE */}
+                <div className="w-full relative z-10 my-6" onPointerDown={event => { carouselDragStart.current = event.clientX; event.currentTarget.setPointerCapture?.(event.pointerId); }} onPointerUp={finishSwipe} onPointerCancel={finishSwipe} style={{ touchAction: "pan-y" }}>
+                  <div className="w-full flex justify-center items-center" style={{ height: 420, perspective: 1100, overflow: "visible" }}>
+                    {MARKET_CAROUSEL_CARDS.map((item, idx) => {
+                      let offset = idx - activeCarousel;
                       const total = MARKET_CAROUSEL_CARDS.length;
                       if (offset > total / 2) offset -= total;
                       if (offset < -total / 2) offset += total;
                       if (Math.abs(offset) > 1) return null;
-                      const isActive = offset === 0;
-                      return <motion.button key={card.background} className="w-[270px] h-[340px] sm:w-[300px] sm:h-[370px] rounded-[40px]" animate={{ x: offset * 238, scale: isActive ? 1 : .85, opacity: isActive ? 1 : .4, rotateY: offset * -8, filter: isActive ? "blur(0px)" : "blur(1px)", zIndex: isActive ? 10 : 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, mass: .72 }} onClick={() => { if (carouselDidDrag.current) { carouselDidDrag.current = false; return; } if (isActive) setLocation(card.route); else setActiveCarousel(index); }} style={{ position: "absolute", top: "50%", left: "50%", margin: 0, transform: "translate(-50%, -50%) translateZ(0)", padding: 0, overflow: "hidden", border: `4px solid ${isActive ? card.color : "rgba(100,116,139,.5)"}`, background: "#07101b", boxShadow: isActive ? `0 10px 30px ${card.color}4d, 0 20px 45px rgba(0,0,0,.34)` : "0 10px 28px rgba(0,0,0,.46)", cursor: "grab", transformStyle: "preserve-3d", textAlign: "left", flexShrink: 0 }}>
-                        <img src={card.image} alt="" draggable={false} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", borderRadius: 36 }} /><div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(4,8,15,.08) 5%,rgba(4,8,15,.14) 38%,rgba(4,8,15,.94) 100%)" }} />
-                        <div style={{ position: "absolute", top: 20, left: 22, right: 22, color: card.color, fontSize: 10, fontWeight: 900, letterSpacing: ".16em", textTransform: "uppercase" }}>{card.subtitle}</div>
-                        <div style={{ position: "absolute", left: 22, right: 22, bottom: 22, color: "#fff", fontSize: 22, lineHeight: 1.08, fontWeight: 900, letterSpacing: "-.035em", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{card.tagline}</div>
-                      </motion.button>;
+                      const active = offset === 0;
+                      return <motion.div key={item.background} animate={{ x: offset * 238, scale: active ? 1 : .85, opacity: active ? 1 : .4, rotateY: offset * -8, filter: active ? "blur(0px)" : "blur(1px)" }} transition={{ type: "spring", stiffness: 300, damping: 30, mass: .72 }} onClick={() => { if (carouselDidDrag.current) { carouselDidDrag.current = false; return; } if (!active) setActiveCarousel(idx); }} style={{ position: "absolute", top: "50%", left: "50%", width: "min(280px, calc(100vw - 56px))", height: 360, transform: "translate(-50%, -50%)", zIndex: active ? 10 : 1, cursor: active ? "grab" : "pointer", transformStyle: "preserve-3d" }}>
+                        <div className="w-full h-full rounded-[48px] overflow-hidden relative shadow-2xl border-4 border-slate-700/40 bg-slate-900 mx-auto transition-transform duration-300">
+                          <img src={item.image} alt={item.tagline} draggable={false} className="w-full h-full object-cover" style={{ display: "block" }} />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent p-6 flex flex-col justify-end">
+                            <p className="text-white font-semibold text-lg leading-snug" style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.tagline}</p>
+                          </div>
+                        </div>
+                      </motion.div>;
                     })}
                   </div>
                 </div>
-                <button onClick={() => setLocation(activeCard.route)} style={{ position: "relative", zIndex: 20, marginTop: -3, padding: "13px 25px", minWidth: 142, border: 0, borderRadius: 28, background: "#fff", color: "#07101b", boxShadow: `0 10px 26px ${activeCard.color}38`, fontSize: 13, fontWeight: 900, cursor: "pointer" }}>{activeCard.action}</button>
-              </div>;
+
+                {/* LAYER 2: EXTERNAL CENTERED CTA */}
+                <div className="relative z-20 -mt-2">
+                  <button onClick={() => setLocation(activeItem.route)} className="bg-black text-white hover:bg-slate-900 px-8 py-3.5 rounded-full font-medium text-sm shadow-xl transition-all active:scale-95 border border-slate-800" style={{ minWidth: 150, cursor: "pointer" }}>
+                    {activeItem.action}
+                  </button>
+                </div>
+              </>;
             })()}
           </motion.div>
 
