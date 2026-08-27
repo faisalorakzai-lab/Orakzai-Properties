@@ -1059,7 +1059,7 @@ import { useProfilePhoto } from "@/hooks/useProfilePhoto";
           </motion.div>
 
           {/* ── EXACT THREE-LAYER PRIMARY CAROUSEL ── */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24 }} className="relative w-full max-w-md mx-auto py-12 px-0 flex flex-col items-center justify-center overflow-hidden" style={{ paddingBottom: 42 }}>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24 }} className="relative w-full max-w-md mx-auto py-12 px-0 flex flex-col items-center justify-center overflow-hidden" style={{ paddingBottom: 28 }}>
             {(() => {
               const activeItem = MARKET_CAROUSEL_CARDS[activeCarousel];
               const goTo = (direction: number) => setActiveCarousel(current => (current + direction + MARKET_CAROUSEL_CARDS.length) % MARKET_CAROUSEL_CARDS.length);
@@ -1072,14 +1072,14 @@ import { useProfilePhoto } from "@/hooks/useProfilePhoto";
               };
               return <>
                 {/* LAYER 0: BACKGROUND TYPOGRAPHY */}
-                <div className="absolute top-2 left-1/2 -translate-x-1/2 z-0 pointer-events-none select-none text-center w-full">
+                <div className="absolute top-12 left-1/2 -translate-x-1/2 z-0 pointer-events-none select-none text-center w-full">
                   <p className="text-xs font-medium text-slate-400 lowercase tracking-widest mb-1">{activeItem.subtitle}</p>
-                  <h1 className="text-8xl font-black text-white/10 uppercase tracking-tighter leading-none" style={{ color: activeItem.color, fontSize: "clamp(70px, 19vw, 150px)", whiteSpace: "nowrap" }}>{activeItem.background}</h1>
+                  <h1 className="text-8xl font-black text-white/10 uppercase tracking-tighter leading-none" style={{ color: "rgba(245,158,11,.80)", fontSize: "clamp(70px, 19vw, 150px)", whiteSpace: "nowrap" }}>{activeItem.background}</h1>
                 </div>
 
                 {/* LAYER 1: CENTERED SWIPER/COVERFLOW STAGE */}
                 <div className="w-full relative z-10 my-6" onPointerDown={event => { carouselDragStart.current = event.clientX; event.currentTarget.setPointerCapture?.(event.pointerId); }} onPointerUp={finishSwipe} onPointerCancel={finishSwipe} style={{ touchAction: "pan-y" }}>
-                  <div className="w-full flex justify-center items-center" style={{ height: 420, perspective: 1100, overflow: "visible" }}>
+                  <div className="w-full flex justify-center items-center" style={{ height: 392, perspective: 1100, overflow: "visible" }}>
                     {MARKET_CAROUSEL_CARDS.map((item, idx) => {
                       let offset = idx - activeCarousel;
                       const total = MARKET_CAROUSEL_CARDS.length;
@@ -1087,8 +1087,8 @@ import { useProfilePhoto } from "@/hooks/useProfilePhoto";
                       if (offset < -total / 2) offset += total;
                       if (Math.abs(offset) > 1) return null;
                       const active = offset === 0;
-                      return <motion.div key={item.background} animate={{ x: offset * 238, scale: active ? 1 : .85, opacity: active ? 1 : .4, rotateY: offset * -8, filter: active ? "blur(0px)" : "blur(1px)" }} transition={{ type: "spring", stiffness: 300, damping: 30, mass: .72 }} onClick={() => { if (carouselDidDrag.current) { carouselDidDrag.current = false; return; } if (!active) setActiveCarousel(idx); }} style={{ position: "absolute", top: "50%", left: "50%", width: "min(280px, calc(100vw - 56px))", height: 360, transform: "translate(-50%, -50%)", zIndex: active ? 10 : 1, cursor: active ? "grab" : "pointer", transformStyle: "preserve-3d" }}>
-                        <div className="w-full h-full rounded-[48px] overflow-hidden relative shadow-2xl border-4 border-slate-700/40 bg-slate-900 mx-auto transition-transform duration-300">
+                      return <motion.div key={item.background} className="w-[270px] h-[350px] sm:w-[300px] sm:h-[380px] rounded-[44px]" animate={{ x: offset * 238, scale: active ? 1 : .85, opacity: active ? 1 : .4, rotateY: offset * -8, filter: active ? "blur(0px)" : "blur(1px)" }} transition={{ type: "spring", stiffness: 300, damping: 30, mass: .72 }} onClick={() => { if (carouselDidDrag.current) { carouselDidDrag.current = false; return; } if (!active) setActiveCarousel(idx); }} style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", zIndex: active ? 10 : 1, cursor: active ? "grab" : "pointer", transformStyle: "preserve-3d" }}>
+                        <div className="w-full h-full rounded-[44px] overflow-hidden relative shadow-2xl border-4 border-slate-700/60 bg-slate-900 mx-auto transition-transform duration-300">
                           <img src={item.image} alt={item.tagline} draggable={false} className="w-full h-full object-cover" style={{ display: "block" }} />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent p-6 flex flex-col justify-end">
                             <p className="text-white font-semibold text-lg leading-snug" style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.tagline}</p>
@@ -1100,27 +1100,13 @@ import { useProfilePhoto } from "@/hooks/useProfilePhoto";
                 </div>
 
                 {/* LAYER 2: EXTERNAL CENTERED CTA */}
-                <div className="relative z-20 -mt-2">
+                <div className="relative z-20 mt-4">
                   <button onClick={() => setLocation(activeItem.route)} className="bg-black text-white hover:bg-slate-900 px-8 py-3.5 rounded-full font-medium text-sm shadow-xl transition-all active:scale-95 border border-slate-800" style={{ minWidth: 150, cursor: "pointer" }}>
                     {activeItem.action}
                   </button>
                 </div>
               </>;
             })()}
-          </motion.div>
-
-          {/* LIST YOUR PROPERTY CTA */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.46 }} style={{ padding: "28px 0 0" }}>
-            <motion.button whileHover={{ scale: 1.01, boxShadow: "0 20px 50px rgba(201,168,76,0.15)" }} whileTap={{ scale: 0.99 }}
-              onClick={() => setLocation("/post-property")}
-              style={{ width: "100%", padding: "20px", borderRadius: 20, background: "linear-gradient(135deg,rgba(201,168,76,0.12) 0%,rgba(201,168,76,0.05) 100%)", border: `1px solid ${BORDER_GOLD}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}>
-              <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(201,168,76,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}><Plus size={20} color={GOLD} /></div>
-              <div style={{ textAlign: "left" as const }}>
-                <div style={{ color: GOLD, fontWeight: 800, fontSize: 15 }}>List Your Property</div>
-                <div style={{ color: "#8B93A7", fontSize: 11, marginTop: 1 }}>Reach 48,000+ global investors and buyers</div>
-              </div>
-              <ChevronRight size={18} color={GOLD} style={{ marginLeft: "auto" }} />
-            </motion.button>
           </motion.div>
 
           {/* ── END MARKET MODE BLOCK ── */}
