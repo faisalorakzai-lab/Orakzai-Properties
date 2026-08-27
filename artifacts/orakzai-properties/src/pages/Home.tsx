@@ -55,6 +55,17 @@ import { useProfilePhoto } from "@/hooks/useProfilePhoto";
     { glyph: "🏦", title: "Financing & Insurance", image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=85", subtext: "Home Loans, Islamic Finance & Property Insurance", tag: "Mortgage Desk", route: "/finance/home-loans", color: GOLD },
   ];
 
+  const MARKET_CAROUSEL_CARDS = [
+    { background: "HOTELS", subtitle: "Luxury Stays & Bookings", tagline: "Luxury stays, powered by global crypto & fiat.", action: "Book a stay", route: "/stays/hotels", image: PRIMARY_CATEGORY_HUBS[1].image, glyph: "🏨", color: "#06b6d4" },
+    { background: "ESTATES", subtitle: "Buy, Rent & Sell", tagline: "Apartments, Family Homes & Luxury Villas.", action: "Explore Properties", route: "/market/properties", image: PRIMARY_CATEGORY_HUBS[0].image, glyph: "🏢", color: "#10b981" },
+    { background: "INVEST", subtitle: "Tokenized Assets & RWAs", tagline: "Fractional ownership in high-yield megaprojects.", action: "View Projects", route: "/market/invest", image: PRIMARY_CATEGORY_HUBS[2].image, glyph: "📊", color: "#a78bfa" },
+    { background: "BUILD", subtitle: "Raw Materials & Supplies", tagline: "Direct sourcing for cement, steel & heavy equipment.", action: "Source Materials", route: "/market/construction", image: PRIMARY_CATEGORY_HUBS[3].image, glyph: "🏗️", color: "#f97316" },
+    { background: "DESIGN", subtitle: "Architects & Engineers", tagline: "3D Blueprints & Structural Engineering Solutions.", action: "Find Experts", route: "/design/architects", image: PRIMARY_CATEGORY_HUBS[4].image, glyph: "📐", color: "#3b82f6" },
+    { background: "TRADES", subtitle: "Contractors & Technicians", tagline: "Verified local pros for maintenance & logistics.", action: "Hire Services", route: "/market/services", image: PRIMARY_CATEGORY_HUBS[5].image, glyph: "🛠️", color: "#eab308" },
+    { background: "LEGAL", subtitle: "Title Deeds & Lawyers", tagline: "Instant NOC verification & property advocate desk.", action: "Verify Property", route: "/services/verification", image: PRIMARY_CATEGORY_HUBS[6].image, glyph: "⚖️", color: "#ec4899" },
+    { background: "FINANCE", subtitle: "Home Loans & Mortgage Desk", tagline: "Global multi-currency mortgages & Sharia finance.", action: "Check Rates", route: "/finance/home-loans", image: PRIMARY_CATEGORY_HUBS[7].image, glyph: "🏦", color: GOLD },
+  ];
+
   const FEATURED_AGENTS = [
     { id:1, name:"OkzByte", type:"Registered Exchange", city:"Lahore", verified:true, rating:5.0, reviews:412, listings:120, avatar:"https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=200&q=80", badge:"Top Agency" },
     { id:2, name:"Usman Malik",        type:"Independent Agent",  city:"Lahore", verified:true, rating:4.9, reviews:187, listings:34,  avatar:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80", badge:"#1 DHA" },
@@ -448,6 +459,8 @@ import { useProfilePhoto } from "@/hooks/useProfilePhoto";
     const [balanceVisible, setBalanceVisible] = useState(true);
     const [walletBalance, setWalletBalance] = useState(0);
     const [countdownActive, setCountdownActive] = useState(0);
+    const [activeCarousel, setActiveCarousel] = useState(0);
+    const carouselDragStart = useRef<number | null>(null);
     const [listMode, setListMode] = useState<"card" | "row">("row");
     const [activeTypeFilter, setActiveTypeFilter] = useState("Spot");
     const [activeQuote, setActiveQuote] = useState("USDT");
@@ -1044,16 +1057,33 @@ import { useProfilePhoto } from "@/hooks/useProfilePhoto";
             })()}
           </motion.div>
 
-          {/* ── PRIMARY CATEGORY HUBS ── */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24 }} style={{ padding: "28px 0 0" }}>
-            <div style={{ display: "flex", alignItems: "end", justifyContent: "space-between", gap: 10, marginBottom: 13 }}>
-              <div><div style={{ color: GOLD, fontSize: 10, fontWeight: 900, letterSpacing: ".14em" }}>PRIMARY MARKET CATEGORIES</div><h2 style={{ margin: "5px 0 0", fontSize: 18, color: "#F5F5F5" }}>Everything property, in one terminal</h2></div><span style={{ color: "#8B93A7", fontSize: 10 }}>8 hubs</span>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 14 }}>
-              {PRIMARY_CATEGORY_HUBS.map((hub, i) => <motion.button key={hub.title} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.04 * i }} whileHover={{ y: -3, borderColor: `${hub.color}80`, boxShadow: `0 0 20px ${hub.color}22` }} whileTap={{ scale: 0.98 }} onClick={() => setLocation(hub.route)} style={{ minWidth: 0, minHeight: 220, padding: 0, borderRadius: 20, border: `1px solid ${BORDER}`, background: "rgba(15,23,36,.82)", backdropFilter: "blur(14px)", color: "#F5F5F5", textAlign: "left", cursor: "pointer", transition: "all .25s" }}>
-                <div style={{ position: "relative", height: 118, overflow: "hidden" }}><img src={hub.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", filter: "saturate(.9)" }} onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} /><div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(4,8,15,.04),rgba(4,8,15,.94))" }} /><div style={{ position: "absolute", top: 12, left: 12, width: 42, height: 42, display: "grid", placeItems: "center", borderRadius: 13, background: `${hub.color}28`, border: `1px solid ${hub.color}80`, color: hub.color, boxShadow: `0 0 22px ${hub.color}28`, fontSize: 21 }}>{hub.glyph}</div><ChevronRight size={17} color="#fff" style={{ position: "absolute", right: 13, top: 15 }} /></div><div style={{ padding: "14px 14px 15px", background: "linear-gradient(180deg,rgba(8,14,24,.98),rgba(12,20,33,.98))" }}><div style={{ fontSize: 14, lineHeight: 1.25, fontWeight: 850 }}>{hub.title}</div><div style={{ marginTop: 7, color: "#AAB4C2", fontSize: 10.5, lineHeight: 1.45 }}>{hub.subtext}</div><div style={{ display: "inline-flex", marginTop: 11, padding: "6px 8px", borderRadius: 8, background: `${hub.color}18`, border: `1px solid ${hub.color}30`, color: hub.color, fontSize: 9, fontWeight: 800 }}>{hub.tag}</div></div>
-              </motion.button>)}
-            </div>
+          {/* ── 3D PRIMARY CATEGORY CAROUSEL ── */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24 }} style={{ padding: "30px 0 0" }}>
+            {(() => {
+              const activeCard = MARKET_CAROUSEL_CARDS[activeCarousel];
+              const moveCarousel = (direction: number) => setActiveCarousel((activeCarousel + direction + MARKET_CAROUSEL_CARDS.length) % MARKET_CAROUSEL_CARDS.length);
+              return <>
+                <div style={{ position: "relative", minHeight: 390, overflow: "hidden", borderRadius: 24, isolation: "isolate" }} onPointerDown={event => { carouselDragStart.current = event.clientX; }} onPointerUp={event => { if (carouselDragStart.current === null) return; const delta = event.clientX - carouselDragStart.current; if (Math.abs(delta) > 42) moveCarousel(delta < 0 ? 1 : -1); carouselDragStart.current = null; }}>
+                  <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", pointerEvents: "none" }}><AnimatePresence mode="wait"><motion.div key={activeCard.background} initial={{ opacity: 0, scale: .96 }} animate={{ opacity: .13, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: .35 }} style={{ color: activeCard.color, fontSize: "clamp(58px,17vw,176px)", lineHeight: .85, fontWeight: 950, letterSpacing: "-.08em", whiteSpace: "nowrap" }}>{activeCard.background}</motion.div></AnimatePresence></div>
+                  <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at 50% 45%, ${activeCard.color}20, transparent 58%)`, pointerEvents: "none" }} />
+                  {MARKET_CAROUSEL_CARDS.map((card, index) => {
+                    let offset = index - activeCarousel;
+                    const total = MARKET_CAROUSEL_CARDS.length;
+                    if (offset > total / 2) offset -= total;
+                    if (offset < -total / 2) offset += total;
+                    if (Math.abs(offset) > 2) return null;
+                    const isActive = offset === 0;
+                    return <motion.button key={card.background} animate={{ x: `${offset * 73}%`, scale: isActive ? 1 : .78, opacity: isActive ? 1 : .48, rotateY: offset * -14, zIndex: isActive ? 5 : 2 }} transition={{ type: "spring", stiffness: 260, damping: 26 }} onClick={() => isActive ? setLocation(card.route) : setActiveCarousel(index)} style={{ position: "absolute", top: 18, left: "50%", width: "min(78vw, 360px)", height: 350, transform: "translateX(-50%)", padding: 0, overflow: "hidden", borderRadius: 28, border: `2px solid ${isActive ? card.color : "rgba(255,255,255,.12)"}`, background: "#07101b", boxShadow: isActive ? `0 22px 60px ${card.color}30, 0 0 0 1px ${card.color}22` : "0 14px 30px rgba(0,0,0,.45)", cursor: "pointer", transformStyle: "preserve-3d", textAlign: "left" }}>
+                      <img src={card.image} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} /><div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(4,8,15,.05) 5%,rgba(4,8,15,.2) 34%,rgba(4,8,15,.96) 100%)" }} />
+                      <div style={{ position: "absolute", top: 16, left: 16, right: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }}><div style={{ width: 45, height: 45, display: "grid", placeItems: "center", borderRadius: 14, background: `${card.color}38`, border: `1px solid ${card.color}99`, boxShadow: `0 0 24px ${card.color}44`, fontSize: 23 }}>{card.glyph}</div><span style={{ padding: "6px 9px", borderRadius: 20, background: "rgba(4,8,15,.72)", border: "1px solid rgba(255,255,255,.15)", color: "#fff", fontSize: 9, fontWeight: 850 }}>{index + 1} / 8</span></div>
+                      <div style={{ position: "absolute", left: 20, right: 20, bottom: 18 }}><div style={{ color: card.color, fontSize: 10, fontWeight: 900, letterSpacing: ".16em", textTransform: "uppercase" }}>{card.subtitle}</div><div style={{ marginTop: 6, color: "#fff", fontSize: 24, lineHeight: 1.04, fontWeight: 900, letterSpacing: "-.04em" }}>{card.tagline}</div><div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 15 }}><span style={{ padding: "9px 15px", borderRadius: 22, background: "#fff", color: "#07101b", fontSize: 11, fontWeight: 900 }}>{card.action}</span><ChevronRight size={17} color="#fff" /></div></div>
+                    </motion.button>;
+                  })}
+                </div>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, marginTop: 13 }}>{MARKET_CAROUSEL_CARDS.map((card, index) => <button aria-label={`Show ${card.background}`} key={card.background} onClick={() => setActiveCarousel(index)} style={{ width: index === activeCarousel ? 28 : 7, height: 7, border: 0, borderRadius: 20, padding: 0, background: index === activeCarousel ? activeCard.color : "rgba(255,255,255,.2)", boxShadow: index === activeCarousel ? `0 0 12px ${activeCard.color}` : "none", cursor: "pointer", transition: "all .25s" }} />)}</div>
+                <div style={{ display: "flex", justifyContent: "center", gap: 7, marginTop: 8, color: "#68788C", fontSize: 9, letterSpacing: ".1em", textTransform: "uppercase" }}>Swipe to explore <ArrowRight size={11} /></div>
+              </>;
+            })()}
           </motion.div>
 
           {/* LIST YOUR PROPERTY CTA */}
