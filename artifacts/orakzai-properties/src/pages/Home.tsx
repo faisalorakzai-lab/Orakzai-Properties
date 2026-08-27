@@ -56,14 +56,14 @@ import { useProfilePhoto } from "@/hooks/useProfilePhoto";
   ];
 
   const MARKET_CAROUSEL_CARDS = [
-    { background: "HOTELS", subtitle: "Luxury Stays & Bookings", tagline: "Luxury stays, powered by global crypto & fiat.", action: "Book a stay", route: "/stays/hotels", image: PRIMARY_CATEGORY_HUBS[1].image, glyph: "🏨", color: "#06b6d4" },
-    { background: "ESTATES", subtitle: "Buy, Rent & Sell", tagline: "Apartments, Family Homes & Luxury Villas.", action: "Explore Properties", route: "/market/properties", image: PRIMARY_CATEGORY_HUBS[0].image, glyph: "🏢", color: "#10b981" },
-    { background: "INVEST", subtitle: "Tokenized Assets & RWAs", tagline: "Fractional ownership in high-yield megaprojects.", action: "View Projects", route: "/market/invest", image: PRIMARY_CATEGORY_HUBS[2].image, glyph: "📊", color: "#a78bfa" },
-    { background: "BUILD", subtitle: "Raw Materials & Supplies", tagline: "Direct sourcing for cement, steel & heavy equipment.", action: "Source Materials", route: "/market/construction", image: PRIMARY_CATEGORY_HUBS[3].image, glyph: "🏗️", color: "#f97316" },
-    { background: "DESIGN", subtitle: "Architects & Engineers", tagline: "3D Blueprints & Structural Engineering Solutions.", action: "Find Experts", route: "/design/architects", image: PRIMARY_CATEGORY_HUBS[4].image, glyph: "📐", color: "#3b82f6" },
-    { background: "TRADES", subtitle: "Contractors & Technicians", tagline: "Verified local pros for maintenance & logistics.", action: "Hire Services", route: "/market/services", image: PRIMARY_CATEGORY_HUBS[5].image, glyph: "🛠️", color: "#eab308" },
-    { background: "LEGAL", subtitle: "Title Deeds & Lawyers", tagline: "Instant NOC verification & property advocate desk.", action: "Verify Property", route: "/services/verification", image: PRIMARY_CATEGORY_HUBS[6].image, glyph: "⚖️", color: "#ec4899" },
-    { background: "FINANCE", subtitle: "Home Loans & Mortgage Desk", tagline: "Global multi-currency mortgages & Sharia finance.", action: "Check Rates", route: "/finance/home-loans", image: PRIMARY_CATEGORY_HUBS[7].image, glyph: "🏦", color: GOLD },
+    { background: "HOTELS", subtitle: "Luxury Stays & Bookings", tagline: "Luxury stays, powered by crypto.", action: "Book a stay", route: "/stays/hotels", image: PRIMARY_CATEGORY_HUBS[1].image, glyph: "🏨", color: "#06b6d4" },
+    { background: "ESTATES", subtitle: "Buy, Rent & Sell", tagline: "Apartments, family homes & luxury villas.", action: "Explore Properties", route: "/market/properties", image: PRIMARY_CATEGORY_HUBS[0].image, glyph: "🏢", color: "#10b981" },
+    { background: "INVEST", subtitle: "Tokenized Assets & RWAs", tagline: "Fractional ownership in high-yield projects.", action: "View Projects", route: "/market/invest", image: PRIMARY_CATEGORY_HUBS[2].image, glyph: "📊", color: "#a78bfa" },
+    { background: "BUILD", subtitle: "Raw Materials & Supplies", tagline: "Direct sourcing for cement, steel & equipment.", action: "Source Materials", route: "/market/construction", image: PRIMARY_CATEGORY_HUBS[3].image, glyph: "🏗️", color: "#f97316" },
+    { background: "DESIGN", subtitle: "Architects & Engineers", tagline: "3D blueprints & structural engineering.", action: "Find Experts", route: "/design/architects", image: PRIMARY_CATEGORY_HUBS[4].image, glyph: "📐", color: "#3b82f6" },
+    { background: "TRADES", subtitle: "Contractors & Technicians", tagline: "Verified pros for maintenance & logistics.", action: "Hire Services", route: "/market/services", image: PRIMARY_CATEGORY_HUBS[5].image, glyph: "🛠️", color: "#eab308" },
+    { background: "LEGAL", subtitle: "Title Deeds & Lawyers", tagline: "Instant NOC checks & property counsel.", action: "Verify Property", route: "/services/verification", image: PRIMARY_CATEGORY_HUBS[6].image, glyph: "⚖️", color: "#ec4899" },
+    { background: "FINANCE", subtitle: "Home Loans & Mortgage Desk", tagline: "Global mortgages & Sharia finance.", action: "Check Rates", route: "/finance/home-loans", image: PRIMARY_CATEGORY_HUBS[7].image, glyph: "🏦", color: GOLD },
   ];
 
   const FEATURED_AGENTS = [
@@ -1058,11 +1058,10 @@ import { useProfilePhoto } from "@/hooks/useProfilePhoto";
             })()}
           </motion.div>
 
-          {/* ── 3D PRIMARY CATEGORY CAROUSEL ── */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24 }} className="w-full max-w-md mx-auto relative px-0 py-6 overflow-hidden flex flex-col items-center" style={{ paddingTop: 30 }}>
+          {/* ── CLEAN 3D PRIMARY CATEGORY CAROUSEL ── */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24 }} className="w-full max-w-md mx-auto relative px-0 py-6 overflow-hidden flex flex-col items-center" style={{ paddingTop: 30, paddingBottom: 34 }}>
             {(() => {
               const activeCard = MARKET_CAROUSEL_CARDS[activeCarousel];
-              const slideOffset = 196;
               const moveCarousel = (direction: number) => setActiveCarousel(current => (current + direction + MARKET_CAROUSEL_CARDS.length) % MARKET_CAROUSEL_CARDS.length);
               const finishPointer = (event: React.PointerEvent<HTMLDivElement>) => {
                 if (carouselDragStart.current === null) return;
@@ -1071,29 +1070,28 @@ import { useProfilePhoto } from "@/hooks/useProfilePhoto";
                 if (Math.abs(delta) > 42) moveCarousel(delta < 0 ? 1 : -1);
                 carouselDragStart.current = null;
               };
-              return <>
-                <div className="w-full flex justify-center items-center z-10 relative" style={{ height: 448, touchAction: "pan-y", perspective: 1200, overflow: "visible" }} onPointerDown={event => { carouselDragStart.current = event.clientX; event.currentTarget.setPointerCapture?.(event.pointerId); }} onPointerUp={finishPointer} onPointerCancel={finishPointer}>
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 text-7xl font-black opacity-10 uppercase pointer-events-none z-0" style={{ color: activeCard.color, whiteSpace: "nowrap", fontSize: "clamp(64px, 18vw, 150px)", lineHeight: .85, letterSpacing: "-.08em" }}>{activeCard.background}</div>
-                  <div className="absolute inset-0 z-0 pointer-events-none" style={{ background: `radial-gradient(circle at 50% 43%, ${activeCard.color}24, transparent 56%)` }} />
-                  <div className="relative z-10 w-full h-full flex items-center justify-center" style={{ overflow: "visible" }}>
+              return <div className="w-full relative flex flex-col items-center justify-center" style={{ touchAction: "pan-y" }}>
+                <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-7xl font-black text-white/10 uppercase tracking-tighter pointer-events-none z-0 select-none" style={{ color: activeCard.color, whiteSpace: "nowrap", fontSize: "clamp(64px, 18vw, 150px)", lineHeight: .85 }}>{activeCard.background}</div>
+                <div className="absolute top-0 left-0 right-0 bottom-20 z-0 pointer-events-none" style={{ background: `radial-gradient(circle at 50% 40%, ${activeCard.color}22, transparent 58%)` }} />
+                <div className="w-full flex justify-center items-center z-10 relative" style={{ height: 420, perspective: 1200, overflow: "visible" }} onPointerDown={event => { carouselDragStart.current = event.clientX; event.currentTarget.setPointerCapture?.(event.pointerId); }} onPointerUp={finishPointer} onPointerCancel={finishPointer}>
+                  <div className="relative w-full h-full flex items-center justify-center" style={{ overflow: "visible" }}>
                     {MARKET_CAROUSEL_CARDS.map((card, index) => {
                       let offset = index - activeCarousel;
                       const total = MARKET_CAROUSEL_CARDS.length;
                       if (offset > total / 2) offset -= total;
                       if (offset < -total / 2) offset += total;
-                      if (Math.abs(offset) > 2) return null;
+                      if (Math.abs(offset) > 1) return null;
                       const isActive = offset === 0;
-                      return <motion.button key={card.background} className="w-[280px] h-[380px] sm:w-[320px] sm:h-[420px] rounded-[32px]" animate={{ x: offset * slideOffset, scale: isActive ? 1 : .85, opacity: isActive ? 1 : .5, rotateY: offset * -7, filter: isActive ? "blur(0px)" : "blur(1px)", zIndex: isActive ? 10 : 0 }} transition={{ type: "spring", stiffness: 320, damping: 30, mass: .7 }} onClick={() => { if (carouselDidDrag.current) { carouselDidDrag.current = false; return; } if (isActive) setLocation(card.route); else setActiveCarousel(index); }} style={{ position: "absolute", top: "50%", left: "50%", margin: 0, transform: "translate(-50%, -50%) translateZ(0)", padding: 0, overflow: "hidden", border: `2px solid ${isActive ? "#22d3ee" : "rgba(255,255,255,.13)"}`, background: "#07101b", boxShadow: isActive ? "0 10px 30px rgba(6,182,212,.3)" : "0 10px 28px rgba(0,0,0,.42)", cursor: "grab", transformStyle: "preserve-3d", textAlign: "left", flexShrink: 0 }}>
-                        <img src={card.image} alt="" draggable={false} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} /><div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(4,8,15,.08) 4%,rgba(4,8,15,.18) 35%,rgba(4,8,15,.97) 100%)" }} />
-                        <div style={{ position: "absolute", top: 18, left: 18, right: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}><div style={{ width: 46, height: 46, display: "grid", placeItems: "center", borderRadius: 15, background: `${card.color}38`, border: `1px solid ${card.color}99`, boxShadow: `0 0 24px ${card.color}44`, fontSize: 23 }}>{card.glyph}</div><span style={{ padding: "6px 9px", borderRadius: 20, background: "rgba(4,8,15,.72)", border: "1px solid rgba(255,255,255,.15)", color: "#fff", fontSize: 9, fontWeight: 850 }}>{index + 1} / 8</span></div>
-                        <div style={{ position: "absolute", left: 21, right: 21, bottom: 19 }}><div style={{ color: card.color, fontSize: 10, fontWeight: 900, letterSpacing: ".16em", textTransform: "uppercase" }}>{card.subtitle}</div><div style={{ marginTop: 7, color: "#fff", fontSize: 23, lineHeight: 1.06, fontWeight: 900, letterSpacing: "-.035em" }}>{card.tagline}</div><div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 16 }}><span style={{ padding: "10px 16px", borderRadius: 24, background: "#fff", color: "#07101b", fontSize: 11, fontWeight: 900, whiteSpace: "nowrap" }}>{card.action}</span><ChevronRight size={18} color="#fff" /></div></div>
+                      return <motion.button key={card.background} className="w-[270px] h-[340px] sm:w-[300px] sm:h-[370px] rounded-[40px]" animate={{ x: offset * 238, scale: isActive ? 1 : .85, opacity: isActive ? 1 : .4, rotateY: offset * -8, filter: isActive ? "blur(0px)" : "blur(1px)", zIndex: isActive ? 10 : 0 }} transition={{ type: "spring", stiffness: 300, damping: 30, mass: .72 }} onClick={() => { if (carouselDidDrag.current) { carouselDidDrag.current = false; return; } if (isActive) setLocation(card.route); else setActiveCarousel(index); }} style={{ position: "absolute", top: "50%", left: "50%", margin: 0, transform: "translate(-50%, -50%) translateZ(0)", padding: 0, overflow: "hidden", border: `4px solid ${isActive ? card.color : "rgba(100,116,139,.5)"}`, background: "#07101b", boxShadow: isActive ? `0 10px 30px ${card.color}4d, 0 20px 45px rgba(0,0,0,.34)` : "0 10px 28px rgba(0,0,0,.46)", cursor: "grab", transformStyle: "preserve-3d", textAlign: "left", flexShrink: 0 }}>
+                        <img src={card.image} alt="" draggable={false} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", borderRadius: 36 }} /><div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(4,8,15,.08) 5%,rgba(4,8,15,.14) 38%,rgba(4,8,15,.94) 100%)" }} />
+                        <div style={{ position: "absolute", top: 20, left: 22, right: 22, color: card.color, fontSize: 10, fontWeight: 900, letterSpacing: ".16em", textTransform: "uppercase" }}>{card.subtitle}</div>
+                        <div style={{ position: "absolute", left: 22, right: 22, bottom: 22, color: "#fff", fontSize: 22, lineHeight: 1.08, fontWeight: 900, letterSpacing: "-.035em", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{card.tagline}</div>
                       </motion.button>;
                     })}
                   </div>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, marginTop: 7 }}>{MARKET_CAROUSEL_CARDS.map((card, index) => <button aria-label={`Show ${card.background}`} key={card.background} onClick={() => setActiveCarousel(index)} style={{ width: index === activeCarousel ? 28 : 7, height: 7, border: 0, borderRadius: 20, padding: 0, background: index === activeCarousel ? activeCard.color : "rgba(255,255,255,.22)", boxShadow: index === activeCarousel ? `0 0 12px ${activeCard.color}` : "none", cursor: "pointer", transition: "all .25s" }} />)}</div>
-                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 7, marginTop: 9, color: "#7D8998", fontSize: 9, letterSpacing: ".12em", textTransform: "uppercase" }}>Swipe to explore <ArrowRight size={11} /></div>
-              </>;
+                <button onClick={() => setLocation(activeCard.route)} style={{ position: "relative", zIndex: 20, marginTop: -3, padding: "13px 25px", minWidth: 142, border: 0, borderRadius: 28, background: "#fff", color: "#07101b", boxShadow: `0 10px 26px ${activeCard.color}38`, fontSize: 13, fontWeight: 900, cursor: "pointer" }}>{activeCard.action}</button>
+              </div>;
             })()}
           </motion.div>
 
