@@ -1018,46 +1018,6 @@ import { useProfilePhoto } from "@/hooks/useProfilePhoto";
             )}
           </motion.div>
 
-          {/* ── FEATURED PROPERTY LISTINGS ── */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.20 }} style={{ padding: "24px 0 0" }}>
-            {(() => {
-              // Normalise marketCategory → property type key
-              const catKey = marketCategory === "Investments" ? "investment" : marketCategory.toLowerCase();
-              const filtered = listings.filter(p =>
-                p.category.toLowerCase() === catKey ||
-                p.type.toLowerCase() === catKey ||
-                (marketCategory === "Investments" && ["booking", "fractional"].includes(p.type.toLowerCase()))
-              );
-              const display = filtered.length > 0 ? filtered : PROPERTIES.filter(p =>
-                p.category.toLowerCase() === catKey ||
-                p.type.toLowerCase() === catKey ||
-                (marketCategory === "Investments" && ["booking", "fractional"].includes(p.type.toLowerCase()))
-              );
-              const sectionTitle = marketCategory === "Investments" ? "Investment Projects" : `${marketCategory} Listings`;
-              return (
-                <>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                    <div>
-                      <div style={{ fontSize: 14, fontWeight: 800, color: "#F5F5F5" }}>{sectionTitle}</div>
-                      <div style={{ fontSize: 10, color: "#8B93A7", textTransform: "uppercase" as const, letterSpacing: 0.8, marginTop: 1 }}>
-                        Verified properties · updated live
-                      </div>
-                    </div>
-                    <motion.button whileTap={{ scale: 0.96 }} onClick={() => setLocation("/projects")}
-                      style={{ display: "flex", alignItems: "center", gap: 3, background: "none", border: "none", cursor: "pointer", color: GOLD, fontSize: 12, fontWeight: 700 }}>
-                      View all <ChevronRight size={13} />
-                    </motion.button>
-                  </div>
-                  <div style={{ display: "flex", gap: 14, overflowX: "auto", scrollbarWidth: "none" as const, paddingBottom: 4 }}>
-                    {display.slice(0, 8).map(p => (
-                      <CinematicCard key={p.id} p={p} saved={savedIds.has(p.id)} onSave={() => toggleSave(p.id)} />
-                    ))}
-                  </div>
-                </>
-              );
-            })()}
-          </motion.div>
-
           {/* ── EXACT THREE-LAYER PRIMARY CAROUSEL ── */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24 }} className="relative w-full max-w-md mx-auto py-12 px-0 flex flex-col items-center justify-center overflow-hidden" style={{ paddingBottom: 28 }}>
             {(() => {
